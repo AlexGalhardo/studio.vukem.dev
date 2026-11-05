@@ -7,9 +7,17 @@ The documentation site is a container. Railway builds the root `Dockerfile` and 
 
 ## Hostname
 
-The site is [studio.vukem.dev](https://studio.vukem.dev).
+The public name is [studio.vukem.dev](https://studio.vukem.dev).
 
-The DNS record is a CNAME to the Railway target shown in the service domain settings. Railway also issues the certificate after the record matches.
+Until that name resolves, the same deployment answers at <https://studio-production-b48f.up.railway.app>. `/` redirects to `/docs/introduction`.
+
+On the `vukem.dev` zone, add:
+
+| Type | Host | Value |
+| --- | --- | --- |
+| CNAME | `studio` | `oqw3fjl4.up.railway.app` |
+
+Railway issues the certificate after the record matches. If the domain stays unverified, also add the TXT record Railway shows for `_railway-verify.studio`.
 
 <Callout type="warning" title="Do not reuse another project's hostname">
 The Railway account already has a project named `trading`. This site does not attach `trading.vukem.dev`. That name showed up once in the original brief and points at a different product.
@@ -20,6 +28,12 @@ The Railway account already has a project named `trading`. This site does not at
 The image listens on `PORT` (Railway sets it) and binds `0.0.0.0`. The process runs as the `bun` user. The health check path is `/docs/introduction`.
 
 `NEXT_PUBLIC_SITE_URL` is `https://studio.vukem.dev` at build time so canonical links match the public host.
+
+## Config
+
+`railway.toml` selects the Dockerfile and the health check. Railway marks that file format deprecated after 2026-12-01. `.railway/railway.ts` is the generated replacement and is not applied yet.
+
+CLI uploads skip `.agents/` through `.railwayignore`. GitHub builds use `.dockerignore`, which skips the same tree.
 
 ## What this service is not
 

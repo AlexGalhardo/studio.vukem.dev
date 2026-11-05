@@ -50,17 +50,17 @@ The visitor of `studio.vukem.dev` lands on the technical introduction.
 ### 1.2 Host
 
 - [x] `Dockerfile` builds the site as a standalone server
-- [ ] Railway service is created and the image deploys
-- [ ] `studio.vukem.dev` CNAME matches the Railway domain status
+- [x] Railway project `studio`, service deployed from the Dockerfile. Live host: `https://studio-production-b48f.up.railway.app` (`/` is 307 to `/docs/introduction`, introduction is 200)
+- [ ] `studio.vukem.dev` CNAME `studio` → `oqw3fjl4.up.railway.app` (record not in DNS yet)
 - [ ] `https://studio.vukem.dev/docs/introduction` returns 200
 - [ ] `https://studio.vukem.dev/` redirects to the introduction
 
 #### Audit — phase 1
 
 - [ ] Homepage redirect and the introduction render without a console error
-- [ ] One inner page (`/docs/pipeline/overview`) renders the sidebar and the article
-- [ ] Changelog page renders `CHANGELOG.md`
-- [ ] `trading.vukem.dev` is not attached to this service
+- [x] One inner page (`/docs/pipeline/overview`) renders the sidebar and the article
+- [x] Changelog page renders `CHANGELOG.md`
+- [x] `trading.vukem.dev` is not attached to this service
 
 ## Phase 2 — Application shell
 

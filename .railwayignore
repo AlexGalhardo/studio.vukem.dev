@@ -1,0 +1,6 @@
+.agents/**
+zip/**
+.git/**
+site/node_modules/**
+site/.next/**
+vukem-feedback.md

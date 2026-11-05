@@ -14,4 +14,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Video and engineering skill kits unpacked into `.agents/skills/`
 - Repository hygiene: MIT license, contributing guide, security policy, code of conduct, editorconfig, markdownlint, Biome 2, git-cliff, commit-msg hook, Scorecard workflow, and a `v*` GitHub release workflow
 - Docker image and Railway config for the documentation site
+- `.railwayignore` so CLI uploads skip skill media, and a generated Railway config draft in `.railway/railway.ts` (not applied)
 - Bun 1.4.4 typecheck script (`bun run check`)

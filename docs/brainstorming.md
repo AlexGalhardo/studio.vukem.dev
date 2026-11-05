@@ -8,7 +8,7 @@ This file is the interview record. It states the working hypothesis, the questio
 
 You want a Vukem dashboard that compiles a short-form video brief into a prompt, renders an MP4 with open source tools, and a documentation site on `studio.vukem.dev` that uses the same docs shell as vukem.dev.
 
-Confidence: about 75%. Still open: the public hostname that appeared once as `trading.vukem.dev`, whether the first render must include a voice, and whether Remotion is acceptable under its company license.
+Confidence: about 80%. Hostname is `studio.vukem.dev`. Still open: whether the first render must include a voice, and whether Remotion is acceptable under its company license.
 
 ## What was taken as given
 
@@ -28,9 +28,9 @@ Each question has a guess. The guess is what the scaffold assumed when the work 
 
 Q: The brief says the site is `studio.vukem.dev`, and task (a) says the web process should answer on `trading.vukem.dev`. Which hostname is this product?
 
-Guess: `studio.vukem.dev`. `trading` is a separate Railway project already on this account. Pointing Studio at that name would collide with it.
+Decision, already deployed: `studio.vukem.dev`. `trading` is a separate Railway project on this account. This service lists `studio-production-b48f.up.railway.app` and `studio.vukem.dev` only. `trading.vukem.dev` is not attached.
 
-Assumption in the repo: the docs and the Railway service use `studio.vukem.dev`. `trading.vukem.dev` is not attached.
+DNS for `studio.vukem.dev` is still empty. The CNAME is `studio` to `oqw3fjl4.up.railway.app`.
 
 ### 2. First video that counts as done
 
