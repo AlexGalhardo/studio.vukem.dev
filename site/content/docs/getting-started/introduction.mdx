@@ -17,8 +17,8 @@ One video job moves through five stages:
 4. **Render.** [Remotion](/docs/tools/renderers) or [HyperFrames](/docs/tools/renderers) draws the frames. [FFmpeg](/docs/tools/renderers) encodes the file.
 5. **Check.** Duration, loudness, captions, and a factual pass before anyone downloads the file.
 
-<Callout type="warning" title="Shell only">
-The dashboard shell and the Google login page are in the repository. The render worker is still specified in the [roadmap](https://github.com/AlexGalhardo/vukem-studio/blob/main/ROADMAP.md). This site documents the system that those pieces have to match.
+<Callout type="tip" title="The first cut needs no API key">
+A signed-in operator opens **Videos**, fills the brief, and the worker stores the compiled prompt, a scene plan, and an MP4. The default planner is local and the default renderer is FFmpeg, so the silent fixture runs without a model key. HyperFrames and Remotion are optional commands selected with `STUDIO_RENDERER`.
 </Callout>
 
 ## Two programs, one repository

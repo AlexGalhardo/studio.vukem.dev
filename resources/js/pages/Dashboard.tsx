@@ -9,6 +9,11 @@ export default function Dashboard() {
     <>
       <Head title="Dashboard" />
       <h1 className="text-2xl font-semibold">Hello, {user?.name}</h1>
+      <p className="mt-4">
+        <Link href="/jobs" className="text-indigo-600 hover:underline dark:text-indigo-400">
+          Videos
+        </Link>
+      </p>
       {user?.email_verified_at ? (
         <p className="mt-2">Your email is verified.</p>
       ) : (

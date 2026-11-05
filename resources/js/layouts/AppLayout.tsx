@@ -1,5 +1,5 @@
 import { Link, usePage } from "@inertiajs/react";
-import { LayoutDashboard, LogOut } from "lucide-react";
+import { Clapperboard, LayoutDashboard, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuItem } from "../components/ui/sidebar";
@@ -42,6 +42,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <Link href="/" className={item}>
                   <LayoutDashboard aria-hidden="true" className="size-4" />
                   Dashboard
+                </Link>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <Link href="/jobs" className={item}>
+                  <Clapperboard aria-hidden="true" className="size-4" />
+                  Videos
                 </Link>
               </SidebarMenuItem>
               {demoInstalled ? (

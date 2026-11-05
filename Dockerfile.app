@@ -31,7 +31,7 @@ RUN tags="$(sed 's/#.*//' .buildtags 2>/dev/null | tr -s ', \t\r\n' ',' | sed 's
 	&& go build -trimpath -ldflags="-s -w" -tags "$tags" -o /out/app ./cmd/app
 
 FROM alpine:3.24.2
-RUN apk add --no-cache ca-certificates tzdata \
+RUN apk add --no-cache ca-certificates tzdata ffmpeg font-dejavu \
 	&& adduser -D -H -u 10001 app \
 	&& mkdir -p /app/storage \
 	&& chown app:app /app/storage

@@ -3,22 +3,24 @@ title: Status
 description: What is in the repository today, and what the roadmap still owns.
 ---
 
-Studio is at `v0.1.0` of the repository, not of a video product. The first slice is the documentation site, the research, the unpacked skills, and the release tooling.
+Studio is at `v0.1.0`. The repository has the documentation site, the Vukem dashboard, and a worker that turns a brief into a checked MP4.
 
 ## In this repository
 
 - Documentation site with the same docs shell as vukem.dev
 - Research notes in `docs/web-research.md`
 - Skill kits under `.agents/skills/`
-- GitHub Actions for markdown, the site, OpenSSF Scorecard, pull request titles, and version tags
-- Docker image for the documentation site
+- Vukem dashboard: Inertia, React, Google sign-in, and a video library at `/jobs`
+- Brief form, prompt compiler, local scene planner, FFmpeg renderer, QA, captions, loudness, and a publish pack
+- GitHub Actions for markdown, the site, the Go tests, OpenSSF Scorecard, pull request titles, and version tags
+- Docker image for the documentation site, and `Dockerfile.app` for the dashboard
 - Roadmap with audit checks
 
-## Not in this repository yet
+## Still outside this repository
 
-- The Vukem dashboard application
-- Google sign-in
-- A render queue
-- An end-to-end brief that produces an MP4
+- DNS for `studio.vukem.dev` (the name currently answers Vercel with deployment-not-found; the Railway host serves the docs)
+- A Scorecard run recorded on `main`
+- Hosted model keys, a Whisper weight file, and the HyperFrames or Remotion CLIs
+- Direct posting to YouTube, Instagram, or TikTok
 
 Those items are phases in `ROADMAP.md`. A box is `[x]` when the audit checks under it pass, `[/]` when the work is only partly true, and `[ ]` when it has not started.

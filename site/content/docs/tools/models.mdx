@@ -7,7 +7,7 @@ Studio uses a language model to write. It does not use a video-diffusion model i
 
 ## Language model
 
-The compiler sends one prompt and expects a structured plan: script, shots, and composition source that matches the selected skill. Claude and OpenAI models are the first adapters. The provider is a setting, not a fork of the pipeline.
+The compiler sends one prompt and expects a structured plan: script, shots, and composition source that matches the selected skill. The default adapter is `local-planner`. It builds that plan from the brief so a fixture can render with no API key. A response that is not a plan fails the job and stores the raw text. Claude and OpenAI stay later adapters. The provider is a setting, not a fork of the pipeline.
 
 The call stores the model id and the prompt. A later regeneration uses the same skill even if the default model changes.
 
