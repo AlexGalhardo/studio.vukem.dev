@@ -1,0 +1,6 @@
+{"depende": ["video-direcao-de-arte"],
+ "programas": ["ffmpeg", "ffprobe"],
+ "python": {"PIL": "pillow"},
+ "whisper": false,
+ "node": null,
+ "chaves": []}

@@ -1,0 +1,33 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Folha de objetos: todas as construções do RI paradas, lado a lado, em cada cor. Use para testar um desenho novo
+     antes de levar para o vídeo:  node render.mjs folha --at=0.5  → previews/folha-de-objetos/00.jpg -->
+<script>VIDEO={w:1080,h:1920,fps:30,dur:1}</script>
+<script src="../../lib/boot.js"></script>
+<style>.lb{position:absolute;font:600 22px 'Inter Tight';color:#2a2440;opacity:.6}</style></head><body>
+<div id="stage"><svg id="s" class="ri-full" viewBox="0 0 1080 1920"></svg><div id="ui"></div></div>
+<script>
+RI.instalar();
+const s = K.$('#s'), ui = K.$('#ui'), cores = Object.keys(RI.CORES);
+const lb = (x, y, t) => ui.insertAdjacentHTML('beforeend', `<div class="lb" style="left:${x}px;top:${y}px">${t}</div>`);
+const at = (x, y, sc, inner) => `<g transform="translate(${x} ${y}) scale(${sc})">${inner}</g>`;
+let h = '';
+// linha 1: pasta fechada (RI.mini) em todas as cores
+cores.forEach((k, i) => { h += at(95 + i * 178, 230, .62, RI.mini(k)); lb(40 + i * 178, 250, k); }); lb(40, 40, 'RI.mini(k)');
+// linha 2: cartão arredondado e bola
+cores.forEach((k, i) => { h += at(95 + i * 178, 470, .55, RI.cartao(k)); h += at(95 + i * 178, 640, .7, RI.bola(k, 70)); }); lb(40, 300, 'RI.cartao(k) · RI.bola(k, r)');
+// linha 3: folha de papel + formas livres com RI.camada (celular, caixa, pizza)
+h += at(110, 1050, .9, RI.folha());
+h += at(330, 1050, 1, RI.camada(RI.ret(170, 300, 30), 'lilas') + `<rect x="-60" y="-280" width="120" height="14" rx="7" fill="#fff" opacity=".7"/>`);   // celular
+h += at(560, 1050, 1, RI.camada('M-120 0V-150L0 -200L120 -150V0Z', 'ambar') + RI.camada('M-120 -150L0 -100L120 -150L0 -200Z', 'ambar', 'b'));          // caixa
+h += at(820, 1050, 1, RI.camada('M0 -130L0 -260A130 130 0 0 1 112.6 -65Z', 'rosa') + RI.camada('M0 -130L112.6 -65A130 130 0 1 1 0 -260Z', 'menta'));      // pizza
+lb(40, 690, 'RI.folha() · RI.camada(path, k, "f"|"b") — celular, caixa, pizza');
+// linha 4: mãos (todas as peles)
+Object.keys(RI.MAOS).forEach((k, i) => { h += `<g id="m${i}"></g>`; lb(80 + i * 262, 1880, k); }); lb(40, 1110, 'RI.mao(g, {pele})');
+s.innerHTML = h;
+Object.keys(RI.MAOS).forEach((k, i) => RI.mao(K.$('#m' + i), { pele: k }).pos(190 + i * 262, 1290, 6, .44));
+// forma pintável: cartão azul sendo pintado de verde a partir do canto inferior direito
+s.insertAdjacentHTML('beforeend', '<g id="pv" transform="translate(600 1230) scale(.8)"></g>'); lb(470, 1240, 'RI.pintavel (meio pintado)');
+RI.pintavel(K.$('#pv'), RI.ret(260, 170, 22), ['azul', 'verde'], { origem: [150, 20] })(1, 170);
+// selo
+const selo = RI.selo(ui, [[0, 'selo<br>de três<br>linhas']], { x: 960, y: 1180, lado: 170 }); onTick(t => selo(t + 1));
+</script></body></html>

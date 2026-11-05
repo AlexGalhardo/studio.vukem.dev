@@ -1,0 +1,18 @@
+{
+ "depende": [],
+ "programas": [
+  "ffmpeg",
+  "ffprobe"
+ ],
+ "python": {
+  "PIL": "pillow",
+  "numpy": "numpy",
+  "scipy": "scipy"
+ },
+ "whisper": false,
+ "node": {
+  "dir": "assets/projeto",
+  "chromium": true
+ },
+ "chaves": []
+}

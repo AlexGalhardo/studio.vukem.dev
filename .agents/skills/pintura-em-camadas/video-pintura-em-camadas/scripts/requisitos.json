@@ -1,0 +1,21 @@
+{
+ "depende": [
+  "video-direcao-de-arte"
+ ],
+ "programas": [
+  "ffmpeg",
+  "ffprobe",
+  "node"
+ ],
+ "python": {
+  "PIL": "pillow",
+  "cv2": "opencv-python",
+  "numpy": "numpy"
+ },
+ "whisper": false,
+ "node": {
+  "dir": "assets/projeto",
+  "chromium": true
+ },
+ "chaves": []
+}

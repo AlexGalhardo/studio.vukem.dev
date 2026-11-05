@@ -1,0 +1,35 @@
+---
+title: Introduction
+description: Studio turns a short-form video brief into a rendered MP4 with open source tools and a language model.
+---
+
+Studio is an open source short-form video studio. You describe the video. The application turns that brief into a prompt, a scene plan, and a rendered `.mp4` for Shorts, Reels, and other vertical or square social cuts.
+
+The public site is the documentation. Opening [studio.vukem.dev](https://studio.vukem.dev) lands here.
+
+## What you are building
+
+One video job moves through five stages:
+
+1. **Brief.** Goal, audience, length, aspect ratio, and visual style.
+2. **Prompt.** A compiled instruction for the language model, built from the brief and a style skill. The operator does not write that prompt by hand.
+3. **Plan.** Script, shot list, voice, captions, and asset list.
+4. **Render.** [Remotion](/docs/tools/renderers) or [HyperFrames](/docs/tools/renderers) draws the frames. [FFmpeg](/docs/tools/renderers) encodes the file.
+5. **Check.** Duration, loudness, captions, and a factual pass before anyone downloads the file.
+
+<Callout type="warning" title="Not built yet">
+The dashboard, Google sign-in, and the render worker are specified in the [roadmap](https://github.com/AlexGalhardo/studio.vukem.dev/blob/main/ROADMAP.md). This site documents the system that those pieces have to match.
+</Callout>
+
+## Two programs, one repository
+
+| Path | What it is |
+| --- | --- |
+| `site/` | This documentation. Next.js, same information architecture as [vukem.dev](https://vukem.dev). |
+| Application (next) | A [Vukem](https://vukem.dev/docs/introduction) app. Inertia, React, and a sidebar dashboard. `/` is the dashboard. A signed-out visitor goes to `/login`, which has one Google button. |
+
+The framework documentation stays on vukem.dev. This site documents Studio only.
+
+## What a finished job returns
+
+A job is done when the worker stores one `.mp4` plus a sidecar the operator can read: the compiled prompt, the scene plan, the tool versions, and the check report. A video that fails the check is not marked ready.

@@ -1,0 +1,185 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Exemplo da skill video-traco-simples: "Raças de cachorro", 15 s, 9:16.
+     Roteiro: pontinho → estouro de estrelas → bolinha → zoom-out num campo de ícones → mergulho na bolinha →
+     5 raças (uma por fundo, cada uma com o seu gesto) → osso treme e estoura → mascote olha e pisca → wordmark digitado.
+     Tudo desenhado aqui com as primitivas de lib/traco.js (TR). Nenhuma imagem externa. -->
+<script>VIDEO={w:1080,h:1920,fps:60,dur:15,bpm:124,music:{style:'launch_bright',key:'F',gain:-1}}</script>
+<script src="../../lib/boot.js"></script>
+</head><body>
+<div id="stage"></div>
+<script>
+const P = TR.P, { blob, poly, star, line, G, tf, show, E, pop, q12, whip, janela, f1 } = TR;
+const S = TR.palco();            // #art (borda que ferve) > #bg + #cam > #svg + #labs
+TR.ferver(S.art);                // ruído novo a cada 1/12 s em tudo que está dentro de #art
+
+// ── linha do tempo (s): cada raça tem [entra, corta] ──
+const T = { boom: .5, f0: 1.55, out: 4.3, cut: 4.78, corgi: [4.78, 6.05], dal: [6.05, 7.35], dach: [7.35, 8.65], pood: [8.65, 9.85], pug: [9.85, 11.05], bone: 11.05, burst: 11.55, word: 13.15, end: 14.7 };
+TR.fundos(S.bg, [[0, '#000'], [T.cut, P.L], [T.dal[0], P.V], [T.dach[0], P.G], [T.pood[0], P.M], [T.pug[0], P.R], [T.bone, P.L], [T.end, '#000']]);
+TR.tremer(S.cam, [T.boom, T.burst]);
+
+// ── ícones do campo: [nome em TR.IC, cores] ──
+const ICONS = [['bone', [P.W]], ['bone', [P.L]], ['paw', [P.G]], ['paw', [P.M]], ['paw', [P.R]], ['house', [P.R, P.V]], ['house', [P.G, P.M]], ['bowl', [P.M, P.L]], ['bowl', [P.V, P.L]],
+  ['hydrant', [P.R, P.L]], ['hydrant', [P.V, P.G]], ['ball', [P.L]], ['collar', [P.V, P.L]], ['collar', [P.R, P.G]], ['disc', [P.G, P.V]], ['disc', [P.M, P.L]], ['heart', [P.R]],
+  ['mutt', [P.L, P.R]], ['mutt', [P.W, P.V]], ['mutt', [P.G, P.M]], ['sock', [P.M, P.L]], ['sock', [P.W, P.R]], ['star8', [P.V, P.M]], ['aster', [P.L]], ['dots', [P.L, P.V, P.R]],
+  ['rosette', [P.L, P.M, P.R]], ['rosette', [P.G, P.V, P.L]], ['sausage', [P.R]], ['leash', [P.M, P.L]], ['tri', [P.G]], ['tri', [P.M]], ['heart', [P.M]], ['paw', [P.V]]];
+
+// ── desenhos das cenas (coordenadas locais; o grupo é posicionado no tick) ──
+// CORGI de costas: cabeça e orelhas atrás, pernas, depois o bumbum (corpo + coração branco de cabeça pra baixo)
+const corgi = G('cgHead', poly([[-112, -250], [-74, -405], [-22, -262]], P.R) + poly([[-92, -262], [-72, -360], [-42, -268]], P.M) + poly([[112, -250], [74, -405], [22, -262]], P.R) + poly([[92, -262], [72, -360], [42, -268]], P.M) + blob(0, -215, 125, 95, P.R))
+  + G('cgLegL', blob(-100, 200, 46, 70, P.R) + blob(-100, 262, 52, 26, P.W)) + G('cgLegR', blob(100, 200, 46, 70, P.R) + blob(100, 262, 52, 26, P.W))
+  + G('cgButt', blob(0, 10, 218, 200, P.R, { j: .03 }) + poly([[-168, 96], [168, 96], [0, -70]], P.W, { j: 2 }) + blob(-76, 112, 104, 96, P.W) + blob(76, 112, 104, 96, P.W) + line('M0 70 L0 190', P.R, 7) + blob(0, -48, 24, 28, P.W, { n: 9 }));
+// DÁLMATA de frente: orelhas (pivô no alto), cabeça, focinho, pintas (animadas), olhos, nariz, boca, coleira
+const SPOTS = [[-120, -120, 28], [105, -138, 22], [-25, -168, 18], [150, -40, 20], [-150, 40, 24], [40, -92, 13], [128, 82, 20], [-96, 142, 17], [70, 168, 14]];
+const dal = G('dlEarL', blob(-185, 10, 70, 135, P.k, { rot: 18 })) + G('dlEarR', blob(185, 10, 70, 135, P.k, { rot: -18 })) + blob(0, -10, 190, 195, P.W, { j: .035 }) + blob(0, 105, 135, 95, P.W)
+  + SPOTS.map(([x, y, r]) => `<g class="spot">${blob(0, 0, r, r * 1.1, P.k, { n: 8, j: .1 })}</g>`).join('')
+  + TR.olho(-72, -25, 25) + TR.olho(72, -25, 25) + blob(0, 62, 42, 30, P.k)
+  + line('M-46 118Q-20 140 0 116Q20 140 46 118', P.k, 9) + line('M0 88L0 116', P.k, 8) + blob(0, 228, 170, 34, P.R, { j: .03 }) + blob(0, 276, 30, 30, P.L, { n: 9 });
+// DACHSHUND de perfil: corpo é um path refeito a cada quadro (estica); cabeça, rabo e 4 pernas acompanham as pontas
+const leg = () => poly([[-21, -10], [21, -10], [18, 84], [-18, 84]], P.R, { j: 2 }) + blob(10, 88, 32, 17, P.V, { n: 9 });
+const dach = G('dhTail', poly([[12, 935], [-104, 848], [-84, 836], [24, 902]], P.R)) + [0, 1, 2, 3].map(i => G('dhL' + i, leg())).join('') + `<path id="dhBody" fill="${P.R}"/>`
+  + G('dhHead', blob(30, 898, 100, 82, P.R) + blob(128, 935, 86, 46, P.R, { rot: 4 }) + blob(208, 922, 21, 18, P.k, { n: 8 }) + TR.olho(42, 880, 13) + line('M132 966Q160 976 186 961', P.k, 6) + blob(-6, 946, 48, 92, P.V, { rot: -12 }));
+// POODLE: corpo raspado branco + pompons lima que brotam um a um
+const POMS = [[180, -300, 82, 72], [150, -182, 48, 84], [95, -40, 112, 106], [-128, -5, 72, 66], [-205, -128, 46, 46], [-112, 268, 42, 30], [-62, 268, 42, 30], [98, 268, 42, 30], [142, 268, 42, 30]];
+const pood = poly([[-127, 30], [-95, 30], [-99, 272], [-123, 272]], P.W) + poly([[-77, 30], [-45, 30], [-49, 272], [-73, 272]], P.W) + poly([[82, 20], [114, 20], [110, 272], [86, 272]], P.W) + poly([[126, 20], [158, 20], [154, 272], [130, 272]], P.W)
+  + line('M-150 -10L-200 -112', P.W, 20) + blob(0, 20, 158, 72, P.W) + poly([[92, -20], [152, -36], [210, -205], [150, -205]], P.W) + blob(190, -216, 72, 62, P.W) + blob(268, -196, 74, 33, P.W, { rot: 8 })
+  + blob(338, -188, 15, 13, P.k, { n: 7 }) + blob(204, -224, 10, 11, P.k, { n: 7 })
+  + POMS.map(([x, y, rx, ry]) => `<g class="pom">${blob(0, 0, rx, ry, P.L, { n: 12, j: .09 })}</g>`).join('');
+// PUG de frente: língua ATRÁS da máscara (sai por baixo), olhos grandes com pupila e brilho
+const eye = (x, s) => `<g class="pgEye" transform="translate(${x} -25)">${blob(0, 0, 52, 49, P.W)}${blob(6 * s, 6, 33, 33, P.k, { n: 9 })}${blob(-6 * s, -6, 9, 9, P.W, { n: 6 })}</g>`;
+const pug = poly([[-205, -140], [-120, -205], [-112, -108]], P.k) + poly([[205, -140], [120, -205], [112, -108]], P.k) + G('pgTongue', blob(0, 195, 38, 48, P.M) + line('M0 160L0 205', P.R, 6))
+  + blob(0, 0, 215, 188, P.G, { j: .03 }) + line('M-72 -122Q0 -152 72 -122', P.k, 11) + line('M-46 -95Q0 -114 46 -95', P.k, 10) + blob(0, 82, 128, 100, P.k)
+  + eye(-95, -1) + eye(95, 1) + blob(0, 40, 14, 7, P.W, { n: 7 }) + line('M-44 118Q-22 134 0 114Q22 134 44 118', P.W, 6);
+// OSSO facetado (o "objeto precioso" que estoura)
+const bone = poly([[-205, -58], [205, -58], [205, 58], [-205, 58]], P.V, { j: 3 }) + [[-215, -62], [-215, 62], [215, -62], [215, 62]].map(([x, y]) => blob(x, y, 82, 82, P.V, { n: 10, j: .04 })).join('')
+  + poly([[-150, -58], [-62, -58], [-112, 58], [-196, 58]], P.M) + poly([[24, -58], [112, -58], [62, 58], [-26, 58]], P.M) + blob(-240, -88, 40, 30, P.M, { rot: -30 }) + blob(236, 90, 44, 30, P.M, { rot: -30 })
+  + blob(-170, -30, 22, 9, P.W, { n: 7, rot: -15 });
+// MASCOTE: silhueta preta, olhos brancos com pupila que se move e pálpebra (retângulo preto) que desce no piscar
+const msEye = (x, id) => `<g id="${id}" transform="translate(${x} -14)">${blob(0, 0, 36, 33, P.W, { n: 10 })}<g class="pup">${blob(0, 0, 16, 16, P.k, { n: 8 })}</g><rect class="lid" x="-44" y="-42" width="88" height="20" fill="${P.k}"/></g>`;
+const mascot = G('msEarL', blob(-132, 34, 52, 94, P.k, { rot: 22 })) + G('msEarR', blob(132, 34, 52, 94, P.k, { rot: -22 })) + G('msTongue', blob(0, 112, 20, 26, P.M, { n: 9 }))
+  + blob(0, 0, 132, 114, P.k, { j: .03 }) + blob(0, 64, 66, 46, P.k) + msEye(-50, 'msEyeL') + msEye(50, 'msEyeR') + blob(0, 48, 12, 6, P.W, { n: 6 });
+
+S.svg.innerHTML = G('stars', '') + G('field', G('ball', blob(0, 0, 48, 48, P.L, { n: 12, j: .03 }) + G('seam', line('M-34 -33C-12 -12 -12 14 -34 34', P.W, 7) + line('M34 -33C12 -12 12 14 34 34', P.W, 7))))
+  + G('corgi', corgi) + G('dal', dal) + G('dach', dach) + G('pood', pood) + G('pug', pug) + G('bone', bone)
+  + G('burst', star(0, 0, 11, 330, 215, P.G, { j: .1 })) + G('conf', '') + G('mascot', mascot) + `<path id="ul" fill="none" stroke="${P.M}" stroke-width="10" stroke-linecap="round"/>` + G('conf2', '');
+
+const EL = new Proxy({}, { get: (o, k) => o[k] ?? (o[k] = document.getElementById(k)) });
+const SPOT = K.$$('.spot'), POM = K.$$('.pom'), PGE = K.$$('.pgEye');
+// peças de assinatura prontas
+const estrelas = TR.estrelas(EL.stars, { t0: T.boom });
+const campo = TR.campo(EL.field, { icones: ICONS, t0: T.f0, tSaida: T.out });
+const confete = TR.confete(EL.conf), confete2 = TR.confete(EL.conf2, { n: 3, cores: [P.V, P.G, P.M], a0: -.9, arco: 1.35, dist: 110, var: 0, r0: 0, tam: .7, vida: .68 });
+// rótulos
+const LAB = { corgi: TR.rotulo(S.labs, 'CORGI', P.k), dal: TR.rotulo(S.labs, 'DÁLMATA', P.W), dach: TR.rotulo(S.labs, 'DACHSHUND', P.k), pood: TR.rotulo(S.labs, 'POODLE', P.W), pug: TR.rotulo(S.labs, 'PUG', P.W),
+  word: TR.rotulo(S.labs, 'RAÇAS DE CACHORRO', P.k, { top: 890, css: 'font-size:104px' }) };
+let ulLen = 0, ulX1 = 0;
+
+onTick(t => {
+  // 1. estouro em estrelas concêntricas
+  estrelas(t);
+
+  // 2. bolinha + campo de ícones: zoom-out (3.2 → 1 → .82) com giro lento, depois mergulho na bolinha (ela vira o fundo lima)
+  const fOn = t < T.cut; show(EL.field, fOn);
+  if (fOn) {
+    let fs = 3.2 - 2.2 * E('power2.inOut', t, T.f0, 2.95) - .18 * E('sine.inOut', t, 2.95, T.out); fs *= 1 + 1.7 * E('power2.in', t, T.out, T.cut);
+    tf(EL.field, 540, 960, fs, -14 * E('sine.inOut', t, T.f0, T.out) - 10 * E('power2.in', t, T.out, T.cut));
+    let bs = t < .08 ? 0 : t < T.boom ? .05 + .95 * E('expo.in', t, .08, T.boom) : 1 + .18 * Math.sin(Math.min(1, (t - T.boom) / .35) * Math.PI) * (1 - K.seg(t, T.boom, T.boom + .35));
+    bs *= 1 + 32 * E('power3.in', t, 4.42, T.cut);
+    tf(EL.ball, 0, Math.sin(q12(t) * 5) * 3 * (t > 1 && t < T.out ? 1 : 0), bs);
+    tf(EL.seam, 0, 0, 1, q12(t) * 160); EL.seam.setAttribute('opacity', f1(1 - K.seg(bs, 2.5, 5)));
+    campo.tick(t);
+  }
+
+  // 3. CORGI — o bumbum em forma de coração rebola (stop-motion 12 qps)
+  const c = T.corgi, cOn = janela(t, ...c); show(EL.corgi, cOn);
+  if (cOn) { const ps = pop(t, c[0], .32); tf(EL.corgi, 540 - whip(t, c[1]), 880, ps * 1.12, (1 - Math.min(1, ps)) * -14);
+    const ang = Math.sin(q12(t) * Math.PI * 2 * 2.4) * 12 * K.seg(t, c[0] + .3, c[0] + .4);
+    EL.cgButt.setAttribute('transform', `rotate(${f1(ang)} 0 -110)`); tf(EL.cgLegL, 0, ang > 3 ? -16 : 0); tf(EL.cgLegR, 0, ang < -3 ? -16 : 0);
+    EL.cgHead.setAttribute('transform', `translate(${f1(-ang * 1.2)} ${f1(Math.abs(ang) * .5)}) rotate(${f1(-ang * .4)} 0 -215)`); }
+  TR.rotuloTick(LAB.corgi, t, c[0] + .3, c[1], -whip(t, c[1]));
+
+  // 4. DÁLMATA — as pintas brotam uma a uma; a cabeça inclina curiosa
+  const d = T.dal, dOn = janela(t, ...d); show(EL.dal, dOn);
+  if (dOn) { const ps = pop(t, d[0], .32), tilt = -13 * E('back.out(3)', t, d[0] + 1.0, d[0] + 1.22);
+    tf(EL.dal, 540, 860 - whip(t, d[1]), ps, tilt + (1 - Math.min(1, ps)) * 12);
+    SPOT.forEach((g, i) => tf(g, SPOTS[i][0], SPOTS[i][1], pop(t, d[0] + .3 + i * .075, .2)));
+    const ef = Math.sin(q12(t) * 9) * 3 + tilt * .5; EL.dlEarL.setAttribute('transform', `rotate(${f1(ef)} -170 -110)`); EL.dlEarR.setAttribute('transform', `rotate(${f1(ef)} 170 -110)`); }
+  TR.rotuloTick(LAB.dal, t, d[0] + .35, d[1], 0, -whip(t, d[1]));
+
+  // 5. DACHSHUND — a frente chega antes, o traseiro vem atrás com mola: o corpo estica como salsicha (e sai esticando)
+  const h = T.dach, hOn = janela(t, ...h); show(EL.dach, hOn);
+  if (hOn) { let xf = -260 + 1050 * E('power3.out', t, h[0], h[0] + .4), xb = -1350 + 1600 * E('back.out(1.25)', t, h[0], h[0] + .78);
+    xf += 1500 * E('power2.in', t, h[1] - .2, h[1] - .02); xb += 1500 * E('power2.in', t, h[1] - .14, h[1]);
+    const moving = t < h[0] + .62 || t > h[1] - .22, ph = q12(t) * 26;
+    EL.dhBody.setAttribute('d', `M${f1(xb + 75)} 905H${f1(xf - 60)}C${f1(xf + 20)} 905 ${f1(xf + 20)} 1055 ${f1(xf - 60)} 1055H${f1(xb + 75)}C${f1(xb - 25)} 1055 ${f1(xb - 25)} 905 ${f1(xb + 75)} 905Z`);
+    tf(EL.dhHead, xf, Math.sin(ph) * 5 * moving); EL.dhTail.setAttribute('transform', `translate(${f1(xb)} 0) rotate(${f1(Math.sin(q12(t) * 30) * 14)} 0 920)`);
+    [xf - 70, xf - 150, xb + 150, xb + 70].forEach((x, i) => tf(EL['dhL' + i], x, 1040, 1, moving ? Math.sin(ph + (i % 2) * Math.PI + (i > 1 ? .8 : 0)) * 30 : 0)); }
+  TR.rotuloTick(LAB.dach, t, h[0] + .55, h[1], whip(t, h[1]));
+
+  // 6. POODLE — os pompons brotam um a um, depois um pulinho com achatada na chegada
+  const p = T.pood, pOn = janela(t, ...p); show(EL.pood, pOn);
+  if (pOn) { const ps = pop(t, p[0], .3), hop = Math.sin(Math.PI * K.seg(t, p[0] + .8, p[0] + 1.04)), land = Math.max(0, 1 - Math.abs(t - (p[0] + 1.06)) / .07);
+    tf(EL.pood, 440 - whip(t, p[1]), 945 - 120 * hop, ps * (1 + .1 * land), (1 - Math.min(1, ps)) * 10 - 6 * hop, ps * (1 - .14 * land + .06 * hop));
+    POM.forEach((g, i) => tf(g, POMS[i][0], POMS[i][1], pop(t, p[0] + .2 + i * .065, .22))); }
+  TR.rotuloTick(LAB.pood, t, p[0] + .35, p[1], -whip(t, p[1]));
+
+  // 7. PUG — inclina a cabeça pra lá e pra cá (degraus com back.out), pisca, língua balançando
+  const g = T.pug, gOn = janela(t, ...g); show(EL.pug, gOn);
+  if (gOn) { const ps = pop(t, g[0], .3), tilt = -14 * E('back.out(3)', t, g[0] + .35, g[0] + .45) + 28 * E('back.out(3)', t, g[0] + .58, g[0] + .68) - 14 * E('back.out(2)', t, g[0] + .8, g[0] + .9);
+    tf(EL.pug, 540, 870 + whip(t, g[1]), ps, tilt + (1 - Math.min(1, ps)) * -12);
+    const bl = 1 - .92 * Math.max(0, 1 - Math.abs(t - (g[0] + .98)) / .06); PGE.forEach((e, i) => tf(e, i ? 95 : -95, -25, 1, 0, bl));
+    EL.pgTongue.setAttribute('transform', `rotate(${f1(Math.sin(q12(t) * 14) * 12)} 0 165)`); }
+  TR.rotuloTick(LAB.pug, t, g[0] + .35, g[1], 0, whip(t, g[1]));
+
+  // 8. OSSO treme (24 qps, cada vez mais) → estrela verde estoura de dentro dele + confete → mascote nasce na estrela
+  const bOn = t >= T.bone && t < T.burst + .03; show(EL.bone, bOn);
+  if (bOn) { const sh = K.seg(t, T.bone + .18, T.burst), k = Math.floor(t * 24) % 2 ? 1 : -1, s0 = pop(t, T.bone, .3);
+    tf(EL.bone, 540 + k * 6 * sh, 960, s0 * (1 + k * .05 * sh), k * 5 * sh, s0 * (1 - k * .05 * sh)); }
+  const buOn = t >= T.burst - .17 && t < T.burst + .7; show(EL.burst, buOn);
+  if (buOn) { const s = t < T.burst ? .18 * E('power2.out', t, T.burst - .17, T.burst) : .18 + 1.1 * E('expo.out', t, T.burst, T.burst + .22);
+    tf(EL.burst, 540, 960, s * TR.popOut(t, T.burst + .42, .26), 25 * K.seg(t, T.burst - .17, T.burst + .7)); }
+  confete(t, T.burst, 540, 960);
+  const mOn = t >= T.burst + .1 && t < T.word; show(EL.mascot, mOn);
+  if (mOn) { tf(EL.mascot, 540, 945 + Math.sin(q12(t) * 6) * 4, pop(t, T.burst + .12, .4) * TR.popOut(t, T.word - .12, .12));
+    const [lx, ly] = TR.passo(t, [[12.3, [-12, -3]], [12.55, [13, -3]], [12.98, [0, 2]]], [0, -6]);   // olhares em degraus
+    const blink = Math.max(0, 1 - Math.abs(t - 12.82) / .07);
+    [EL.msEyeL, EL.msEyeR].forEach(e => { tf(K.$('.pup', e), lx, ly); K.$('.lid', e).setAttribute('height', f1(20 + 54 * blink)); });
+    const ea = t > 12.3 && t < 12.75 ? (Math.floor(t * 12) % 2 ? 8 : -8) : 0; EL.msEarL.setAttribute('transform', `rotate(${ea} -110 -40)`); EL.msEarR.setAttribute('transform', `rotate(${-ea} 110 -40)`);
+    EL.msTongue.setAttribute('transform', `translate(0 ${f1(-30 * (1 - E('back.out(3)', t, 12.98, 13.1)))})`); }
+
+  // 9. wordmark digitado + sublinhado desenhado + confetinho
+  TR.rotuloTick(LAB.word, t, T.word, T.end, 0, 0, .04);
+  const ulOn = t >= T.word + .5 && t < T.end; show(EL.ul, ulOn);
+  if (ulOn) EL.ul.style.strokeDashoffset = f1(ulLen * (1 - E('power2.out', t, T.word + .5, T.word + .85)));
+  confete2(t, T.word + .62, ulX1 + 20, 930);
+});
+
+window.SETUP = () => {
+  // sublinhado à mão sob o wordmark (medido depois de as fontes carregarem)
+  const wm = LAB.word.el; wm.style.display = 'block'; const s0 = K.pos(LAB.word.spans[0], S.cam), s1 = K.pos(LAB.word.spans.at(-1), S.cam); wm.style.display = 'none';
+  const y = s0.y + s0.h + 14, x0 = s0.x + 4, x1 = s1.x + s1.w - 4;
+  EL.ul.setAttribute('d', `M${f1(x0)} ${f1(y + 4)}C${f1(x0 + (x1 - x0) * .3)} ${f1(y - 6)} ${f1(x0 + (x1 - x0) * .65)} ${f1(y + 10)} ${f1(x1)} ${f1(y - 2)}`);
+  ulLen = EL.ul.getTotalLength(); EL.ul.style.strokeDasharray = ulLen; ulX1 = x1;
+
+  // ── som: cada cue cai no quadro do movimento ──
+  cue('m:intro', 0); cue('m:build', T.f0); cue('m:drop', T.cut); cue('m:outro', T.word); cue('m:stop', T.end - .05);
+  cue('riser', .05, { d: .45, gain: -4 }); cue('boom', T.boom); cue('swoosh', T.boom + .08, { gain: -4 }); cue('boing', 1.0, { gain: -6 });
+  cue('whoosh_slow', T.f0, { gain: -2 });
+  { const r = K.rng(8); campo.itens.filter(f => f.d < 1000).sort((a, b) => a.tp - b.tp).filter((_, i) => i % 6 === 0).forEach(f => cue('pop', f.tp, { f: 450 + r() * 900, gain: -7 })); }
+  cue('reverse', T.out - .2, { d: .7, gain: -3 }); cue('whoosh_in', T.out + .2); cue('cut', T.cut);
+  // corgi
+  cue('boing', T.corgi[0] + .02); for (let k = 0; k < 4; k++) cue('squeak', T.corgi[0] + .42 + k * .21, { f: 1200 + k * 120, gain: -8 }); TR.somDigitar(T.corgi[0] + .3, 5); cue('bark', T.corgi[0] + 1.0, { gain: -3 }); cue('swoosh', T.corgi[1] - .17);
+  // dálmata
+  cue('pop', T.dal[0] + .02, { f: 520 }); SPOTS.forEach((_, i) => cue('pop', T.dal[0] + .3 + i * .075, { f: 700 + i * 90, gain: -5 })); TR.somDigitar(T.dal[0] + .35, 7); cue('boing', T.dal[0] + 1.0, { gain: -5 }); cue('swoosh', T.dal[1] - .17);
+  // dachshund
+  cue('whoosh_in', T.dach[0] - .05); for (let k = 0; k < 7; k++) cue('tick', T.dach[0] + .02 + k * .085, { gain: 4 }); cue('boing', T.dach[0] + .5); TR.somDigitar(T.dach[0] + .55, 9); cue('bark', T.dach[0] + .82, { gain: -2, n: 2 }); cue('whoosh_out', T.dach[1] - .22);
+  // poodle
+  cue('pop', T.pood[0] + .02, { f: 480 }); POMS.forEach((_, i) => cue('squeak', T.pood[0] + .2 + i * .065, { f: 1100 + i * 110, gain: -9 })); TR.somDigitar(T.pood[0] + .35, 6); cue('boing', T.pood[0] + .8); cue('swoosh', T.pood[1] - .17);
+  // pug
+  cue('pop', T.pug[0] + .02, { f: 420 }); for (const o of [.35, .58, .8]) cue('tick', T.pug[0] + o, { gain: 2 }); cue('click', T.pug[0] + .97); TR.somDigitar(T.pug[0] + .35, 3); cue('bark', T.pug[0] + .62, { gain: -4, f: 760 }); cue('swoosh', T.pug[1] - .17);
+  // osso → estouro → mascote
+  cue('boing', T.bone + .02, { gain: -3 }); cue('riser', T.bone + .15, { d: .4, gain: -6 }); cue('boom', T.burst); cue('sparkle', T.burst + .05, { gain: -2 }); cue('pop', T.burst + .14, { f: 380 });
+  cue('click', 12.3, { gain: -4 }); cue('click', 12.55, { gain: -4 }); cue('tick', 12.82, { gain: 2 }); cue('squeak', 12.99, { f: 1500, gain: -6 });
+  // wordmark
+  TR.somDigitar(T.word, 17, .04); cue('marker', T.word + .5); cue('sparkle', T.word + .62, { gain: -6 }); cue('cut', T.end, { gain: -6 });
+};
+</script></body></html>

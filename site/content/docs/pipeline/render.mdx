@@ -1,0 +1,34 @@
+---
+title: Render
+description: How a scene plan becomes frames and how FFmpeg writes the MP4.
+---
+
+The worker renders one composition, then encodes once. It does not keep a hidden editor timeline.
+
+## Renderer choice
+
+| Plan | Renderer |
+| --- | --- |
+| React components, data, captions tied to frames | Remotion |
+| HTML, CSS, GSAP, or an existing page | HyperFrames |
+| Already-rendered clips that only need cut, mix, and captions | FFmpeg |
+
+The license note in [Renderers](/docs/tools/renderers) applies before Remotion is used for a company of four or more people.
+
+## Encode
+
+The delivery file uses:
+
+- Container: MP4
+- Video: H.264, `yuv420p`, `+faststart`
+- Audio, when present: AAC, stereo, 48 kHz
+- Loudness target, when a voice is present: -14 LUFS integrated, -1.5 dBTP true peak
+
+Frame rate is 30 fps unless the style skill names another rate. Several style skills draw at 12 fps on purpose. The skill wins, and the encoder repeats frames to a constant rate the player accepts.
+
+## Worker rules
+
+- One job, one output object. Retries overwrite that object only after the new file passes the check.
+- The worker records the renderer version, FFmpeg version, and skill id in the sidecar.
+- A render that exits 0 with a zero-byte file is a failure.
+- Temp frames are deleted after the MP4 is stored.

@@ -1,0 +1,14 @@
+{
+ "name": "video-blocos-de-montar",
+ "private": true,
+ "description": "Vídeos de blocos de montar (three.js + GSAP + Playwright + ffmpeg), renderizados quadro a quadro",
+ "scripts": {
+  "preview": "node render.mjs --preview=12",
+  "render": "node render.mjs"
+ },
+ "dependencies": {
+  "gsap": "^3.15.0",
+  "playwright": "^1.64.0",
+  "three": "^0.186.1"
+ }
+}

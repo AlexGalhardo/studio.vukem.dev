@@ -1,0 +1,8 @@
+{
+ "depende": ["video-direcao-de-arte", "video-transcricao"],
+ "programas": ["node"],
+ "python": {},
+ "whisper": false,
+ "node": null,
+ "chaves": []
+}

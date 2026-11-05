@@ -1,0 +1,29 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Pedido: vídeo 9:16 no estilo "lâminas de espécimes" (ref. Klickpin: besouros de coleção folheados um a um sobre creme liso).
+     Tema: insetos — 48 besouros + 16 borboletas e mariposas de espécies registradas no Brasil (categorias "of Brazil" do Commons),
+     fotos de museu recortadas, um exemplar a cada 1/9 s (semicolcheia a 135 bpm), 64 exemplares = 4 compassos = laço perfeito. -->
+<script>VIDEO={w:1080,h:1920,fps:60,dur:64/9,bpm:135,music:{style:'gabinete',key:'F',gain:-1,laco:true}}</script>
+<script>LIBS=['laminas.js']</script>
+<script src="../../lib/boot.js"></script>
+<script src="especimes.js"></script>
+<style>#stage{background:#e9ecd9}</style></head><body>
+<div id="stage"></div>
+<script>
+const ORDEM = ['b01','b19','b08','b18','b15','b07','b16','b02','b20','b17',            // folha, tartaruga e afins
+  'b23','b22','b10','b28','b25','b11','b30','b27','b24','b21','b26','b42',          // escaravelhos e rola-bostas
+  'b06','b51','b43','b38','b14','b39','b33','b53','b09','b37','b50','b46','b32','b52','b12',    // alongados: tec-tecs, buprestídeos,
+  'b41','b48','b36','b13','b05','b40','b35','b31','b44','b45','b34',                      //   serra-paus
+  'l01','l04','l03','l06','l02','l10','l05','l08','l09','l07',                            // borboletas
+  'l11','l14','l12','l13','l17','l16'];                                                    // mariposas
+
+LA.palco();
+const col = LA.colecao(LA.ordenar(ESPECIMES, ORDEM), { x: 540, y: 860, faixa: [235, 1475] });
+LA.cabecalho('Coleção entomológica', { y: 168 });
+LA.etiqueta(col, { y: 1530 });
+LA.creditos('Fotos de exemplares de museu via Wikimedia Commons: Udo Schmidt (CC BY-SA 2.0/4.0) · Ben Sale (CC BY 2.0, CC BY-SA 4.0) · Hectonichus (CC BY-SA 3.0) · Didier Descouens (CC BY-SA 3.0/4.0)', { y: 1818 });
+
+window.SETUP = async () => {
+  await col.pronto();
+  LA.sons(col);
+};
+</script></body></html>

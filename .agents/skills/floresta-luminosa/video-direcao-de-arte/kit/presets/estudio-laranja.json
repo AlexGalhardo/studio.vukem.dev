@@ -1,0 +1,493 @@
+{
+  "versao_esquema": 1,
+  "herda": null,
+  "projeto": {
+    "nome": "Estúdio laranja",
+    "slug": "estudio-laranja",
+    "criada_em": "2026-10-20",
+    "revisao": 1,
+    "aprovada": false,
+    "aprovada_em": null,
+    "aprovada_sha256": null
+  },
+  "conceito": {
+    "frase": "Branco de estúdio, tinta preta e um laranja terroso: grotesca pesada com uma palavra em itálico serifado, cartões que voam, timelines coloridas e a interface do produto como palco.",
+    "palavras_chave": [
+      "branco",
+      "laranja terroso",
+      "produto",
+      "timeline",
+      "cartões",
+      "itálico serifado",
+      "preciso",
+      "rápido"
+    ],
+    "referencias": [],
+    "faca": [
+      "Fundo branco limpo; o laranja só na palavra-chave, no anel do apresentador e na agulha da timeline",
+      "Título em Inter Tight pesada com UMA palavra em Instrument Serif itálico laranja",
+      "Chapéu em mono caixa alta bem espaçada acima de cada bloco",
+      "Cada palavra entra desfocada e acende no tempo exato da fala",
+      "Legenda sobre o vídeo branca com sombra; o acúmulo palavra por palavra com desfoque é feito pela cena",
+      "Imagens e vídeos entram como cartões arredondados com sombra macia, voando de trás do apresentador ou se espalhando pela tela",
+      "Interface do produto como ela é: prompt, plano com checks, agentes rodando lado a lado, pedidos de permissão",
+      "Telas de interface entram com zoom em perspectiva: inclinadas, foco no centro e borda desfocada",
+      "Cada setor tem a sua cor, do índice à barra da timeline"
+    ],
+    "nao_faca": [
+      "Camadas que afundam, papel de xerox ou recorte de jornal",
+      "Mais de uma palavra em itálico por frase",
+      "Cartela laranja chapada fora da abertura de setor",
+      "Plano de interface parado mais de 4 s: acelere ou dê zoom",
+      "Neon, brilho ou gradiente chamativo"
+    ]
+  },
+  "formatos": {
+    "horizontal": {
+      "largura": 1920,
+      "altura": 1080,
+      "fps": "30000/1001"
+    },
+    "vertical": {
+      "largura": 1080,
+      "altura": 1920,
+      "fps": "30000/1001"
+    },
+    "quadrado": {
+      "largura": 1080,
+      "altura": 1080,
+      "fps": "30000/1001"
+    },
+    "thumbnail": {
+      "largura": 1280,
+      "altura": 720
+    },
+    "margens_seguras": {
+      "horizontal": {
+        "padrao": [
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ]
+      },
+      "vertical": {
+        "instagram": [
+          0.14,
+          0.21,
+          0.35,
+          0.06
+        ],
+        "tiktok": [
+          0.125,
+          0.2778,
+          0.3438,
+          0.1111
+        ],
+        "shorts": [
+          0.15,
+          0.1778,
+          0.35,
+          0.0444
+        ],
+        "uniao": [
+          0.15,
+          0.2778,
+          0.35,
+          0.1111
+        ]
+      },
+      "quadrado": {
+        "padrao": [
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ]
+      }
+    }
+  },
+  "cor": {
+    "paleta": {
+      "fundo": "#FFFFFF",
+      "superficie": "#F4F3EE",
+      "texto": "#0D0D0D",
+      "texto_suave": "#6B6A65",
+      "primaria": "#D97757",
+      "secundaria": "#2B2A27",
+      "destaque": "#C15F3C",
+      "positivo": "#1F8A64",
+      "negativo": "#C2412D",
+      "alerta": "#B7791F",
+      "setor1": "#3355B8",
+      "setor2": "#C8456F",
+      "setor3": "#7158D6",
+      "setor4": "#D97757",
+      "setor5": "#1F8A64",
+      "setor6": "#B7861F",
+      "setor7": "#2A8FB0",
+      "setor8": "#5E6670"
+    },
+    "neutros": [
+      "#000000",
+      "#FFFFFF"
+    ],
+    "dados": [
+      "setor1",
+      "setor2",
+      "setor3",
+      "setor4",
+      "setor5",
+      "setor6",
+      "setor7",
+      "setor8"
+    ],
+    "gradientes": {
+      "vinheta_branca": {
+        "tipo": "radial",
+        "angulo": 0,
+        "paradas": [
+          [
+            "fundo",
+            0
+          ],
+          [
+            "superficie",
+            1
+          ]
+        ]
+      }
+    }
+  },
+  "tipografia": {
+    "papeis": {
+      "titulo": {
+        "familia": "Inter Tight",
+        "arquivo": "fontes/InterTight-Variable.ttf",
+        "peso": 800,
+        "largura": null,
+        "estilo": "normal",
+        "caixa": "normal",
+        "tracking": -0.035,
+        "altura_linha": 1.0,
+        "eixos": {
+          "wght": 800
+        }
+      },
+      "subtitulo": {
+        "familia": "JetBrains Mono",
+        "arquivo": "fontes/JetBrainsMono-Variable.ttf",
+        "peso": 600,
+        "largura": null,
+        "estilo": "normal",
+        "caixa": "alta",
+        "tracking": 0.28,
+        "altura_linha": 1.3,
+        "eixos": {
+          "wght": 600
+        }
+      },
+      "corpo": {
+        "familia": "Inter Tight",
+        "arquivo": "fontes/InterTight-Variable.ttf",
+        "peso": 500,
+        "largura": null,
+        "estilo": "normal",
+        "caixa": "normal",
+        "tracking": -0.01,
+        "altura_linha": 1.4,
+        "eixos": {
+          "wght": 500
+        }
+      },
+      "dados": {
+        "familia": "JetBrains Mono",
+        "arquivo": "fontes/JetBrainsMono-Variable.ttf",
+        "peso": 500,
+        "largura": null,
+        "estilo": "normal",
+        "caixa": "normal",
+        "tracking": 0.0,
+        "altura_linha": 1.3,
+        "eixos": {
+          "wght": 500
+        }
+      },
+      "legenda": {
+        "familia": "Inter Tight",
+        "arquivo": "fontes/InterTight-Variable.ttf",
+        "peso": 800,
+        "largura": null,
+        "estilo": "normal",
+        "caixa": "normal",
+        "tracking": -0.025,
+        "altura_linha": 1.1,
+        "eixos": {
+          "wght": 800
+        }
+      },
+      "enfase": {
+        "familia": "Instrument Serif",
+        "arquivo": "fontes/InstrumentSerif-Italic.ttf",
+        "peso": 400,
+        "largura": null,
+        "estilo": "italic",
+        "caixa": "normal",
+        "tracking": -0.01,
+        "altura_linha": 1.0
+      }
+    },
+    "escala": {
+      "display": 0.15,
+      "h1": 0.085,
+      "h2": 0.056,
+      "h3": 0.04,
+      "corpo": 0.03,
+      "nota": 0.024
+    }
+  },
+  "layout": {
+    "grade": {
+      "colunas": 12,
+      "margem": 0.07,
+      "calha": 0.016
+    },
+    "raio": 0.018,
+    "traco": 0.0019,
+    "sombra": {
+      "dx": 0,
+      "dy": 0.016,
+      "desfoque": 0.05,
+      "cor": "texto",
+      "alfa": 0.16
+    },
+    "densidade": "media"
+  },
+  "movimento": {
+    "curvas": {
+      "entrada": [
+        0.16,
+        1,
+        0.3,
+        1
+      ],
+      "saida": [
+        0.7,
+        0,
+        0.84,
+        0
+      ],
+      "enfase": [
+        0.2,
+        0,
+        0,
+        1
+      ],
+      "suave": [
+        0.45,
+        0,
+        0.55,
+        1
+      ],
+      "linear": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "duracoes": {
+      "micro": 0.12,
+      "curta": 0.28,
+      "media": 0.45,
+      "longa": 0.8
+    },
+    "escalonamento": 0.06,
+    "entrada_padrao": "sobe",
+    "saida_padrao": "fade",
+    "transicoes": {
+      "padrao": "corte",
+      "permitidas": [
+        "corte",
+        "fade",
+        "zoom",
+        "desliza",
+        "empurra",
+        "mascara"
+      ]
+    },
+    "principios": [
+      "A palavra entra desfocada e acende no tempo da fala, nunca antes",
+      "Cartões chegam rápido e assentam macio; nada quica",
+      "Câmera sempre viva: deriva lenta de 2 a 4% em todo plano de interface",
+      "Interface entra inclinada (cerca de 12°) e endireita no detalhe que importa",
+      "Troca de assunto: corte seco ou wipe circular branco; desfoque como respiro"
+    ]
+  },
+  "tratamento": {
+    "grade": {
+      "lut": null,
+      "intensidade_lut": 1.0,
+      "exposicao": 0.0,
+      "contraste": 1.03,
+      "saturacao": 0.96,
+      "gama": 1.0,
+      "temperatura": 0,
+      "matiz": 0,
+      "curva": null
+    },
+    "duotone": {
+      "ativo": false,
+      "sombra": "texto",
+      "luz": "fundo",
+      "mistura": 0.5
+    },
+    "grao": {
+      "ativo": false,
+      "intensidade": 0,
+      "temporal": false
+    },
+    "vinheta": {
+      "ativo": false,
+      "angulo": 0.3
+    },
+    "nitidez": 0.1,
+    "desfoque": 0.0,
+    "velocidade": 1.0,
+    "moldura": {
+      "estilo": "borda",
+      "espessura": 0.004,
+      "cor": "fundo",
+      "raio": 0.03,
+      "margem": 0.07,
+      "rotulo": false
+    },
+    "recorte": {
+      "ancora": "rosto"
+    }
+  },
+  "legenda": {
+    "estilo": "bloco",
+    "papel": "legenda",
+    "tamanho": 0.05,
+    "caixa": "normal",
+    "cor": "fundo",
+    "cor_destaque": "fundo",
+    "cor_falada": null,
+    "contorno": null,
+    "sombra": {
+      "dx": 0,
+      "dy": 0.003,
+      "desfoque": 0.012,
+      "cor": "texto",
+      "alfa": 0.55
+    },
+    "fundo": null,
+    "posicao": {
+      "vertical": {
+        "y": 0.6,
+        "largura_max": 0.61
+      },
+      "horizontal": {
+        "y": 0.82
+      }
+    },
+    "largura_max": 0.76,
+    "max_linhas": 2,
+    "max_palavras": 5,
+    "animacao": "fade",
+    "reservar_em": [
+      "vertical",
+      "quadrado",
+      "horizontal"
+    ]
+  },
+  "graficos": {
+    "gc": {
+      "estilo": "etiqueta",
+      "posicao": "inferior_esquerda",
+      "papel_nome": "titulo",
+      "papel_cargo": "subtitulo",
+      "tamanho_nome": 0.034,
+      "tamanho_cargo": 0.024,
+      "cor_nome": "texto",
+      "cor_cargo": "texto_suave",
+      "cor_fundo": "fundo",
+      "alfa_fundo": 1.0,
+      "cor_acento": "primaria"
+    },
+    "tarja": {
+      "estilo": "chapada",
+      "papel": "titulo",
+      "tamanho": 0.04,
+      "cor_fundo": "primaria",
+      "cor_texto": "fundo",
+      "inclinacao": 0
+    },
+    "icones": {
+      "estilo": "traco",
+      "espessura": 0.0024
+    },
+    "dados": {
+      "eixo": "texto",
+      "grade": "superficie",
+      "rotulo": "dados"
+    },
+    "citacao_fonte": {
+      "papel": "dados",
+      "tamanho": 0.024,
+      "posicao": "inferior_esquerda",
+      "cor": "texto_suave"
+    }
+  },
+  "thumbnail": {
+    "max_palavras": 5,
+    "papel": "titulo",
+    "tamanho": 0.16,
+    "cor": "texto",
+    "cor_destaque": "destaque",
+    "contorno": null,
+    "tratamento_foto": {
+      "saturacao": 1.0,
+      "contraste": 1.06,
+      "recorte_pessoa": true,
+      "contorno_pessoa": {
+        "cor": "fundo",
+        "espessura": 0.014
+      }
+    },
+    "fundo": "fundo",
+    "zona_proibida": "inferior_direita"
+  },
+  "som": {
+    "identidade": "Produto e precisão: cliques de interface, whooshes curtos e macios, um pulso eletrônico leve por baixo; nada compete com a voz.",
+    "loudness": {
+      "longo": {
+        "lufs": -14,
+        "pico_real": -1.0
+      },
+      "curto": {
+        "lufs": -14,
+        "pico_real": -1.0
+      }
+    },
+    "sfx": {
+      "entrada": "whoosh",
+      "enfase": "blip",
+      "texto": "tick"
+    },
+    "musica": {
+      "clima": "eletrônica minimalista, pulsante e clara",
+      "bpm": [
+        100,
+        120
+      ]
+    }
+  },
+  "marca": {
+    "logo": null,
+    "assinatura": null,
+    "posicao_logo": "superior_direita",
+    "marca_dagua": false
+  }
+}

@@ -1,0 +1,24 @@
+# Local framework notes. Never commit.
+vukem-feedback.md
+
+# Original skill archives. The unpacked kits live in .agents/skills/.
+zip/
+
+# Dependencies and builds
+node_modules/
+site/node_modules/
+site/.next/
+dist/
+coverage/
+*.log
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

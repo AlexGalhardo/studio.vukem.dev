@@ -1,0 +1,18 @@
+{
+ "depende": [
+  "video-broll",
+  "video-direcao-de-arte"
+ ],
+ "programas": [
+  "ffmpeg",
+  "ffprobe",
+  "yt-dlp"
+ ],
+ "python": {
+  "PIL": "pillow",
+  "numpy": "numpy"
+ },
+ "whisper": false,
+ "node": null,
+ "chaves": []
+}

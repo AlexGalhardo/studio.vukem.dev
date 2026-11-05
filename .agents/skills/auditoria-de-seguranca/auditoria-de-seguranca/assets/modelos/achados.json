@@ -1,0 +1,126 @@
+{
+  "relatorio": {
+    "sistema": "Loja de Cursos Exemplo (aplicativo web de cursos por assinatura)",
+    "exemplo_ficticio": true,
+    "data": "2026-03-10",
+    "versao": 1,
+    "pedido_por": "Marina Duarte, dona do sistema (marina@example.test)",
+    "auditado_por": "Claude Code, com a skill auditoria-de-seguranca",
+    "confirmacao_de_escopo": "Termo de escopo confirmado por Marina Duarte na conversa de 09/03/2026",
+    "escopo": {
+      "dentro": [
+        "Código-fonte do aplicativo web, no repositório aberto na sessão",
+        "Migrações e permissões do banco de dados",
+        "Configuração de hospedagem, cabeçalhos e variáveis de ambiente (só os nomes)",
+        "Ambiente local, com os dados de exemplo do próprio projeto"
+      ],
+      "fora": [
+        "Produção: nenhuma requisição foi feita ao site no ar",
+        "Infraestrutura dos fornecedores (hospedagem, banco gerenciado, provedor de pagamento)",
+        "Aplicativo de celular e painel interno de atendimento",
+        "Contas pessoais e máquinas da equipe"
+      ],
+      "ambientes": [
+        "Local: aplicativo e banco na máquina da dona, com 4 usuários de teste (visitante, aluna A, aluno B e administradora)"
+      ]
+    },
+    "metodo": {
+      "testado": [
+        "Leitura do código e da configuração nas 14 áreas da skill",
+        "Varredura por texto do projeto, com 31 pontos conferidos um a um",
+        "Inventário de 23 rotas e 17 ações de servidor, com a guarda conferida em cada uma",
+        "12 provas no ambiente local, cada uma com controle positivo",
+        "Consulta aos privilégios do banco local, sem executar comando que apague dado"
+      ],
+      "nao_testado": [
+        "Auditoria de dependências: o comando acessa a rede e a dona preferiu rodar depois",
+        "Histórico do git anterior a 2025: não foi lido em busca de segredo",
+        "Cabeçalhos e cache como chegam ao navegador em produção: dependem da hospedagem",
+        "Limite de tentativas sob volume: só a configuração foi lida"
+      ]
+    },
+    "resumo": {
+      "parecer": "O sistema tem 1 falha crítica e 1 alta, as duas comprovadas no ambiente local e as duas com correção de até 1 dia. Enquanto estiverem abertas, não recomendo divulgar o lançamento. As outras 2 não bloqueiam o lançamento e entram na semana seguinte.",
+      "riscos_principais": [
+        "Uma pessoa sem conta consegue apagar todos os pedidos e matrículas, porque o banco aceita esse comando do visitante. A correção é uma migração de permissões, de até 2 horas.",
+        "Qualquer aluno logado consegue ver o pedido de outro aluno, com nome, e-mail e valor pago, trocando o número no endereço. A correção é conferir o dono do pedido no servidor.",
+        "Os materiais de cursos ainda não lançados aparecem na listagem do depósito de arquivos. Quem souber onde olhar baixa o conteúdo antes da venda."
+      ]
+    },
+    "nao_cobre": [
+      "O aplicativo de celular usa a mesma API e não foi lido: os achados SEG-001 e SEG-002 provavelmente valem para ele também."
+    ]
+  },
+  "achados": [
+    {
+      "id": "SEG-001",
+      "titulo": "Visitante sem conta pode esvaziar as tabelas do banco",
+      "gravidade": "critico",
+      "area": "Permissões no banco",
+      "onde": [
+        "banco/migracoes/0003_pedidos.sql:41",
+        "banco/migracoes/0005_matriculas.sql:28"
+      ],
+      "consegue": "Apagar de uma vez todas as linhas de pedidos e de matrículas. O site fica sem histórico de compras e os alunos perdem o acesso aos cursos.",
+      "precisa": "Só a chave pública do banco, que vai dentro do JavaScript do site e qualquer visitante lê. Não precisa de conta.",
+      "cenario": "As migrações criam as tabelas e ligam a regra por linha, mas não retiram os privilégios com que a tabela nasce neste provedor. A regra por linha filtra ler, inserir, atualizar e apagar linha a linha; ela não filtra o comando que esvazia a tabela inteira. Um visitante que chama a API pública do banco com a chave pública envia esse comando e o banco aceita.",
+      "evidencia": "No banco local, a consulta de privilégios respondeu que o papel de visitante tem o privilégio de esvaziar em 9 de 9 tabelas do aplicativo. O comando em si não foi executado: o privilégio já prova o problema.",
+      "estado": "comprovado com teste",
+      "correcao": "Escrever uma migração nova que retira todos os privilégios dos papéis de visitante e de usuário logado em cada tabela e concede de volta só o necessário (visitante: leitura do catálogo; logado: os quatro comandos nas tabelas em que a regra por linha decide). Acrescentar um teste de banco que fixa a lista exata de privilégios por tabela e por papel.",
+      "esforco": "pequeno",
+      "situacao": "aberto"
+    },
+    {
+      "id": "SEG-002",
+      "titulo": "Qualquer aluno logado lê o pedido de outro aluno",
+      "gravidade": "alto",
+      "area": "Acesso a dado de outro usuário",
+      "onde": [
+        "app/api/pedidos/[id]/route.ts:14",
+        "rota GET /api/pedidos/<número>"
+      ],
+      "consegue": "Ler nome, e-mail, curso comprado e valor pago de qualquer pedido. Os números são sequenciais, então dá para percorrer todos.",
+      "precisa": "Uma conta comum, que qualquer pessoa cria de graça.",
+      "cenario": "A rota confere que existe uma sessão, busca o pedido pelo número que veio no endereço e devolve. Ela não compara o dono do pedido com a pessoa da sessão. A consulta usa a credencial de serviço, que ignora a regra por linha do banco, então nenhuma outra barreira segura.",
+      "evidencia": "No ambiente local, logada como a aluna de teste A, a requisição do pedido 1042, que é do aluno de teste B, respondeu 200 com os dados dele. O esperado era 404. Controle positivo: a mesma sessão leu o pedido 1041, que é dela.",
+      "estado": "comprovado com teste",
+      "correcao": "Filtrar a consulta pelo dono, com a identidade tirada da sessão e nunca do endereço, e responder 404 quando o pedido não é da pessoa. Trocar a credencial de serviço pelo cliente com a sessão do usuário, para a regra por linha valer como segunda barreira. Acrescentar o teste: aluna A pede pedido de B e recebe 404.",
+      "esforco": "pequeno",
+      "situacao": "aberto"
+    },
+    {
+      "id": "SEG-003",
+      "titulo": "A listagem do depósito público mostra arquivos de cursos não lançados",
+      "gravidade": "medio",
+      "area": "Upload e arquivos",
+      "onde": [
+        "banco/migracoes/0007_depositos.sql:12"
+      ],
+      "consegue": "Listar e baixar capas e vídeos de demonstração de cursos que ainda estão em rascunho. Não alcança as aulas pagas, que ficam em outro depósito, privado.",
+      "precisa": "A chave pública do banco e saber que a API de arquivos tem uma chamada de listagem. Não precisa de conta.",
+      "cenario": "No depósito público, o endereço de um arquivo abre sem passar por regra nenhuma, o que é esperado para a vitrine. A regra de leitura do depósito governa só a listagem, e ela está escrita como \"todos listam tudo\". Quem lista o depósito vê os caminhos dos cursos em rascunho e abre cada arquivo pelo endereço público.",
+      "evidencia": "Leitura da regra na migração citada. Não foi reproduzido: o ambiente local não tinha curso em rascunho com mídia enviada.",
+      "estado": "encontrado na leitura",
+      "correcao": "Restringir a listagem ao que pertence a curso publicado, em uma migração nova. Registrar como limite aceito que quem souber o caminho exato de um arquivo público ainda o abre: se isso não for aceitável, a mídia de rascunho precisa ir para um depósito privado.",
+      "esforco": "medio",
+      "situacao": "aberto"
+    },
+    {
+      "id": "SEG-004",
+      "titulo": "Os mapas de código-fonte são publicados junto com o site",
+      "gravidade": "baixo",
+      "area": "Erros e mapas de código-fonte",
+      "onde": [
+        "configuração de build: opção de mapas de código-fonte ligada para produção"
+      ],
+      "consegue": "Ler o código do navegador como foi escrito, com nomes de função, comentários e endereços internos de API. Isso encurta o trabalho de achar outras falhas.",
+      "precisa": "Só um navegador. Não precisa de conta.",
+      "cenario": "Com a opção ligada, cada arquivo de JavaScript do site aponta para o mapa correspondente, e o navegador o baixa quando as ferramentas de desenvolvimento são abertas. Nenhum segredo foi encontrado no código do navegador, por isso a gravidade é baixa.",
+      "evidencia": "Leitura do arquivo de configuração do build. Não foi conferido em produção, que está fora do escopo.",
+      "estado": "encontrado na leitura",
+      "correcao": "Desligar a opção para o build de produção, ou enviar os mapas só para o serviço de monitoramento de erros, sem publicá-los.",
+      "esforco": "pequeno",
+      "situacao": "aberto"
+    }
+  ]
+}

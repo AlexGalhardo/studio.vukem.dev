@@ -1,0 +1,7 @@
+{
+  "name": "video-laminas-de-especimes",
+  "private": true,
+  "description": "Lâminas de espécimes — motor de motion quadro a quadro (GSAP + Playwright + ffmpeg)",
+  "scripts": { "preview": "node render.mjs --preview=12", "render": "node render.mjs" },
+  "dependencies": { "gsap": "^3.15.0", "playwright": "^1.64.0" }
+}

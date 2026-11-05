@@ -1,0 +1,80 @@
+# Molde: o job de ponta a ponta, para o GitHub Actions. Cole o job dentro de `jobs:` do workflow.
+# Generalizado de um job em uso; não foi executado nesta forma. Troque cada `<versão>` pela versão
+# maior atual da ação (a conferir no repositório de cada uma): com `<versão>` o job não roda.
+#
+# No topo do workflow, fora deste trecho, cancele a execução anterior da mesma branch:
+#   concurrency:
+#     group: ${{ github.workflow }}-${{ github.ref }}
+#     cancel-in-progress: true
+
+jobs:
+  ponta-a-ponta:
+    name: "Banco local, build e ponta a ponta"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Código
+        uses: actions/checkout@<versão>
+
+      - name: Node, na versão escrita no arquivo do projeto
+        uses: actions/setup-node@<versão>
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Dependências, com o arquivo de trava congelado
+        run: npm ci
+
+      # Sobe o banco, aplica as migrations do zero e os dados de exemplo (as personas vêm daqui).
+      # Sem os serviços que o aplicativo não usa: sobe mais rápido. A caixa de e-mail local fica:
+      # o teste de login lê o código nela.
+      - name: Banco local
+        run: npx supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor
+
+      # O endereço e as chaves são os da stack que acabou de subir: nenhum segredo do repositório.
+      # O `tee` grava no ambiente do job e no arquivo que a configuração do Playwright carrega,
+      # sem imprimir nada no registro. O `test` falha o passo se a stack não respondeu.
+      - name: Variáveis do banco local
+        run: |
+          eval "$(npx supabase status -o env 2>/dev/null | grep -E '^[A-Z0-9_]+=')"
+          {
+            echo "URL_DO_BANCO=${API_URL}"
+            echo "CHAVE_PUBLICA=${PUBLISHABLE_KEY:-$ANON_KEY}"
+            echo "CHAVE_DE_SERVICO=${SECRET_KEY:-$SERVICE_ROLE_KEY}"
+          } | tee -a "$GITHUB_ENV" > .env.local
+          test -n "${API_URL}" || { echo "::error::o banco local não devolveu o endereço"; exit 1; }
+
+      # Só o navegador que os projetos usam, com as bibliotecas do sistema.
+      - name: Navegador
+        run: npx playwright install --with-deps chromium
+
+      # Passo próprio: build quebrado aparece como "Build", não como teste que estourou o tempo.
+      - name: Build de produção
+        run: npm run build
+
+      # Com CI=true a configuração sobe o servidor de produção, proíbe `.only`, repete até 2 vezes
+      # e grava o rastro na primeira repetição.
+      - name: Ponta a ponta
+        run: npx playwright test
+        env:
+          CI: true
+
+      - name: Relatório, só quando falha
+        if: failure()
+        uses: actions/upload-artifact@<versão>
+        with:
+          name: relatorio-ponta-a-ponta
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+# O que adaptar:
+# - npm e .nvmrc: o gerenciador de pacotes do projeto, com a instalação que respeita o arquivo de
+#   trava, e o arquivo que guarda a versão do Node. A ferramenta do banco local é dependência de
+#   desenvolvimento do projeto: o job não baixa nada fora do arquivo de trava.
+# - Os dois passos do banco: outro banco local sobe por contêiner ou serviço do job; o que não
+#   muda é ler o endereço e as chaves da stack e gravá-los com os nomes que o projeto usa.
+# - Os nomes das variáveis: os que o aplicativo e <testes>/personas.ts leem.
+# - Se o build consulta o banco, ele só funciona neste job. Se não consulta, rode-o também no job
+#   rápido, para o erro de build aparecer antes de subir a stack.

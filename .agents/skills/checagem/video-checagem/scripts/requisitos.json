@@ -1,0 +1,3 @@
+{"depende": ["video-transcricao"], "programas": [],
+ "python": {"pypdf": "pypdf"}, "whisper": false,
+ "node": null, "chaves": []}

@@ -1,0 +1,34 @@
+-- Molde da variante web. Generalizado de uso real, com nomes genéricos.
+-- Não foi executado nesta forma: rode antes de confiar.
+-- =============================================================================================
+--  DADOS DE EXEMPLO · SÓ NO AMBIENTE LOCAL E NO BANCO DE TESTE. NÃO RODE NO AMBIENTE REMOTO.
+-- =============================================================================================
+-- Só insere linhas: não cria tabela, função nem tipo, para o artefato gerado do banco não mudar.
+--
+-- Personas (conta, papel, identificador):
+--   admin@example.com     administrador       a0000000-0000-0000-0000-000000000001
+--   logado@example.com    logado, sem pagar   a0000000-0000-0000-0000-000000000002
+--   pagante@example.com   pagante             a0000000-0000-0000-0000-000000000003
+-- As três já cumpriram os passos obrigatórios do aplicativo (perfil respondido).
+--
+-- Itens (identificador 10000000-0000-0000-0000-0000000000NN):
+--   01 <slug>   restrito · publicado há 3 dias
+--   02 <slug>   livre    · publicado
+--   03 <slug>   restrito · RASCUNHO (só o administrador vê)
+--   04 <slug>   restrito · publicado, com versão nova em rascunho
+-- Versões em 20000000-…; arquivos em 40000000-…. Os testes de banco usam f0…, f1… e f2….
+--
+-- Marcadores (uma linha dentro do texto restrito; não aparecem em nenhum outro campo):
+--   01 restrito      APP-SEED-RESTRITO-3T8V2L (primeira linha) e APP-SEED-RESTRITO-7F3K9Q (última)
+--   02 livre         APP-SEED-LIVRE-2M8XZD        o visitante deve ver: prova que o teste enxerga
+--   03 rascunho      APP-SEED-RASCUNHO-9B4T1W     não aparece em página pública
+--   04 versão nova   APP-SEED-VERSAONOVA-K4P7QD   não aparece em página pública
+--
+-- Datas relativas: os testes de banco usam hoje -3, -2, +7 e +30 numa coluna única.
+-- Aqui só -8, -1 e +14: não repita os deslocamentos dos testes.
+--
+-- O que adaptar:
+-- - A sigla (APP), as áreas e os seis caracteres: sorteie-os, um conjunto por marcador.
+-- - As personas e os itens: um exemplo de cada estado que as regras distinguem.
+-- - Dado restrito que não aceita texto: liste aqui o valor sentinela ou o nome do campo.
+-- - A lista de marcadores do teste de vazamento tem de ser igual a esta.

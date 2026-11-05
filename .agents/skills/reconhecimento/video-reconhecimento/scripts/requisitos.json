@@ -1,0 +1,6 @@
+{"depende": [],
+ "programas": ["ffmpeg", "ffprobe"],
+ "python": {"numpy": "numpy", "PIL": "pillow", "cv2": "opencv-python"},
+ "whisper": false,
+ "node": null,
+ "chaves": []}

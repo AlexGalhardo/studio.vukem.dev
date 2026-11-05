@@ -1,0 +1,18 @@
+---
+title: Releases
+description: How a version tag becomes a GitHub release.
+---
+
+Studio uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Tags look like `v0.1.0`. The first tag is `v0.1.0`.
+
+## What a tag does
+
+Pushing a `v*` tag runs `.github/workflows/release.yml`. The workflow checks that the tag is `vMAJOR.MINOR.PATCH`, reads the matching section of `CHANGELOG.md`, and publishes a GitHub release.
+
+Pull request titles follow Conventional Commits. The local `.githooks/commit-msg` hook checks the same shape.
+
+## What a tag does not do yet
+
+The Vukem framework publishes CLI archives, an SBOM, and a cosign bundle, because it ships a Go binary. Studio does not have that binary yet. The release workflow will gain those artifacts when the application build exists. Until then a release is the changelog section and the git tag.
+
+`cliff.toml` is the git-cliff config for generating changelog sections from Conventional Commits. Edit `CHANGELOG.md` in the same change as the behavior it describes. Do not rewrite a released section.

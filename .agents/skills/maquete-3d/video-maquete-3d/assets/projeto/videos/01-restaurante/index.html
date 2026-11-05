@@ -1,0 +1,187 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Demo do estilo "maquete 3D semi-realista": restaurante de esquina (fictício) com a equipe toda trabalhando no almoço.
+     Bloco de diorama com estratos, telhado removido (paredes cortadas), órbita lenta de ~18° em 5 s + leve aproximação. -->
+<meta name="formats" content="9x16,16x9">
+<script>VIDEO={w:1080,h:1920,fps:30,dur:5,bpm:96}</script>
+<script>if (/fmt=16x9/.test(location.search)) Object.assign(VIDEO, { w: 1920, h: 1080 });</script>
+<script src="../../lib/boot.js"></script>
+<style>#stage{background:#ECEAE4;overflow:hidden} .layer{position:absolute;inset:0;width:100%;height:100%}</style></head><body>
+<div id="stage"></div>
+<script type="module">
+import * as M from '../../lib/maquete.js';
+const { THREE, PAL, PELE, CABELO, tex, ACAO, OBJ, MAT, ciclo, lerp } = M;
+const DUR = VIDEO.dur, LARGO = VIDEO.w > VIDEO.h;                 // 16:9 muda só câmera e posições do HUD
+
+window.SETUP = async () => {
+  const S = M.palco({ fov: 26, exposicao: 1, ambiente: .85, sol: { dir: [-.5, 1, .55], forca: 2.1, raio: 9 }, chao: -1.86, sombraChao: .3, raioSombra: 9 });
+  const cena = S.scene, add = (o, x = 0, y = 0, z = 0, ry = 0) => { o.position.set(x, y, z); o.rotation.y = ry; cena.add(o); return o; };
+
+  // ════════ o bloco: estratos do chão (de cima para baixo) ════════
+  const bloco = M.bloco({ x: [-5, 5], z: [-4.5, 4.5], seed: 3, estratos: [
+    { h: .14, tipo: 'concreto' },
+    { h: .52, tipo: 'terra', raizes: 26, canos: { frente: [{ u: .27, v: .22, r: .1 }, { u: .63, v: .16, r: .045, cor: '#3a78c4', agua: true }], lado: [{ u: .42, v: .24, r: .1 }, { u: .78, v: .14, r: .04, cor: '#e0a33a' }] } },
+    { h: .3, tipo: 'argila' },
+    { h: .24, tipo: 'areia' },
+    { h: .2, tipo: 'brita' },
+    { h: .22, tipo: 'rocha' },
+  ] });
+  cena.add(bloco);
+
+  // ════════ pisos ════════
+  const lad = tex.ladrilho();
+  cena.add(M.piso([-4.85, -1.9, 3.45, 2.85], lad, { tam: 1.2, rug: .45 }));                                     // salão: ladrilho hidráulico
+  cena.add(M.piso([-4.85, -4.35, 3.45, -1.9], tex.azulejo({ cor: '#e9e7e1', rejunte: '#a9a59c', n: 8 }), { tam: 2, rug: .3 }));   // cozinha
+  const pp = tex.pedraPortuguesa();
+  cena.add(M.piso([-5, 3, 4.4, 3.9], pp, { tam: 4, h: .1, rug: .6 }));                                            // calçada da frente
+  cena.add(M.piso([3.6, -4.5, 4.4, 3], pp, { tam: 4, h: .1, rug: .6 }));                                          // calçada do lado
+  const guia = M.mat(PAL.guia, { rug: .8 });
+  cena.add(M.caixa(9.5, .12, .1, guia, { pos: [-.25, 0, 3.95], chanfro: .015 }));
+  cena.add(M.caixa(.1, .12, 8.5, guia, { pos: [4.45, 0, -.25], chanfro: .015 }));
+  const asf = tex.asfalto();
+  cena.add(M.piso([-5, 4, 5, 4.5], asf, { tam: 2, h: .02, rug: .85 }));
+  cena.add(M.piso([4.5, -4.5, 5, 4], asf, { tam: 2, h: .02, rug: .85 }));
+  for (let i = 0; i < 9; i++) cena.add(M.caixa(.3, .005, .06, M.mat('#f1efe8', { rug: .7 }), { pos: [-4.4 + i * 1.1, .02, 4.27], chanfro: 0 }));   // faixa da rua
+
+  // ════════ paredes (telhado removido; topo em "corte") ════════
+  const azu = tex.azulejo({ cor: '#f3f2ee', rejunte: '#c3c0b8', n: 8, linhas: 14, faixa: { linhas: [7], cor: PAL.azulBR } });
+  const verde = tex.pintura({ cor: '#a7d3c3', alt: 2.8, barra: { alt: 1.1, cor: '#5f9f8a' } });
+  const fach = tex.pintura({ cor: '#ecc25e', alt: 2.8, rodape: '#7a5a34', barra: { alt: .45, cor: '#c75b3c' } });
+  const fachBaixa = tex.pintura({ cor: '#ecc25e', alt: .95, rodape: '#7a5a34', barra: { alt: .45, cor: '#c75b3c' } });
+  const verdeBaixo = tex.pintura({ cor: '#a7d3c3', alt: .95, barra: { alt: .95, cor: '#5f9f8a' } });
+  cena.add(M.parede([-5, -4.425], [3.6, -4.425], { h: 2.8, dentro: azu, fora: fach, tam: 1.6 }));                 // fundo
+  cena.add(M.parede([-4.925, -1.9], [-4.925, -4.35], { h: 2.8, dentro: azu, fora: fach, tam: 1.6 }));             // esquerda (cozinha)
+  cena.add(M.parede([-4.925, 3], [-4.925, -1.9], { h: 2.8, dentro: verde, fora: fach, tam: 2 }));                 // esquerda (salão)
+  cena.add(M.parede([-5, 2.925], [3.6, 2.925], { h: .95, dentro: fachBaixa, fora: verdeBaixo, tam: 2 }));         // frente cortada baixa
+  const fx = 3.525, fachada = [[-4.5, -1.0, 2.8], [-1.0, .4, 0], [.4, .8, 2.8], [.8, 2.4, 0], [2.4, 3.0, 2.8]];    // [z0, z1, alt] (0 = porta)
+  for (const [z0, z1, h] of fachada) {
+    if (h) cena.add(M.parede([fx, z0], [fx, z1], { h, dentro: verde, fora: fach, tam: 2 }));
+    else cena.add(M.parede([fx, z0], [fx, z1], { h: .5, y: 2.3, dentro: M.mat('#a7d3c3'), fora: M.mat('#ecc25e') }));
+  }
+  for (const [z0, z1] of [[-1.0, .4], [.8, 2.4]]) { const rolo = M.cilindro(.09, z1 - z0, M.mat('#9aa0a5', { rug: .5, metal: .4 }), { seg: 14 }); rolo.rotation.x = Math.PI / 2; add(rolo, fx + .14, 2.2, (z0 + z1) / 2); }   // portas de aço enroladas
+  // letreiro + toldo
+  const letreiro = tex.placa([{ txt: 'SABOR DE CASA', tam: 104, y: .43, cor: '#b8322a', peso: 900 }, { txt: 'RESTAURANTE · PF · MARMITEX', tam: 34, y: .83, cor: '#3b2a1f', peso: 700 }], { fundo: PAL.amareloBR, w: 1024, h: 200, borda: '#b8322a' });
+  add(M.caixa(.06, .7, 3.7, M.mat('#c9a43a', { rug: .5 }), { chanfro: .01 }), fx + .1, 2.8 + .35, .7);
+  add(M.plano(3.6, .66, letreiro, { rug: .55 }), fx + .135, 3.15, .7, Math.PI / 2);
+  add(M.toldo({ comp: 3.4, proj: .85, cair: .38, cores: ['#f3efe6', PAL.verdeBR] }), fx + .08, 2.36, .7, Math.PI / 2);
+
+  // ════════ cozinha: ilha (pia · fogão · chapa) virada para o salão; cozinheiros atrás ════════
+  const zI = -2.85;
+  const pia = add(M.pia(S, { comp: 1.2 }), -3.95, 0, zI, Math.PI);
+  const fog = add(M.fogao(S, { comp: 1.5 }), -2.25, 0, zI, Math.PI);
+  const chp = add(M.chapa({ comp: 1.1 }), -.7, 0, zI, Math.PI);
+  const pan1 = add(M.panela({ conteudo: 'feijao', r: .2, alt: .28 }), -2.25 + .375, .86, zI - .17);
+  const pan2 = add(M.panela({ conteudo: 'arroz', r: .17, alt: .22 }), -2.25 - .375, .86, zI - .17);
+  add(M.panela({ conteudo: 'molho', r: .13, alt: .14 }), -2.25 - .375, .86, zI + .17);
+  cena.add(M.vapor(S, { pos: [-2.25 + .375, 1.12, zI - .17], n: 18, T: 2.5, alt: 1.3, larg: .16, opac: .85, tam: .36, cor: '#aab6bf', seed: 2 }));
+  cena.add(M.vapor(S, { pos: [-2.25 - .375, 1.06, zI - .17], n: 12, T: 2.5, alt: 1.1, larg: .14, opac: .75, tam: .3, cor: '#aab6bf', seed: 9 }));
+  cena.add(M.vapor(S, { pos: [-.7, .92, zI], n: 14, T: 1.25, alt: 1.0, larg: .3, opac: .7, tam: .3, cor: '#8f8d89', seed: 4 }));
+  // botijão, prateleira e potes na parede do fundo
+  add(M.cilindro(.15, .55, M.mat('#3f6fb0', { rug: .4, metal: .2 }), { seg: 20 }), .25, 0, -3.95);
+  add(M.cilindro(.06, .08, MAT.inox(), { seg: 10 }), .25, .55, -3.95);
+  add(M.caixa(5.2, .03, .32, MAT.inox(), { chanfro: .005 }), -2.2, 1.62, -4.18);
+  { const r = M.rng(8); for (let i = 0; i < 9; i++) { const x = -4.5 + i * .62 + r() * .1; const p = i % 3 ? M.cilindro(.07, .16 + r() * .1, M.mat(['#d9c89a', '#b3412c', '#e7e3d6', '#7a5a35'][i % 4], { rug: .3 }), { seg: 12 }) : M.panela({ r: .14, alt: .16, conteudo: 'agua' }); add(p, x, 1.65, -4.18); } }
+  // meia-parede de passagem (o "passe") com pratos prontos
+  add(M.caixa(4.75, .98, .18, M.mat('#e9e6df', { rug: .7 }), { chanfro: .01 }), -2.47, 0, -1.92);
+  add(M.caixa(4.85, .03, .4, MAT.inox(), { chanfro: .008 }), -2.47, .98, -1.92);
+  for (const x of [-1.3, -.9, -3.0]) add(M.pf({ r: .1 }), x, 1.01, -1.9);
+
+  // ════════ bar: geladeiras, balcão de vidro com salgados e caixa ════════
+  add(M.geladeira({ seed: 3 }), 1.78, 0, -4.02);
+  add(M.geladeira({ seed: 7, faixa: PAL.azulBR, texto: 'SUCOS E REFRIS' }), 2.6, 0, -4.02);
+  add(M.cilindro(.13, .24, M.mat('#b4643c', { rug: .8 }), { seg: 16 }), 3.15, 0, -3.95);        // filtro de barro (no chão do canto, sobre banqueta)
+  add(M.balcaoVidro({ comp: 1.9 }), 1.5, 0, -1.45);
+  add(M.caixaRegistradora(), 2.1, .93, -1.52, Math.PI);
+
+  // ════════ salão: mesas com toalha xadrez, quadro de giz, TV, ventilador, planta ════════
+  const mesas = [[-3.7, -.7], [-3.7, 1.5], [1.45, 1.75], [.2, 2.25]];
+  for (const [x, z] of mesas) { add(M.mesa({ toalha: PAL.vermelho }), x, 0, z); }
+  const cad = (x, z, ry) => add(M.cadeira(), x, 0, z, ry);
+  cad(-3.7, -1.28, 0); cad(-3.7, -.12, Math.PI); cad(-3.7, 2.08, Math.PI); cad(-3.7, .92, 0); cad(1.45, 1.17, 0); cad(1.45, 2.33, Math.PI); cad(-.38, 2.25, Math.PI / 2); cad(.78, 2.25, -Math.PI / 2);
+  add(M.pf(), -3.7, .76, -.92); add(M.pf(), -3.7, .76, -.48, Math.PI); add(M.copo(), -3.45, .76, -.7); add(M.copo('#e98a2a'), -3.9, .76, -.55);
+  add(M.pf(), -3.7, .76, 1.72, Math.PI); add(M.copo(), -3.45, .76, 1.4); add(M.garrafa('#7a3a1b'), -3.95, .76, 1.4);
+  add(M.pf(), 1.45, .76, 1.53); add(M.copo('#e98a2a'), 1.7, .76, 1.8); add(M.garrafa('#3f6b2f'), .3, .76, 2.2);
+  const giz = tex.giz([
+    { txt: 'HOJE TEM', tam: 34, cor: 'rgba(242,197,61,.95)' },
+    { txt: 'PF R$ 24', tam: 76 },
+    { txt: 'FEIJOADA · QUA E SÁB', tam: 30 },
+    { txt: 'MARMITEX R$ 20', tam: 30 },
+    { txt: 'SUCO NATURAL R$ 8', tam: 30 },
+  ], { w: 512, h: 384, topo: 58 });
+  add(M.quadro(1.25, .94, giz), -4.84, 2.15, -.45, Math.PI / 2);
+  add(M.tv(S, { larg: .95 }), -4.82, 2.35, 1.55, Math.PI / 2);
+  add(M.ventilador(S), -4.84, 2.45, .6, Math.PI / 2);
+  add(M.planta({ seed: 3 }), 3.1, 0, 2.5);
+  add(M.planta({ seed: 5, vaso: '#3f6b54' }), -4.5, .1, 3.45);
+
+  // ════════ calçada: cavalete, cachorro, orelhão, árvore ════════
+  const cav = tex.giz([{ txt: 'ALMOÇO', tam: 46, cor: 'rgba(242,197,61,.95)' }, { txt: 'PF', tam: 120, esp: 1.05 }, { txt: 'R$ 24', tam: 78 }], { w: 320, h: 448, topo: 66 });
+  add(M.cavalete(cav, { larg: .5, alt: .78 }), 2.55, .1, 3.45, -.25);
+  add(M.cachorro(S), -2.6, .1, 3.5, Math.PI / 2 + .3);
+  add(M.orelhao(), 4.1, .1, -2.75, Math.PI / 2);
+  add(M.arvore({ seed: 6, alt: 2.5 }), 4.0, .1, -3.85);
+
+  // ════════ a equipe (6) e os clientes ════════
+  const P = (o, x, z, ry = 0, y = 0) => { const p = M.pessoa(o); p.root.position.set(x, y, z); p.root.rotation.y = ry; cena.add(p.root); return p; };
+  // cozinheira de touca mexendo o feijão
+  const coz = P({ corpo: 'm', pele: PELE[3], touca: '#ffffff', camisa: '#ffffff', manga: 'curta', avental: '#2f6db3', calca: '#ffffff', sapato: '#f2f2f2' }, -1.88, zI - .62, 0);
+  M.segurar(coz, 'D', OBJ.colher(), [0, -.05, .02], [-.6, 0, 0]);
+  // chapeiro de boné virando bife
+  const cha = P({ pele: PELE[1], cabelo: CABELO[1], bone: '#c3372c', camisa: '#f2f1ec', avental: '#5b4a3a', calca: '#2c3140' }, -.7, zI - .6, 0);
+  M.segurar(cha, 'D', OBJ.espatula(), [0, -.05, .03], [-.9, 0, 0]);
+  // lavador de louça com luva amarela
+  const lav = P({ pele: PELE[5], penteado: 'careca', camisa: '#8fb7d6', avental: '#e7d24a', luvas: '#f0c92e', calca: '#3a3f4a' }, -3.95, zI - .6, 0);
+  M.segurar(lav, 'E', OBJ.prato(), [0, -.08, .04], [1.3, 0, 0]);
+  // garçom de colete com bandeja
+  const gar = P({ pele: PELE[2], cabelo: CABELO[0], camisa: '#f6f5f1', manga: 'longa', colete: '#1f2023', gravata: '#1a1a1a', calca: '#1f2023' }, 0, 0, 0);
+  const bandeja = OBJ.bandeja(2); gar.tronco.add(bandeja); bandeja.position.set(.33, .31, .3);
+  // atendente do caixa (de frente)
+  const ate = P({ corpo: 'm', pele: PELE[0], cabelo: CABELO[2], penteado: 'rabo', camisa: '#c3372c', cracha: true, calca: '#2c3140' }, 1.75, -2.02, 0);
+  // seu Zé varrendo a calçada (bermuda e chinelo)
+  const var_ = P({ pele: PELE[4], cabelo: CABELO[4], camisa: '#f2c53d', manga: 'regata', bermuda: true, calca: '#4b6a8a', chinelo: true }, -.7, 3.5, .5, .1);
+  const vas = OBJ.vassoura(); var_.tronco.add(vas); vas.position.set(-.04, .12, .33); vas.rotation.set(-.3, 0, -.12);
+  // clientes
+  const c1 = P({ pele: PELE[1], cabelo: CABELO[3], camisa: '#6c8f4e', calca: '#33405a' }, -3.7, -1.22, 0, 0);
+  const c2 = P({ corpo: 'm', pele: PELE[4], cabelo: CABELO[0], penteado: 'black', camisa: '#e07a3a', calca: '#2c3140' }, -3.7, -.18, Math.PI);
+  const c3 = P({ pele: PELE[2], cabelo: CABELO[1], camisa: '#3e5f8a', calca: '#2c3140' }, -3.7, 2.02, Math.PI);
+  const c4 = P({ corpo: 'm', pele: PELE[3], cabelo: CABELO[0], penteado: 'coque', camisa: '#b8a3d6', calca: '#2c3140' }, 1.45, 1.23, 0);
+  const c5 = P({ pele: PELE[0], cabelo: CABELO[2], camisa: '#2f8f5b', calca: '#4a4f5a' }, 1.95, -.68, Math.PI);
+  M.segurar(c5, 'D', OBJ.cartao(), [0, -.08, .03], [0, 0, 0]);
+  for (const c of [c1, c2, c3, c4]) c.root.position.y = 0;
+  for (const c of [c1, c3, c4]) M.segurar(c, 'D', OBJ.garfo(), [0, -.07, .02], [-.4, 0, 0]);
+
+  // rota do garçom: do passe às mesas da esquerda e de volta (laço fechado de 5 s)
+  const rota = new THREE.CatmullRomCurve3([[-.55, 0, -1.35], [-2.05, 0, -.45], [-2.3, 0, .95], [-1.1, 0, 1.55], [-.25, 0, .35]].map(p => new THREE.Vector3(...p)), true, 'centripetal');
+  const passos = Math.max(2, Math.round(rota.getLength() / 1.3));
+
+  // ════════ câmera: órbita lenta (~18°) com leve aproximação ════════
+  const cam = M.orbita(S, { alvo: LARGO ? [-.6, .8, .1] : [-.2, -.25, .1], raio: LARGO ? [39, 36.5] : [57, 53.5], azim: [24, 42], elev: [37, 35], fov: 26, t0: 0, t1: DUR, ease: 'sine.inOut' });
+
+  S.update = t => {
+    cam(t);
+    ACAO.mexer(coz, t, { T: 1.25 });
+    ACAO.chapear(cha, t, { T: 1.25, f: .3 });
+    ACAO.lavar(lav, t, { T: .625 });
+    ACAO.digitar(ate, t, { T: .5, Tolhar: 2.5 });
+    ACAO.varrer(var_, t, { T: 1.25 });
+    M.caminho(gar, rota, t, DUR); ACAO.andar(gar, t, { T: DUR / passos, bandeja: true });
+    ACAO.comer(c1, t, { T: 2.5 }); ACAO.conversar(c2, t, { T: 2.5, sentado: true }); ACAO.comer(c3, t, { T: 2.5, f: .4 }); ACAO.comer(c4, t, { T: 2.5, f: .7 });
+    ACAO.pagar(c5, t, { T: 2.5 });
+    const fl = Math.max(0, Math.sin(ciclo(t, 1.25, .3))) ** 3; chp.userData.bifes[1].rotation.x = fl * Math.PI; chp.userData.bifes[1].position.y = .875 + .12 * Math.sin(fl * Math.PI);
+  };
+
+  // ════════ HUD editorial ════════
+  M.cabecalho(S, { x: LARGO ? 80 : 62, y: LARGO ? 90 : 150, rotulo: 'Estudos de maquete · Nº 01', titulo: ['Restaurante.'], tam: LARGO ? 112 : 156, sub: ['Seis pessoas, um fogão de seis bocas', 'e o PF saindo antes do meio-dia.'] });
+  M.selo(S, { txt: 'AO VIVO', relogio: [11, 42, 7], direita: LARGO ? 80 : 62, y: LARGO ? 86 : 146 });
+  M.painel(S, { direita: LARGO ? 80 : 62, x: 'auto', y: LARGO ? 160 : 1400, w: 410, titulo: 'O expediente', fig: 'fig. 01', blocos: [
+    { tipo: 'botoes', itens: [{ txt: 'Servir', on: true }, { txt: 'Sineta', on: true }, { txt: 'Fechar<br>conta', on: true }] },
+    { tipo: 'stats', itens: [['Pedidos', t => 31 + Math.floor(t * .8)], ['Na chapa', 4], ['Saindo', t => 2 + (Math.floor(t / 1.25) % 2)]] },
+    { tipo: 'chips', rot: 'Turno', itens: [{ txt: 'Café', cor: '#b98653' }, { txt: 'Almoço', cor: '#e2a33a' }, { txt: 'Janta', cor: '#4d5f8f' }], ativo: 1 },
+    { tipo: 'slider', titulo: 'Fogo', val: t => .7 + .03 * Math.sin(ciclo(t, 2.5)), txt: 'alto', de: 'brando', ate: 'alto' },
+    { tipo: 'slider', titulo: 'Movimento', val: t => .82 + .02 * Math.sin(ciclo(t, 5)), txt: 'cheio', de: 'vazio', ate: 'lotado' },
+  ] });
+  M.rodape(S, { x: LARGO ? 80 : 62, y: LARGO ? 800 : 1660, cab: 'Na cozinha', frase: 'Mexe o feijão. Vira o bife. Leva o PF.', dados: [
+    { rot: 'Pratos', val: t => 128 + Math.floor(t * .6) }, { rot: 'Mesas', val: 4 }, { rot: 'Equipe', val: 6 }, { rot: 'PF', val: 'R$24' },
+  ], nota: 'Restaurante fictício · maquete ilustrativa, 1 unid. = 1 m' });
+};
+</script>
+</body></html>

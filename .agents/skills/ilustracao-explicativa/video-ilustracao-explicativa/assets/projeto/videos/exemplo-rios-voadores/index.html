@@ -1,0 +1,226 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Pedido: demo 9:16 no estilo "ilustração explicativa" (referência Klickpin "Quiet nature ideas…", explainer de captura de carbono).
+     Tema: rios voadores — como a Amazônia faz chover no Sudeste. 3 cenas na proporção da referência (26/54/20%):
+     1) rosa: fotos P&B em cantoneiras deslizam e se reorganizam, rios pretos crescem, coroas amarelas fervem;
+     2) creme: plano contínuo com câmera — cientistas sem rosto e o globo com o rio voador → braços com regadores regam o Sudeste
+        → câmera desce pelo cano até a torneira da cozinha; 3) rosa: banco de nuvens "H₂O" varrido por um guarda-chuva revela o título. -->
+<script>VIDEO={w:1080,h:1920,fps:30,dur:8,bpm:112,music:{style:'explicador',key:'F',gain:-8}}</script>
+<script>LIBS=['terra.js','ilustra.js']</script>
+<script src="../../lib/boot.js"></script>
+<style>
+#stage{background:#f3ece0}
+.cena{position:absolute;inset:0;overflow:hidden}
+#mundo{position:absolute;left:0;top:0;width:1080px;height:3400px;will-change:transform}
+.titulo{position:absolute;left:0;right:0;text-align:center;font-family:'Archivo';font-stretch:125%;font-weight:900;line-height:.92;letter-spacing:-.01em;white-space:nowrap}
+#sub{position:absolute;left:0;right:0;text-align:center;font-family:'Archivo';font-stretch:112%;font-weight:800;color:#231f20;line-height:1.08;white-space:nowrap}
+#cred{position:absolute;left:40px;right:40px;bottom:26px;text-align:center;font-family:'Archivo';font-stretch:100%;font-weight:500;font-size:17px;line-height:1.35;color:rgba(35,31,32,.72)}
+</style></head><body>
+<div id="stage">
+  <div id="c1" class="cena"></div>
+  <div id="c2" class="cena"><div id="mundo"></div></div>
+  <div id="c3" class="cena"></div>
+</div>
+<script>
+const P = IL.P, ST = K.$('#stage');
+const T = { c2: 2.05, c3: 6.40, fim: 8.0,
+  f2: .45, f3: .95, f4: 1.40,
+  excl: 2.14, vapor: 2.12, rio: 2.30, olho: 2.75, sobe: 3.22, bracos: 3.26, inclina: 3.80, rega: 3.92, apaga: 4.22, saem: 4.28, desce: 4.78,
+  funil: 4.86, armarios: 4.92, pessoa: 5.00, cano: 5.10, torneira: 5.52, copo: 5.60,
+  varre: 6.52, titulo: 6.92, sub: 7.12, chuva: 7.18, cred: 7.28 };
+const cenaEm = t => t < T.c2 ? 1 : t < T.c3 ? 2 : 3;
+onTick(t => { const c = cenaEm(t); ['#c1', '#c2', '#c3'].forEach((s, i) => IL.show(K.$(s), c === i + 1)); });
+
+/* ═══════════ CENA 1 — rosa: fotos em cantoneiras + rios que crescem + coroas ═══════════ */
+const c1 = K.$('#c1'); IL.fundo(c1, P.rosa);
+const s1 = IL.svg(c1, 1080, 1920);
+const rios = IL.rachaduras(s1, { seed: 21, n: 10, lw: 3.6, seg: [60, 135], passos: [6, 11], ramo: .45 });
+onTick(t => IL.crescer(rios, t, { t0: -.5, dur: 1.6, atraso: .1 }));
+const FW = 480, FH = 320, fotos = ['floresta', 'rio', 'nuvens', 'chuva'].map(n => IL.foto(c1, `img/${n}_pb.jpg`, FW, FH, { canto: 34 }));
+// poses [t, x, y, escala, giro, duração, ease]
+IL.coreografia(fotos[0], [[-1, 540, 830, 1.18, -9], [-.14, 540, 900, 1.34, -3, .42, 'expo.out'], [T.f2, 285, 770, 1, -3, .38]], { fase: 0 });
+IL.coreografia(fotos[1], [[T.f2, 1560, 700, 1, 14], [T.f2, 795, 770, 1, 3, .24, 'expo.out']], { fase: 1.3 });
+IL.coreografia(fotos[2], [[T.f3, 470, 2240, 1, -12], [T.f3, 540, 1130, 1, 2.5, .24, 'expo.out'], [T.f4, 285, 1130, 1, 2, .38]], { fase: 2.1 });
+IL.coreografia(fotos[3], [[T.f4, 1580, 1300, 1, 13], [T.f4, 795, 1130, 1, -2.5, .24, 'expo.out']], { fase: 3.7 });
+const s1b = IL.svg(c1, 1080, 1920);
+IL.coroa(s1b, 30, 1690, 210, 270, { seed: 3, picos: 4 });
+IL.coroa(s1b, 1080 - 30 - 210, 1690, 210, 270, { seed: 8, picos: 4, espelho: true });
+
+/* ═══════════ CENA 2 — creme: plano contínuo com câmera ═══════════ */
+const c2 = K.$('#c2'); c2.insertBefore(IL.fundo(c2, P.creme), c2.firstChild);
+const mundo = K.$('#mundo'), w2 = IL.svg(mundo, 1080, 3400);
+const GX = 540, GY = 1250, GR = 290;
+// labareda amarela atrás do globo (calor/seca), contorno rosa fino, fervendo a 8 qps
+const chama = IL.add(w2, `<g><path fill="${P.amarelo}" stroke="${P.rosa}" stroke-width="3" stroke-linejoin="round"/></g>`), chamaP = chama.firstElementChild;
+const faiscas = [[300, 880], [770, 860], [835, 1000], [250, 1050]].map(([x, y]) => IL.add(w2, `<path d="M0 -12 L8 0 L0 12 L-8 0Z" fill="#f7a35c" stroke="${P.rosa}" stroke-width="2.5" transform="translate(${x} ${y})"/>`));
+// globo (América do Sul de frente) + Brasil em linha um pouco mais forte
+const G = IL.globo(w2, { cx: GX, cy: GY, r: GR, lon0: -58, lat0: -14, cor: P.rosa, lw: 2.8, pais: P.rosa, paisLw: 4 });
+// rio voador: do Atlântico, sobre a Amazônia, desvia nos Andes e desce até o Sudeste
+const rioD = G.caminho([[-31, -1], [-41, -2.5], [-50, -3.5], [-58, -4.5], [-66, -6.5], [-72, -10.5], [-71, -15.5], [-65.5, -19.5], [-58, -22], [-50.5, -23]]);
+const RV = IL.fluxo(w2, rioD, { w: 22, cor: P.azulc, lw: 4.5, tw: 5, dash: [22, 26], ponta: true });
+const vapor = IL.bolhas(w2, { x: G.proj(-62, -5)[0], y: G.proj(-62, -5)[1], larg: 170, n: 14, t0: T.vapor, dur: 1.1, sobe: 330, r: 15, vida: .85, seed: 4 });
+// cientistas sem rosto (jaleco), um de cada lado
+const CL = IL.boneco(w2, { x: 225, y: 1831, s: 1.55, dir: 1, jaleco: true, blusa: P.rosa, estampa: 'rabisco', corEstampa: P.azulm, cabelo: 'curto', pele: P.azulm, bico: P.rosa, maos: P.azulm });
+const CR = IL.boneco(w2, { x: 858, y: 1846, s: 1.55, dir: -1, jaleco: true, blusa: P.amarelo, estampa: 'zigue', corEstampa: P.branco, cabelo: 'coque', pele: P.azulc, bico: P.amarelo, maos: P.azulc, seedEstampa: 9 });
+const prancha = IL.add(CL.bracos.frente.g, `<g transform="translate(-6 112) rotate(-16)">${IL.prancheta()}</g>`); CL.bracos.frente.g.insertBefore(prancha, CL.bracos.frente.g.firstChild);
+const pasta = IL.add(CR.bracos.tras.g, `<g transform="translate(60 222) rotate(12)">${IL.forma('M-62 -46 L62 -46 L62 46 L-62 46 Z', P.amarelo)}${IL.linha('M-62 -18 L62 -18', P.k, 4)}</g>`); CR.bracos.tras.g.insertBefore(pasta, CR.bracos.tras.g.firstChild);
+const lupa = IL.add(CR.bracos.frente.g, `<g>${IL.lupa()}</g>`), palpebra = lupa.querySelector('.palpebra');
+const excl = IL.add(w2, `<g><path fill="${P.k}"/></g>`), exclP = excl.firstElementChild;
+// braços com regadores que descem do alto (azul royal e azul claro)
+const regE = IL.add(w2, `<g></g>`), regD = IL.add(w2, `<g></g>`);
+const MX = 338, MY = 362, CS = 1.32, BICO = [228 * 1.32, 81 * 1.32];   // punho (alça) e ponta do bico em coords do regador montado
+const montaBraco = (g, cor, sinal, icone) => {   // sinal: 1 = vem da esquerda, -1 = da direita (espelhado)
+  const inner = IL.add(g, `<g transform="${sinal < 0 ? 'translate(1080 0) scale(-1 1)' : ''}"></g>`);
+  const can = IL.add(inner, `<g class="can"><g transform="translate(0 125)">${IL.regador({ icone })}</g></g>`);
+  IL.add(inner, IL.tubo(IL.cm([[-170, -190], [40, 130], [262, 290], [330, 368]]), 108, cor, { lw: 5 }));
+  IL.add(inner, IL.mao(332, 360, 72, cor, { tipo: 'punho', s: 1.95, lw: 5 }));
+  return { inner, can };
+};
+const BE = montaBraco(regE, P.royal, 1, 'arvore'), BD = montaBraco(regD, P.azulc, -1, 'vento');
+const gotas = IL.add(w2, `<g></g>`), borrifo = IL.add(w2, `<g></g>`);
+const bolhasRega = IL.bolhas(w2, { x: 600, y: 1420, larg: 520, n: 18, t0: T.rega + .15, dur: .9, sobe: 240, r: 17, vida: .95, seed: 13 });
+// cozinha: armários com vidro azul, bancada, cano que desce do funil até a torneira
+const coz = IL.add(w2, `<g></g>`);
+const armSup = IL.add(coz, `<g>${IL.forma('M-20 1790 L338 1790 L338 2230 L-20 2230 Z', P.creme)}
+  ${IL.forma('M14 1824 L160 1824 L160 2196 L14 2196 Z', P.vidro)}${IL.forma('M176 1824 L304 1824 L304 2196 L176 2196 Z', P.vidro)}
+  ${IL.linha('M14 1990 L160 1990 M176 1990 L304 1990', P.k, 4)}${IL.forma('M40 1930 L90 1930 L90 1990 L40 1990 Z', 'none', { lw: 3.5 })}${IL.linha('M40 1930 L90 1990 M90 1930 L40 1990', P.k, 3.5)}
+  ${IL.forma('M196 2150 L270 2150 L270 2196 L196 2196 Z', 'none', { lw: 3.5 })}${IL.linha('M190 1880 L215 1850 L240 1880 L265 1846 L290 1878 M30 2120 C60 2108 90 2132 140 2116', P.branco, 3.5)}</g>`);
+const bancada = IL.add(coz, `<g>${IL.forma('M-20 2556 L700 2556 L700 2590 L-20 2590 Z', P.creme)}${IL.forma('M-20 2590 L120 2590 L120 3400 L-20 3400 Z', P.k)}
+  ${IL.forma('M120 2590 L400 2590 L400 3400 L120 3400 Z', P.creme)}${IL.forma('M400 2590 L680 2590 L680 3400 L400 3400 Z', P.creme)}
+  ${IL.linha('M372 2640 L372 2760 M428 2640 L428 2760', P.k, 9)}</g>`);
+const funil = IL.add(w2, `<g transform="translate(${GX + 30} 1594)"><g class="f"><path d="M-74 -34 L74 -34 L18 26 L18 52 L-18 52 L-18 26 Z" fill="${P.cinza}"/><ellipse cx="0" cy="-34" rx="74" ry="12" fill="${P.cinzaE}"/></g></g>`);
+const canoD = IL.cm([[GX + 30, 1640], [GX + 30, 1740], [470, 1860], [440, 2010], [440, 2300]]) + ` L440 2338 L520 2338`;
+const cano = IL.add(w2, IL.tubo(canoD, 30, P.creme, { lw: 4.5, cap: 'butt' }));
+const agua = IL.fluxo(w2, canoD, { w: 16, cor: P.azulc, borda: P.azulc, lw: 0, tw: 4, dash: [16, 22] });
+const torneira = IL.add(w2, `<g>${IL.forma('M500 2318 L548 2318 L548 2382 L520 2382 L520 2358 L500 2358 Z', P.cinza, { lw: 4.5 })}${IL.linha('M478 2322 L478 2300', P.k, 8)}${IL.forma('M458 2290 L498 2290 L498 2302 L458 2302 Z', P.k, { lw: 3 })}</g>`);
+const jato = IL.add(w2, IL.tubo('M534 2384 L534 2384', 13, P.azulc, { lw: 3.5 }));
+// copo na mão da pessoa
+const copo = IL.add(w2, `<g transform="translate(534 2480)"><clipPath id="cpc"><path d="M-46 -64 L46 -64 L36 62 L-36 62 Z"/></clipPath>
+  <rect class="nivel" x="-60" y="62" width="120" height="0" fill="${P.azulc}" clip-path="url(#cpc)"/>
+  <path d="M-46 -64 L46 -64 L36 62 L-36 62 Z" fill="none" stroke="${P.k}" stroke-width="4.5" stroke-linejoin="round"/>${IL.linha('M-30 -40 L-24 40', P.branco, 5)}</g>`), nivel = copo.querySelector('.nivel');
+const bolhasCopo = IL.bolhas(w2, { x: 534, y: 2470, larg: 60, n: 8, t0: T.copo + .1, dur: .7, sobe: 120, r: 8, vida: .6, seed: 31 });
+const PE = IL.boneco(w2, { x: 850, y: 2400, s: 1.5, dir: -1, blusa: P.rosa, estampa: 'zigue', corEstampa: P.branco, pele: P.azulc, bico: P.rosa, maos: P.rosa, hx: 18, seedEstampa: 6 });
+// copo e jato ficam à frente da pessoa
+w2.appendChild(jato); w2.appendChild(copo);
+regE.parentNode.appendChild(regE); regD.parentNode.appendChild(regD); w2.appendChild(gotas); w2.appendChild(borrifo);
+
+// câmera vertical (tilt) da cena 2
+const camY = IL.chaves([[T.c2, 640], [T.sobe, 610, 'none'], [T.sobe + .58, -50, 'power2.inOut'], [T.desce, -110, 'none'], [T.desce + .62, 1150, 'power2.inOut'], [T.c3, 1190, 'none']]);
+
+onTick(t => {
+  if (cenaEm(t) !== 2) return;
+  const tq = IL.q(t, 12), fr = IL.quadro(t, 8);
+  mundo.style.transform = `translateY(${-camY(t).toFixed(1)}px)`;
+  // labareda: ferve e apaga em degraus quando a água chega
+  const ap = IL.passo(t, [[T.apaga, .78], [T.apaga + .12, .55], [T.apaga + .24, .34], [T.apaga + .36, .15], [T.apaga + .48, 0]], 1);
+  chama.setAttribute('transform', `translate(${GX} ${GY}) scale(${ap}) translate(${-GX} ${-GY})`); IL.show(chama, ap > 0);
+  chamaP.setAttribute('d', IL.fogoD(GX, GY, GR, 5, fr, { picos: 6, dir: -62, abertura: 170, alto: .95, base: 1.07 }));
+  faiscas.forEach((f, i) => { const u = ((tq * .7 + i * .27) % 1); f.setAttribute('transform', `translate(${[300, 770, 835, 250][i] + Math.sin(u * 6) * 6} ${[880, 860, 1000, 1050][i] - u * 60}) rotate(${u * 90})`); f.setAttribute('opacity', ap > .3 ? 1 : 0); });
+  // continentes: rosa enquanto queima, creme depois que apaga (como na referência)
+  const fria = t > T.apaga + .4; G.terra.setAttribute('stroke', fria ? P.creme : P.rosa); G.pais.setAttribute('stroke', fria ? P.creme : P.rosa);
+  // rio voador se desenha e corre
+  RV.set(IL.E('power2.inOut', IL.q(t, 15), T.rio, T.rio + .75), (t - T.rio) * 160);
+  // cientistas: gestos em dois, saem por baixo quando a câmera sobe demais
+  const sai = 760 * IL.E('power2.in', t, T.saem, T.saem + .42);
+  CL.pos(225, 1831 + sai, 1.55, Math.sin(tq * 3) * .8); CR.pos(858, 1846 + sai, 1.55, -Math.sin(tq * 3 + 1) * .8);
+  IL.show(CL.g, sai < 740); IL.show(CR.g, sai < 740);
+  const ap1 = Math.sin(tq * 5) * 6;
+  CL.braco('tras', [[80, 30], [150, 6 + ap1 * .3], [168, -98 + ap1]], { tipo: 'aponta', s: 1.05, ang: -72 });
+  CL.braco('frente', [[-76, 30], [-78, 128], [8, 136]], { ang: -25, s: 1.05 });
+  CR.braco('frente', [[-76, 30], [-136, 84 + ap1 * .3], [-116, -36 + ap1 * .5]], { ang: -95, s: 1.05 });
+  lupa.setAttribute('transform', `translate(-118 ${-122 + ap1 * .5}) rotate(${-14 + ap1 * .4})`);
+  palpebra.setAttribute('height', IL.janela(t, T.olho, T.olho + .13) ? 72 : 0);
+  CR.braco('tras', [[76, 30], [128, 128], [80, 208]], { ang: 150, s: 1.05 });
+  // "!" que salta e ferve
+  const pe = IL.pop(t, T.excl, .3); IL.show(excl, pe > .01 && sai < 600);
+  excl.setAttribute('transform', `translate(${225 - 14} ${1831 + sai - 262}) rotate(${-10 + Math.sin(fr) * 3}) scale(${pe})`); exclP.setAttribute('d', IL.exclamaD(fr, 2));
+  // braços com regadores entram do alto, inclinam e regam
+  const ent = IL.E('expo.out', t, T.bracos, T.bracos + .55), sobeB = IL.E('power2.in', t, T.desce - .05, T.desce + .35);
+  const off = [[-420 * (1 - ent), -620 * (1 - ent) - 700 * sobeB + Math.sin(tq * 4) * 4], [420 * (1 - ent), -640 * (1 - ent) - 700 * sobeB + Math.sin(tq * 4 + 2) * 4]];
+  regE.setAttribute('transform', `translate(${off[0][0].toFixed(1)} ${off[0][1].toFixed(1)})`); regD.setAttribute('transform', `translate(${off[1][0].toFixed(1)} ${off[1][1].toFixed(1)})`);
+  IL.show(regE, ent > 0 && sobeB < 1); IL.show(regD, ent > 0 && sobeB < 1);
+  // regador gira em volta da mão (alça presa no punho)
+  const inc = 56 * IL.E('back.out(1.6)', t, T.inclina, T.inclina + .32) + Math.sin(tq * 6) * 1.5, arad = inc * Math.PI / 180;
+  [BE, BD].forEach(B => B.can.setAttribute('transform', `translate(${MX} ${MY}) rotate(${inc.toFixed(2)}) scale(${CS})`));
+  // gotas: saem do bico e caem em arco até o Sudeste do globo; borrifo curto na ponta
+  gotas.innerHTML = ''; borrifo.innerHTML = '';
+  if (t > T.rega && sobeB < .4) { let s = '', b = '';
+    const bx = MX + BICO[0] * Math.cos(arad) - BICO[1] * Math.sin(arad), by = MY + BICO[0] * Math.sin(arad) + BICO[1] * Math.cos(arad);
+    [1, -1].forEach((lado, li) => { const X = (lado > 0 ? bx : 1080 - bx) + off[li][0], Y = by + off[li][1], alvo = G.proj(-46.5 + (lado > 0 ? -2.5 : 2.5), -21.5);
+      for (let i = 0; i < 8; i++) { const u = (((tq - T.rega) * 1.7 + i / 8) % 1), rr = K.rng(i * 7 + li * 99);
+        const x = K.lerp(X, alvo[0] + (rr() - .5) * 70, u), y = K.lerp(Y, alvo[1] - 6, u * u) - Math.sin(u * Math.PI) * 26;
+        s += `<path d="M0 -14 C6 -4 9 2 9 6 C9 13 -9 13 -9 6 C-9 2 -6 -4 0 -14Z" fill="${P.azulc}" stroke="${P.k}" stroke-width="3" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(.8 + rr() * .5).toFixed(2)})"/>`; }
+      for (let i = 0; i < 4; i++) { const rr = K.rng(fr * 5 + i + li * 50), a = (lado > 0 ? .5 : Math.PI - .5) + (rr() - .5) * 1.3, r0 = 22 + rr() * 30;
+        b += IL.linha(`M${(X + Math.cos(a) * r0).toFixed(1)} ${(Y + Math.sin(a) * r0).toFixed(1)} l${(Math.cos(a) * 14).toFixed(1)} ${(Math.sin(a) * 14).toFixed(1)}`, P.azulc, 5); } });
+    gotas.innerHTML = s; borrifo.innerHTML = b; }
+  // funil, cano e torneira
+  const fp = IL.pop(t, T.funil, .3); funil.firstElementChild.setAttribute('transform', `scale(${fp})`); IL.show(funil, fp > .01);
+  const cp = IL.E('expo.out', t, T.funil + .05, T.funil + .45); cano.style.opacity = cp > 0 ? 1 : 0;
+  cano.querySelectorAll('path').forEach(p => { const L = p.getTotalLength(); p.style.strokeDasharray = `${L * cp} ${L + 99}`; });
+  agua.set(IL.E('power1.inOut', t, T.cano, T.torneira), (t - T.cano) * 260);
+  IL.show(torneira, t > T.funil); torneira.style.opacity = K.seg(t, T.funil, T.funil + .1);
+  const jt = IL.E('power2.out', t, T.torneira, T.torneira + .14), topoAgua = 2542 - 120 * IL.E('power1.out', t, T.copo, T.c3 + .3);
+  IL.setTubo(jato, `M534 2384 L534 ${(2384 + (topoAgua - 2384) * jt).toFixed(1)}`); IL.show(jato, jt > 0);
+  nivel.setAttribute('y', (topoAgua - 2480).toFixed(1)); nivel.setAttribute('height', (2542 - topoAgua).toFixed(1));
+  // armários deslizam da esquerda; pessoa sobe do pé do quadro
+  const ar = IL.E('expo.out', t, T.armarios, T.armarios + .5); coz.setAttribute('transform', `translate(${(-760 * (1 - ar)).toFixed(1)} 0)`); IL.show(coz, ar > 0);
+  const ps = IL.E('expo.out', t, T.pessoa, T.pessoa + .5); IL.show(PE.g, ps > 0);
+  PE.pos(850, 2400 + 700 * (1 - ps), 1.5, Math.sin(tq * 3) * .6);
+  copo.setAttribute('transform', `translate(534 ${(2480 + 700 * (1 - ps) + Math.sin(tq * 4) * 2).toFixed(1)})`); IL.show(copo, ps > 0);
+  PE.braco('frente', [[-100, 34], [-166, 118], [-206, 58 + Math.sin(tq * 4) * 1.4]], { tipo: 'luva', ang: -80, s: 1.15, cor: P.rosa });
+  PE.braco('tras', [[100, 34], [178, 142], [112, 210]], { ang: 160, s: 1.1, cor: P.rosa });
+});
+
+/* ═══════════ CENA 3 — rosa: nuvens "H₂O" varridas por um guarda-chuva revelam o título ═══════════ */
+const c3 = K.$('#c3'); IL.fundo(c3, P.rosa); const chuva = IL.add(IL.svg(c3, 1080, 1920), `<g></g>`);
+const tit = IL.add(c3, `<div><div class="titulo" id="t1" style="color:${P.k}"><span>RIOS</span></div><div class="titulo" id="t2" style="color:${P.creme}"><span>VOADORES</span></div></div>`);
+const sub = IL.add(c3, `<div id="sub">a Amazônia faz<br>chover no Sudeste</div>`);
+const s3 = IL.svg(c3, 1080, 1920);
+// banco de nuvens "H₂O": moldura (fica) + miolo (varrido); mão azul com guarda-chuva varre de baixo à esquerda para o alto à direita
+const NV = IL.nuvens(s3, { seed: 42, rotulo: IL.H2O });
+const varrida = IL.bezier3([-260, 2150], [430, 1150], [760, 520], [1500, 200]), VD = .62;
+NV.varrer(varrida, T.varre, VD, -260);
+const gc = IL.add(s3, IL.guardaChuva());
+IL.varredor(gc, varrida, T.varre, VD, { cena: t => cenaEm(t) === 3 });
+const chover = IL.chuva(chuva, { t0: T.chuva, n: 46 });
+const cred = IL.add(c3, `<div id="cred">Fotos: lubasi (CC BY-SA 2.0) · Neil Palmer/CIAT (CC BY-SA 2.0) · Jorge.kike.medina (CC BY 3.0) ·<br>Rafael Vianna Croffi (CC BY 2.0) — Wikimedia Commons. Mapa: Natural Earth.</div>`);
+
+onTick(t => {
+  if (cenaEm(t) !== 3) return;
+  const tq = IL.q(t, 12);
+  NV.update(t);
+  // título: aparece por trás (leve assentamento) e subtítulo sobe
+  const ti = IL.E('back.out(2)', t, T.titulo, T.titulo + .35);
+  tit.style.transform = `scale(${(.9 + .1 * ti).toFixed(3)})`; tit.style.opacity = ti > 0 ? 1 : 0;
+  const su = IL.E('expo.out', t, T.sub, T.sub + .45); sub.style.transform = `translateY(${(40 * (1 - su)).toFixed(1)}px)`; sub.style.opacity = su;
+  cred.style.opacity = IL.E('power1.out', t, T.cred, T.cred + .3);
+  chover(t);
+});
+
+/* acabamento: grão fino por cima de tudo */
+IL.grao(ST, { op: .2, amp: 70, qps: 12 });
+
+window.SETUP = () => {
+  // título: VOADORES ocupa ~78% da largura (cabe na janela entre as nuvens)
+  const t1 = K.$('#t1'), t2 = K.$('#t2'), fs = IL.cabe(t2, 790);
+  [t1, t2].forEach(e => e.style.fontSize = fs + 'px'); const y0 = 585; t1.style.top = y0 + 'px'; t2.style.top = (y0 + fs * .96) + 'px';
+  tit.style.transformOrigin = `540px ${y0 + fs}px`;
+  sub.style.fontSize = '58px'; sub.style.top = (y0 + fs * 2 + 46) + 'px';
+  // ── som ──
+  cue('m:main', 0); cue('m:break', T.c3); cue('m:main', T.titulo); cue('m:stop', T.fim - .25);
+  cue('whoosh_in', -.02, { gain: -10 }); cue('paper', .1, { gain: -9 });
+  [T.f2, T.f3, T.f4].forEach(t => IL.somFoto(t));
+  [.2, .7, 1.15, 1.6].forEach((t, i) => cue('scratch', t, { gain: -18, pan: i % 2 ? .4 : -.4 }));
+  cue('cut', T.c2, { gain: -6 }); cue('pop', T.excl + .02, { f: 900, gain: -9 });
+  [0, .14, .3, .45, .62, .8].forEach((d, i) => cue('bubble', T.vapor + .1 + d, { gain: -14, pan: -.3 + i * .1 }));
+  cue('marker', T.rio, { gain: -10 }); cue('swoosh', T.rio + .4, { gain: -14 });
+  cue('ui_blip', T.olho, { gain: -12 });
+  cue('whoosh_slow', T.sobe - .02, { gain: -8 }); cue('swoosh', T.bracos + .05, { gain: -11, pan: -.5 }); cue('swoosh', T.bracos + .12, { gain: -11, pan: .5 });
+  cue('agua', T.rega - .02, { gain: -9, d: .95 }); [0, .2, .38, .55].forEach(d => cue('bubble', T.rega + .25 + d, { gain: -13 }));
+  cue('sizzle', T.apaga, { gain: -12 });
+  cue('whoosh_slow', T.desce, { gain: -8 }); cue('swoosh', T.armarios + .02, { gain: -10, pan: -.6 }); cue('pop', T.funil + .05, { f: 520, gain: -12 });
+  cue('agua', T.cano, { gain: -16, d: .45 }); cue('squeak', T.torneira - .06, { f: 1500, gain: -20 }); cue('agua', T.torneira, { gain: -10, d: .85 });
+  cue('cut', T.c3, { gain: -5 }); cue('whoosh_in', T.varre + .05, { gain: -6 });
+  [0, .08, .16, .26, .34].forEach((d, i) => cue('pop', T.varre + .18 + d, { f: 420 - i * 40, gain: -9 }));
+  cue('impact', T.titulo, { gain: -9 }); cue('chuva', T.chuva, { gain: -12, d: T.fim - T.chuva });
+};
+</script></body></html>

@@ -1,0 +1,19 @@
+#!/bin/sh
+# Conventional Commits. Subject starts lowercase and does not end with a period.
+# Merge commits from git itself are allowed.
+
+msg=$(head -n 1 "$1")
+
+case "$msg" in
+  Merge\ *) exit 0 ;;
+  Revert\ *) exit 0 ;;
+esac
+
+printf '%s\n' "$msg" | grep -Eq '^(feat|fix|perf|refactor|docs|test|build|ci|chore|style|revert)(\([a-z0-9._/-]+\))?: [a-z0-9].*[^.]$'
+status=$?
+
+if [ "$status" -ne 0 ]; then
+  echo "commit-msg: use Conventional Commits, lowercase subject, no final period." >&2
+  echo "example: feat(docs): add the render page" >&2
+  exit 1
+fi

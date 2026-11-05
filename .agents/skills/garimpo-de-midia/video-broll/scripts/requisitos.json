@@ -1,0 +1,19 @@
+{
+ "depende": [
+  "video-direcao-de-arte"
+ ],
+ "programas": [
+  "ffmpeg",
+  "ffprobe"
+ ],
+ "python": {
+  "PIL": "pillow",
+  "numpy": "numpy"
+ },
+ "whisper": false,
+ "node": null,
+ "chaves": [
+  "PEXELS_API_KEY",
+  "PIXABAY_API_KEY"
+ ]
+}

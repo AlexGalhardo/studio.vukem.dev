@@ -1,0 +1,32 @@
+---
+title: Audio
+description: Voice, cleanup, music, and captions on the timeline.
+---
+
+A silent style skill skips this page. A spoken video uses four steps, in this order.
+
+## Cleanup
+
+[DeepFilterNet](https://github.com/Rikorose/DeepFilterNet) is the noise reducer the studio kit already names. The worker runs it on a recorded voice before measuring loudness. It does not run on a generated voice unless the file measures noisy.
+
+## Voice
+
+The worker needs a WAV and word times.
+
+| Source | When |
+| --- | --- |
+| Operator upload | The person already recorded |
+| Local TTS | No vendor key, or the brief forbids a hosted voice |
+| ElevenLabs or another hosted voice | The brief names that vendor and a key is present |
+
+Hosted voices are adapters. The core job does not require one.
+
+## Word times
+
+[Whisper](https://github.com/openai/whisper) (or a faster descendant such as faster-whisper) writes word times. Captions and scene changes anchor to those times, not to a guessed duration.
+
+The transcription skill in `.agents/skills/` trims leading silence and passes proper names from the script into the prompt so names survive.
+
+## Music and effects
+
+The mix keeps the voice in front. Music ducks while the voice is active. Sound effects sit on speech anchors, not on a free timeline. Pixabay and other stock beds are allowed only when the sidecar stores the license. A job with no license record ships without that bed.

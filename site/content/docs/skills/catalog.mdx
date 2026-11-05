@@ -1,0 +1,40 @@
+---
+title: Catalog
+description: The skill packs unpacked into .agents/skills and how a job picks one.
+---
+
+Each directory under `.agents/skills/` is one kit from `zip/`. A kit is either a visual style, a production step, or a software practice. The prompt compiler may attach one visual style and the production skills that style needs. It does not attach every kit.
+
+The skill files are still in Portuguese. Translating them is an open roadmap item. The folder names below are the ids the compiler will use.
+
+## Production steps
+
+| Id | Step |
+| --- | --- |
+| `transcricao` | Word-level transcript |
+| `decupagem` | Selects the good takes from a recording |
+| `dublagem` | Replaces one spoken span |
+| `mapa-de-fala` | Speech map: names, numbers, pace |
+| `roteiro-e-estilo-de-fala` | Script in a speaker's measured style |
+| `efeitos-sonoros` | Synthesized effects on speech anchors |
+| `compositor` | Score and final mix |
+| `garimpo-de-midia` / `pauta-de-midia` | Licensed b-roll, only after a yes |
+| `prancha-de-referencia` | Shot board from the script |
+| `motor-de-cenas` | Animated screens locked to speech |
+| `retencao-e-introducao` | Opening burst, cut last |
+| `checagem` / `pesquisa-ia` | Fact check |
+| `reconhecimento` | Looks at camera, reading, or no face |
+| `publicacao` | Titles, captions, and platform limits |
+| `direcao-de-arte-do-projeto` | Art direction file other styles import |
+
+## Visual styles
+
+`airpainting`, `blocos-de-montar`, `colagem-explicativa`, `colagem-parallax`, `diorama-isometrico`, `dossie-investigativo`, `floresta-luminosa`, `ilustracao-explicativa`, `jelly`, `laminas-de-especimes`, `lowpoly-explicativo`, `mapa-documental`, `maquete-3d`, `midia-mista`, `palavra-em-recortes`, `pelucia`, `pintura-em-camadas`, `pixel-art-hd2d`, `texto-grifado`, `traco-simples`.
+
+Each of those kits includes an example render under its `assets/` folder.
+
+## Software practice
+
+These kits are for the application itself, not for a picture style: `app-com-supabase`, `assinatura-com-stripe`, `auditoria-de-seguranca`, `engenharia-do-projeto`, `migrations-sem-susto`, `nextjs-boas-praticas`, `ponta-a-ponta-com-personas`, `revisor-de-codigo`, `vazamento-de-paywall`.
+
+Studio's application stack is Vukem, not Supabase. Those kits stay as reference material. They are not the architecture.

@@ -1,0 +1,198 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Demo do estilo "Jelly Bear": mini obra brasileira de ursinhos de goma num prato de porcelana (loop de 5 s).
+     Mestre de obras (limão, capacete branco) martela o tijolo do topo · servente (uva) carrega tijolo da pilha até o monte ·
+     ajudante (morango) mexe a massa na masseira · operário (abacaxi) manobra o carrinho de mão. -->
+<script>VIDEO={w:1080,h:1920,fps:30,dur:5,bpm:96,music:{style:'jelly',key:'F',gain:-6}}</script>
+<script src="../../lib/boot.js"></script>
+<style>#stage{background:#ece8e2;overflow:hidden}</style></head><body>
+<div id="stage"></div>
+<script type="module">
+import * as JL from '../../lib/jelly.js';
+const { THREE, V3, lerp, clamp, fase, suave, ciclo } = JL;
+const D = VIDEO.dur, TAU = Math.PI * 2;
+
+// ════════ palco: estúdio creme, luz suave lateral (direita-fundo), prato de porcelana ════════
+const S = JL.palco({ fov: 30, luz: { dir: [.55, 1, -.45], forca: 2.5 }, ambiente: .8, hemi: .85, raioLuz: 1.7 });
+const cena = S.scene;
+cena.add(JL.prato({ raio: 1.18 }));
+const sombras = [];
+const add = (...o) => o.forEach(x => cena.add(x));
+
+// ════════ parede meia-subida de tijolo baiano de goma ════════
+const jParede = JL.jiggle({ altura: .34, freq: 4.4, amort: .2, onda: .9 });
+const W = JL.parede({ J: jParede, cursos: 2, porCurso: 4, ultimo: 3, alinhar: 'esq' });
+W.grupo.position.set(-.22, 0, -.58); add(W.grupo);
+const alvo = W.topo[0], jTopo = JL.jiggle({ altura: .09, freq: 5.5, amort: .14, onda: 1.2 });
+alvo.material = JL.tijolo(jTopo).material;
+const alvoBase = new THREE.Object3D(); W.grupo.add(alvoBase); alvoBase.position.copy(alvo.position).add(V3(0, -.045, 0));
+const sParede = JL.sombraColorida({ cor: JL.SABORES.tijolo.cor, miolo: JL.SABORES.tijolo.miolo, raio: .2, forma: [2.3, .55], altura: .3, alonga: 1.3 });
+sParede.posicionar(V3(-.22, 0, -.58)); add(sParede);
+
+// pilha (de onde o servente tira) e monte (onde ele larga)
+function tijoloSolto(x, y, z, ry = 0, J = JL.PARADO) { const m = JL.tijolo(J); m.position.set(x, JL.piso() + y, z); m.rotation.y = ry; return m; }
+const A = JL.TIJOLO[1] + .004;
+const pilha = new THREE.Group(); pilha.position.set(.5, 0, -.5); add(pilha);
+for (const [x, y, z, r] of [[0, .5, -.056, 0], [0, .5, .056, .03], [-.052, 1.5, 0, Math.PI / 2], [.052, 1.5, 0, Math.PI / 2 - .04]]) pilha.add(tijoloSolto(x, y * A, z, r));
+const pilhaTopo = new THREE.Vector3(.5, JL.piso() + A * 2.5, -.5);
+const sPilha = JL.sombraColorida({ cor: JL.SABORES.tijolo.cor, miolo: JL.SABORES.tijolo.miolo, raio: .14, altura: .2 }); sPilha.posicionar(V3(.5, 0, -.5)); add(sPilha);
+const monte = new THREE.Group(); monte.position.set(-.28, 0, .06); add(monte);
+monte.add(tijoloSolto(-.02, A / 2, 0, .25), tijoloSolto(.03, A / 2, .11, -.1));
+const monteTopo = new THREE.Vector3(-.27, JL.piso() + A * 1.5, .07);
+const sMonte = JL.sombraColorida({ cor: JL.SABORES.tijolo.cor, miolo: JL.SABORES.tijolo.miolo, raio: .14, altura: .15 }); sMonte.posicionar(V3(-.28, 0, .08)); add(sMonte);
+
+// ════════ placa da obra (marca fictícia) + marmita ════════
+const pl = JL.placa([
+  { txt: 'OBRA', alt: .34, tam: .7, cor: '#fff', fundo: '#1f6b4a', esp: 18 },
+  { txt: 'CONSTRUTORA JUJUBA', alt: .26, tam: .5, cor: '#1f2a24' },
+  { txt: 'Residencial Bala de Goma · 12 unidades', alt: .18, tam: .45, peso: 500, cor: '#3b4a42' },
+  { txt: 'USO OBRIGATÓRIO DE EPI', alt: .22, tam: .5, cor: '#1f2a24', fundo: '#ffc20e', esp: 4 },
+], { largura: .5, alturaPostes: .3 });
+pl.position.set(-.14, 0, -.98); pl.rotation.y = .04; add(pl);
+const mm = JL.marmita(); mm.position.set(.86, 0, -.42); mm.rotation.y = -.6; add(mm);
+
+// ════════ mestre de obras (limão, capacete branco) martelando o tijolo do topo ════════
+const ped = JL.ursinho({ sabor: 'limao', capacete: '#f6f4ef', colete: '#ff6a1a', seed: 21 });
+const mart = JL.martelo(ped.jig, { cabo: .34 }); mart.scale.setScalar(1.25); ped.mao.E.add(mart);
+const PER = D / 8, U_GOLPE = .62;
+let aGolpe = -1.9;
+const poseMart = a => ({ bracoE: [a, 0, -.1], bracoD: [-.6, 0, .15], tronco: [.1 + .08 * clamp((a - aGolpe + 1.7) / 1.7), .05, 0], cabeca: [.12, 0, 0] });
+{ // acha o ângulo do braço e a posição do pedreiro para a cabeça do martelo bater em cima do tijolo
+  const ry = .35; ped.grupo.rotation.y = ry; add(ped.grupo);
+  const topo = new THREE.Vector3(); alvo.getWorldPosition(topo); topo.y += JL.TIJOLO[1] / 2 + .013;
+  const h = new THREE.Vector3(); let melhor = [1e9, 0];
+  for (let a = -3; a <= -.4; a += .01) { mart.rotation.x = Math.PI / 2 - a; ped.pose(poseMart(a)); ped.grupo.updateMatrixWorld(true); mart.cabeca.getWorldPosition(h); const e = Math.abs(h.y - topo.y); if (e < melhor[0]) melhor = [e, a]; }
+  aGolpe = melhor[1]; mart.rotation.x = Math.PI / 2 - aGolpe; ped.pose(poseMart(aGolpe)); ped.grupo.updateMatrixWorld(true); mart.cabeca.getWorldPosition(h);
+  ped.grupo.position.set(topo.x - h.x, 0, topo.z - h.z);
+}
+add(ped.sombra);
+const golpes = Array.from({ length: 8 }, (_, k) => +(k * PER + U_GOLPE * PER).toFixed(4));
+for (const tk of golpes) { ped.jig.impacto(tk, .9, [.45, 0]); jTopo.impacto(tk, 1.7); jParede.impacto(tk, .45, [-.4, 0]); cue('martelo', tk, { gain: -6 }); }
+function animaPedreiro(t) {
+  const u = ciclo(t, PER) / PER;
+  let a;
+  if (u < .5) a = lerp(aGolpe + .22, aGolpe - 1.75, fase(u, 0, .5, 'power2.out'));
+  else if (u < U_GOLPE) a = lerp(aGolpe - 1.75, aGolpe, fase(u, .5, U_GOLPE, 'power3.in'));
+  else a = aGolpe + .22 * Math.sin(fase(u, U_GOLPE, 1) * Math.PI * .5);
+  mart.rotation.x = Math.PI / 2 - aGolpe - (a - aGolpe) * .25;
+  ped.pose(poseMart(a));
+}
+
+// ════════ servente (uva) carregando tijolo: pilha → monte → volta ════════
+const car = JL.ursinho({ sabor: 'uva', capacete: '#ffc20e', colete: '#c9f03a', listra: '#f4f6f4', seed: 5 });
+add(car.grupo, car.sombra);
+const P0 = V3(.34, 0, -.36), P1 = V3(-.1, 0, -.04), PASSO = .3, RYI = Math.atan2(P1.x - P0.x, P1.z - P0.z);
+const T = { ida: [0, 1.85], larga: [1.85, 2.45], solta: 2.25, vira1: [2.4, 2.75], volta: [2.75, 4.3], pega: [4.3, 4.72], ergue: 4.55, vira2: [4.7, 5] };
+const jB = JL.jiggle({ altura: .09, freq: 5, amort: .15 }), jC = JL.jiggle({ altura: .09, freq: 5, amort: .15 });
+const B = JL.tijolo(jB), C = JL.tijolo(jC); add(B, C);
+const poseCarrega = { bracoE: [-.95, -.55, -.25], bracoD: [-.95, .55, .25] };
+const naMao = new THREE.Object3D(); naMao.position.set(0, .31, .2); car.grupo.add(naMao);
+for (const tk of [...JL.pisadas(T.ida[0] + .1, T.ida[1], PASSO), ...JL.pisadas(T.volta[0] + .1, T.volta[1], PASSO, T.volta[0])]) { car.jig.impacto(tk, .75, [.2, 0]); jB.impacto(tk, .35); cue('passo', tk, { gain: -16 }); }
+car.jig.impacto(T.ida[1], 1.3, [1.2, 0]); car.jig.impacto(T.volta[0], .8, [-1, 0]); car.jig.impacto(T.volta[1], 1.2, [1.2, 0]);
+jB.impacto(T.solta, 1.4); car.jig.impacto(T.solta + .05, .5, [.5, 0]); cue('plop', T.solta, { gain: -8 }); cue('plop', T.ergue + .05, { gain: -14, pitch: 1.3 });
+jC.impacto(T.ergue, .9); car.jig.impacto(T.ergue, .7);
+const _v = new THREE.Vector3();
+function animaServente(t) {
+  let k = 0, ry, p;
+  const andando = amp => JL.andar(t, PASSO, amp), R2 = RYI + Math.PI;
+  if (t < T.ida[1]) { k = fase(t, ...T.ida, 'power1.inOut'); ry = RYI; p = { ...andando(1), bracoE: poseCarrega.bracoE, bracoD: poseCarrega.bracoD }; }
+  else if (t < T.vira1[0]) { k = 1; ry = RYI; const q = Math.sin(fase(t, ...T.larga) * Math.PI); p = { tronco: [.55 * q, 0, 0], cabeca: [-.2 * q, 0, 0], pernaE: [-.35 * q, 0, 0], pernaD: [-.35 * q, 0, 0], bracoE: t < T.solta ? poseCarrega.bracoE : [-.8 * q, 0, 0], bracoD: t < T.solta ? poseCarrega.bracoD : [-.8 * q, 0, 0], sobe: -.03 * q }; }
+  else if (t < T.volta[0]) { k = 1; ry = lerp(RYI, R2, fase(t, ...T.vira1, 'power2.inOut')); p = andando(.5); }
+  else if (t < T.pega[0]) { k = 1 - fase(t, ...T.volta, 'power1.inOut'); ry = R2; p = andando(1.1); }
+  else if (t < T.vira2[0]) { k = 0; ry = R2; const q = Math.sin(fase(t, T.pega[0], T.vira2[0] + .1) * Math.PI); p = { tronco: [.5 * q, 0, 0], cabeca: [-.2 * q, 0, 0], pernaE: [-.3 * q, 0, 0], pernaD: [-.3 * q, 0, 0], bracoE: t > T.ergue ? poseCarrega.bracoE : [-1.1 * q, 0, 0], bracoD: t > T.ergue ? poseCarrega.bracoD : [-1.1 * q, 0, 0], sobe: -.03 * q }; }
+  else { k = 0; ry = lerp(R2, RYI + TAU, fase(t, ...T.vira2, 'power2.inOut')); p = { ...andando(.5), bracoE: poseCarrega.bracoE, bracoD: poseCarrega.bracoD }; }
+  const x = lerp(P0.x, P1.x, k), ZC = lerp(P0.z, P1.z, k);
+  car.grupo.position.set(x, 0, ZC); car.grupo.rotation.y = ry; car.pose(p);
+  car.grupo.updateMatrixWorld(true); naMao.getWorldPosition(_v);
+  // tijolo B: na mão até soltar, cai no monte
+  if (t < T.solta - .2) { B.position.copy(_v); B.rotation.set(0, ry + Math.PI / 2, 0); }
+  else if (t < T.solta) { const k = fase(t, T.solta - .2, T.solta, 'power2.in'); B.position.lerpVectors(_v, monteTopo, k); B.rotation.set(0, lerp(ry + Math.PI / 2, .5, k), 0); }
+  else { B.position.copy(monteTopo); B.rotation.set(0, .5, 0); }
+  // tijolo C: no topo da pilha até ser erguido
+  if (t < T.ergue - .15) { C.position.copy(pilhaTopo); C.rotation.set(0, .2, 0); }
+  else if (t < T.ergue) { const k = fase(t, T.ergue - .15, T.ergue, 'power2.out'); C.position.lerpVectors(pilhaTopo, _v, k); C.rotation.set(0, lerp(.2, ry + Math.PI / 2, k), 0); }
+  else { C.position.copy(_v); C.rotation.set(0, ry + Math.PI / 2, 0); }
+}
+
+// ════════ ajudante (morango) mexendo a massa na masseira ════════
+const ms = JL.masseira({ w: .46, d: .3 }); ms.position.set(-.6, 0, .5); ms.rotation.y = .1; add(ms);
+const mix = JL.ursinho({ sabor: 'morango', capacete: '#ffc20e', colete: '#ff6a1a', seed: 9 });
+const enx = JL.enxada(mix.jig, { cabo: .66 }); mix.mao.D.add(enx);
+mix.grupo.position.set(-.66, 0, .36); mix.grupo.rotation.y = Math.atan2(1, -.15); add(mix.grupo, mix.sombra);
+const PM = D / 4;
+for (let k = 0; k < 4; k++) { const tk = k * PM + PM * .52; mix.jig.impacto(tk, .7, [-.8, 0]); cue('massa', tk, { gain: -12 }); }
+function animaMexe(t) {
+  const u = ciclo(t, PM) / PM, s = Math.sin(u * TAU);
+  const a = -.62 + .32 * s;
+  enx.rotation.x = -.42 - .2 * s; enx.rotation.z = -.1;
+  mix.pose({ bracoD: [a, .35, 0], bracoE: [a - .1, -.5, -.2], tronco: [.22 + .1 * s, .12, 0], cabeca: [.1 - .05 * s, 0, 0], pernaE: [-.1 * s, 0, 0], pernaD: [.12, 0, 0] });
+}
+
+{ animaMexe(0); mix.grupo.updateMatrixWorld(true); const b = new THREE.Vector3(); enx.lamina.getWorldPosition(b);
+  const d = V3(Math.sin(mix.grupo.rotation.y), 0, Math.cos(mix.grupo.rotation.y)); ms.position.set(b.x + d.x * .06, 0, b.z + d.z * .06); }
+
+// ════════ operário (abacaxi) manobrando o carrinho de mão ════════
+const jCar = JL.jiggle({ altura: .3, freq: 3.6, amort: .14 });
+const cr = JL.carrinho(jCar), opr = JL.ursinho({ sabor: 'abacaxi', capacete: '#2f6fd6', colete: '#ff6a1a', seed: 13 });
+const rCar = new THREE.Group(); opr.grupo.add(rCar); cr.position.set(0, 0, .74); cr.rotation.x = -.16; rCar.add(cr);
+add(opr.grupo, opr.sombra);
+const sCr = JL.sombraColorida({ cor: JL.SABORES.framboesa.cor, miolo: JL.SABORES.framboesa.miolo, raio: .17, altura: .25, forma: [1, 1.3] }); add(sCr);
+const HEAD = Math.atan2(-.3, 1), O0 = V3(.68, 0, -.02), DIST = .16;
+const TC = { vai: [0, 2.1], para1: 2.1, volta: [2.65, 4.5], para2: 4.5 };
+jCar.impacto(TC.para1, 1.2, [1, 0]); jCar.impacto(TC.para2, 1, [-1, 0]); jCar.impacto(TC.vai[0] + .05, .5, [-.6, 0]); jCar.impacto(TC.volta[0] + .05, .5, [.6, 0]);
+opr.jig.impacto(TC.para1, 1.2, [1.1, 0]); opr.jig.impacto(TC.para2, 1, [-1, 0]);
+for (const tk of [...JL.pisadas(.1, TC.vai[1], .34), ...JL.pisadas(TC.volta[0] + .1, TC.volta[1], .34, TC.volta[0])]) { opr.jig.impacto(tk, .65, [.15, 0]); jCar.impacto(tk, .25); }
+cue('baque', TC.para1, { gain: -10 }); cue('baque', TC.para2, { gain: -12, pitch: .9 });
+function animaCarrinho(t) {
+  let d, amp, re = 1;
+  if (t < TC.vai[1]) { d = DIST * fase(t, ...TC.vai, 'power1.inOut'); amp = Math.sin(fase(t, ...TC.vai) * Math.PI) ** .4; }
+  else if (t < TC.volta[0]) { d = DIST; amp = 0; }
+  else if (t < TC.volta[1]) { d = DIST * (1 - fase(t, ...TC.volta, 'power1.inOut')); amp = Math.sin(fase(t, ...TC.volta) * Math.PI) ** .4; re = -1; }
+  else { d = 0; amp = 0; }
+  opr.grupo.position.set(O0.x + Math.sin(HEAD) * d, 0, O0.z + Math.cos(HEAD) * d); opr.grupo.rotation.y = HEAD;
+  const w = JL.andar(t * re, .34, amp * .8);
+  opr.pose({ ...w, bracoE: [-.62, -.25, 0], bracoD: [-.62, .25, 0], tronco: [.2, 0, w.tronco[2]], cabeca: [-.05, 0, 0] });
+  cr.roda.rotation.x = d / cr.raioRoda;
+  cr.updateWorldMatrix(true, false); jCar.atualizar(t, cr);
+  const e = cr.matrixWorld.elements; sCr.posicionar(V3(e[12] - Math.sin(HEAD) * .25, 0, e[14] - Math.cos(HEAD) * .25));
+}
+
+// ════════ câmera quase parada, deriva periódica (fecha o loop) ════════
+function camera(t) {
+  const w = TAU * t / D;
+  S.orbita([.0, .5, -.12], 6.6 + .08 * Math.sin(w + .6), 4 * Math.sin(w), 28 + .8 * Math.sin(w + 1.3), 30);
+}
+
+S.update = t => {
+  camera(t);
+  animaPedreiro(t); animaServente(t); animaMexe(t); animaCarrinho(t);
+  for (const U of [ped, car, mix, opr]) U.atualizar(t);
+  jParede.atualizar(t, W.grupo); jTopo.atualizar(t, alvoBase);
+  B.updateWorldMatrix(true, false); jB.atualizar(t, B); jC.atualizar(t, C);
+};
+
+// ════════ HUD editorial ════════
+const ACOES = [{ n: 'Assentar', k: 'TECLA 1' }, { n: 'Carregar', k: 'TECLA 2' }, { n: 'Martelar', k: 'TECLA 3' }, { n: 'Mexer massa', k: 'TECLA 4', larga: 2 }, { n: 'Empurrar', k: 'TECLA 5' }];
+const SAB = ['morango', 'limao', 'laranja', 'uva', 'abacaxi'];
+// quem está "em destaque" a cada 1,25 s: martelar (limão) → carregar (uva) → mexer (morango) → empurrar (abacaxi)
+const vez = t => Math.floor(ciclo(t, D) / (D / 4));
+const VEZ = [{ a: 2, s: 1, e: 'MARTELANDO' }, { a: 1, s: 3, e: 'CARREGANDO' }, { a: 3, s: 0, e: 'MEXENDO A MASSA' }, { a: 4, s: 4, e: 'EMPURRANDO' }];
+JL.titulo(S, { rotulo: 'Estudos de material &nbsp;/&nbsp; Construção civil', titulo: ['Obra', 'Jelly'], tam: 210, x: 64, y: 96,
+  sub: ['Tijolo por tijolo, no balanço.', 'Mole por fora, firme no serviço.'], ponto: t => JL.SABORES[SAB[VEZ[vez(t)].s]].cor });
+JL.pilula(S, { estado: t => VEZ[vez(t)].e, y: 96 });
+JL.painel(S, { titulo: 'O canteiro', x: 632, y: 166, w: 404, acoes: ACOES, ativa: t => VEZ[vez(t)].a, sabores: SAB, sabor: t => VEZ[vez(t)].s,
+  sliders: [
+    { n: 'Firmeza', v: () => .58, txt: () => 'No ponto', ex: ['Mole', 'Dura'] },
+    { n: 'Amortecimento', v: t => .5, txt: () => '50', ex: ['Balança muito', 'Para logo'] },
+    { n: 'Luz', v: () => .86, txt: () => '120° D', ex: ['Esq.', 'Frente', 'Dir.'] },
+  ], botoes: ['Reiniciar', 'Pausar', '¼ velocidade'] });
+JL.rodape(S, { txt: 'Dentro do canteiro', x: 632, w: 404, base: 72 });
+JL.dados(S, { x: 64, base: 72, w: 520, instrucao: '<b>Toque</b> para cutucar. <b>Segure</b> um ursinho para apertar, <b>arraste</b> um tijolo até a parede. Arraste o prato para girar.',
+  campos: [
+    { l: 'Volume', v: t => JL.num(100 + 1.6 * car.jig.u.jSquash.value + .2 * Math.sin(t * 3), 1), u: '%' },
+    { l: 'Tijolos', v: t => String(t < T.solta ? 11 : 12), u: '/ 40' },
+    { l: 'Balanço', v: t => JL.num(car.jig.energia * 3.2 + ped.jig.energia * .8, 1), u: 'mm' },
+  ], nota: 'Unidades ilustrativas: 1 unidade ≈ 2 cm. O balanço é medido no topo do capacete do servente.' });
+window.DBG = { B, C, car, ped, mix, opr, cr, naMao, W, alvo };
+window.SETUP = () => {};
+</script>
+</body></html>

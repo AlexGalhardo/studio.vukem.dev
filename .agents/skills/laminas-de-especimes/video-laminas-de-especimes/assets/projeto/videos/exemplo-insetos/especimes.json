@@ -1,0 +1,420 @@
+{
+ "saida": "img/esp",
+ "alvo": 560,
+ "caixa": [
+  900,
+  1150
+ ],
+ "itens": [
+  {
+   "id": "b01",
+   "t": "File:Eumolpus ignitus Fabricius, 1787 (11206106423).png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b02",
+   "t": "File:Stolas aenea (Olivier, 1790) (7492759136).png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b05",
+   "t": "File:Trachyderes striatus (Fabricius, 1787) (3953985736).jpg",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b06",
+   "t": "File:Semiotus distinctus (Herbst, 1806).png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b07",
+   "t": "File:Botanochara impressa (Panzer, 1798).png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b08",
+   "t": "File:Cyrtonota sexpustulata (Fabricius, 1781) (5925769363) (2).jpg",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b09",
+   "t": "File:Chalcolepidius zonatus Eschscholtz, 1829.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b10",
+   "t": "File:Canthon smaragdulus Fabricius, 1781 (3013307092).jpg",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b11",
+   "t": "File:Leptinopterus tibialis (Eschscholtz, 1822) male (3989862485).jpg",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b12",
+   "t": "File:Dactylozodes monteiroi Théry, 1935.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b13",
+   "t": "File:Psiloptera roseocarinata Thomson, 1878.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b14",
+   "t": "File:Conognatha amoena Kirby, 1818 (4276378944).jpg",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b15",
+   "t": "File:Erotylus incomparabilis (Perty, 1832).png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b16",
+   "t": "File:Omophoita octoguttata (Fabricius, 1775).png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b17",
+   "t": "File:Platyphora fervida (Fabricius, 1775).png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b18",
+   "t": "File:Omophoita communis Bechyné, 1958.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b19",
+   "t": "File:Calligrapha polyspila Germar, 1872.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b20",
+   "t": "File:Omophoita magniguttis Bechyné, 1955.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b21",
+   "t": "File:Eurysternus caribaeus Herbst, 1789.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b22",
+   "t": "File:Athyreus acuticornis Howden, 1978 Male.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b23",
+   "t": "File:Phanaeus (Notiophanaeus) splendidulus (Fabricius, 1781) Male.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b24",
+   "t": "File:Phanaeus palaeno Blanchard, 1843 Male dorsal.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b25",
+   "t": "File:Phanaeus palaeno Blanchard, 1843 Female dorsal.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b26",
+   "t": "File:Gromphas inermis Harold, 1869.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b27",
+   "t": "File:Deltochilum brasiliense (Castelnau, 1840).png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b28",
+   "t": "File:Dichotomius fissus (Harold, 1867) Male.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b30",
+   "t": "File:Canthon rutilans Castelnau, 1840.png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b31",
+   "t": "File:Lampetis doncherii (Gory, 1840).png",
+   "g": "besouros",
+   "rot": 90
+  },
+  {
+   "id": "b32",
+   "t": "File:Psiloptera attenuata (Fabricius, 1793) - Espirito Santo, Brazil - Flickr.jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b33",
+   "t": "File:Butherium erythropus - Flickr - Bennyboymothman.jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b34",
+   "t": "File:Callichroma auricomum - Brazil - Flickr - Bennyboymothman.jpg",
+   "g": "besouros",
+   "rot": 90,
+   "t0": 24,
+   "t1": 56
+  },
+  {
+   "id": "b35",
+   "t": "File:Deliathis diluta (21165020081).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b36",
+   "t": "File:Andraegoidus rufipes fabricii (38980670172).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b37",
+   "t": "File:Xestiodion pictipes - Flickr - Bennyboymothman.jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b38",
+   "t": "File:Rhaphiptera nodifera (38703779375).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b39",
+   "t": "File:Buprestidae - Euchroma gigantea.jpg",
+   "g": "besouros",
+   "rot": 0,
+   "t0": 14,
+   "t1": 46,
+   "vision": true
+  },
+  {
+   "id": "b40",
+   "t": "File:Psiloptera reichei - Flickr - Bennyboymothman.jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b41",
+   "t": "File:Psiloptera bicarinata - Flickr - Bennyboymothman.jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b42",
+   "t": "File:Scarabaeidae - Pelidnota burmeisteri.JPG",
+   "g": "besouros",
+   "rot": 0,
+   "t0": 14,
+   "t1": 46,
+   "vision": true
+  },
+  {
+   "id": "b43",
+   "t": "File:Conognatha reichardti (15976742802).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b44",
+   "t": "File:Colobothea schmidtii (52521834195).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b45",
+   "t": "File:Psiloptera nattereri (52768419467).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b46",
+   "t": "File:Colobothea emarginata (50930475921).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b48",
+   "t": "File:Colobothea cassandra (15977402185).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b50",
+   "t": "File:Hiperantha speculigera (51153720498).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b51",
+   "t": "File:Chrysesthes tripunctata (49086159828).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b52",
+   "t": "File:Callipogon armillatus (49540067217).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "b53",
+   "t": "File:Gounellea bruchi (52689860880).jpg",
+   "g": "besouros",
+   "rot": 0
+  },
+  {
+   "id": "l01",
+   "t": "File:Morpho menelaus huebneri MHNT Male Dos.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l02",
+   "t": "File:Prepona laertes laertes MHNT dos.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l03",
+   "t": "File:Catonephele acontius MHNT dos.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l04",
+   "t": "File:Aphrissa statira statira MHNT dos.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l05",
+   "t": "File:Melinaea ludovica ludovica MHNT dos.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l06",
+   "t": "File:Mechanitis polymnia polymnia MHNT dos.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l07",
+   "t": "File:Penetes pamphanis MHNT dos.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l08",
+   "t": "File:Caligo martia.jpg",
+   "g": "lepidopteros",
+   "rot": 0,
+   "caixa": [
+    0,
+    0,
+    0.5,
+    1
+   ]
+  },
+  {
+   "id": "l09",
+   "t": "File:Archaeoprepona licomedes Bresil Global.jpg",
+   "g": "lepidopteros",
+   "rot": 0,
+   "caixa": [
+    0,
+    0,
+    0.5,
+    1
+   ]
+  },
+  {
+   "id": "l10",
+   "t": "File:Taygetis excavata Male.jpg",
+   "g": "lepidopteros",
+   "rot": 0,
+   "caixa": [
+    0,
+    0,
+    0.5,
+    1
+   ]
+  },
+  {
+   "id": "l11",
+   "t": "File:Rothschildia aurota speculifera MHNT female dos.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l12",
+   "t": "File:Eumorpha labruscae MHNT CUT 2010 0 386 Mocambinho Jaiba Minas Gerais Brazil male dorsal.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l13",
+   "t": "File:Eumorpha adamsi MHNT CUT 2010 0 261 Estrada Vianopolis-Luziana - Goiás Brazil male dorsal.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l14",
+   "t": "File:Xylophanes pistacina MHNT CUT 2010 0 399 Paineiras Corcovado (Rio) Brazil, male dorsal.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l16",
+   "t": "File:Xylophanes marginalis MHNT CUT 2010 0 399 Boraceia (Sao Paulo) Brazil, male dorsal.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  },
+  {
+   "id": "l17",
+   "t": "File:Adhemarius eurysthenes MHNT CUT 2010 0 427 Petropolis female dorsal.jpg",
+   "g": "lepidopteros",
+   "rot": 0
+  }
+ ]
+}

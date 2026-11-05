@@ -1,0 +1,6 @@
+{"depende": ["video-transcricao"],
+ "programas": ["ffmpeg", "ffprobe"],
+ "python": {"numpy": "numpy", "PIL": "pillow"},
+ "whisper": false,
+ "node": null,
+ "chaves": []}

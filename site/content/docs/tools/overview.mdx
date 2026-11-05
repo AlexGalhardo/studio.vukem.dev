@@ -1,0 +1,27 @@
+---
+title: Overview
+description: The tools Studio is allowed to depend on, and the ones it only documents.
+---
+
+The production path uses tools the worker can run. A recommendation list is not a dependency.
+
+## On the render path
+
+| Tool | Job |
+| --- | --- |
+| Language model | Script, shot list, composition code |
+| Remotion or HyperFrames | Frame rendering |
+| FFmpeg | Encode, concat, captions, loudness |
+| Whisper | Word times when a voice track exists |
+
+Voice synthesis and stock footage are optional steps. The first milestone can render a silent motion cut with no third-party media.
+
+## Documented, not required
+
+`docs/recommend-tools.md` is a translated catalog of editing, voice, and research tools. Many of those products are hosted and closed. Studio does not call them unless a later phase names an adapter and a key.
+
+`docs/video-studio-kit.md` is the translated studio kit: reference libraries for picture, and the local tools the skill packs already assume (FFmpeg, Whisper, DeepFilterNet, GSAP, headless Chrome).
+
+## Open source first
+
+When two tools do the same step, the worker prefers the one with a permissive license and a local run. See [Models](/docs/tools/models) and the research notes in `docs/web-research.md`.

@@ -1,0 +1,24 @@
+---
+title: Renderers
+description: Remotion, HyperFrames, and FFmpeg, and which job each one owns.
+---
+
+All three tools end in FFmpeg. The difference is who describes the frame.
+
+## Remotion
+
+Remotion draws each frame as a React render at a frame number. Studio already speaks React in the dashboard, so a data-heavy explainer, a caption template, or a product card is a Remotion composition.
+
+Remotion's source is available under its own license. Individuals, non-profits, and for-profit companies of up to three people can use it without a company license. A larger for-profit company needs a license. Confirm the current terms at [remotion.dev](https://www.remotion.dev/) before turning it on for an organization.
+
+## HyperFrames
+
+[HyperFrames](https://github.com/heygen-com/hyperframes) draws a video from HTML, CSS, and JavaScript. HeyGen released it in 2026 under Apache-2.0. GSAP, Lottie, and Three.js animations can stay in the page. The renderer seeks them to the frame it captures.
+
+Choose HyperFrames when the style skill is already HTML, or when the license must stay permissive at any company size. The skill packs in this repository that render with headless Chrome and GSAP are closer to HyperFrames than to Remotion.
+
+## FFmpeg
+
+FFmpeg is the encoder even when another tool draws the frames. It is also the whole renderer when the plan is only cuts, mixes, and burned-in captions.
+
+The worker shells out with an argument list. It does not build a shell string from the brief.

@@ -1,0 +1,8 @@
+{
+  "depende": [],
+  "programas": ["ffmpeg", "ffprobe", "node", "npm"],
+  "python": {"numpy": "numpy", "scipy": "scipy", "PIL": "pillow"},
+  "whisper": false,
+  "node": {"dir": "assets/projeto", "chromium": true},
+  "chaves": []
+}

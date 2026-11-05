@@ -1,0 +1,10 @@
+{
+ "depende": [],
+ "programas": [
+  "git"
+ ],
+ "python": {},
+ "whisper": false,
+ "node": null,
+ "chaves": []
+}

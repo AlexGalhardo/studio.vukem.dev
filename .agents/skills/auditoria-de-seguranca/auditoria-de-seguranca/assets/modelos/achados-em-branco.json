@@ -1,0 +1,42 @@
+{
+  "relatorio": {
+    "sistema": "",
+    "exemplo_ficticio": false,
+    "data": "",
+    "versao": 1,
+    "pedido_por": "",
+    "auditado_por": "",
+    "confirmacao_de_escopo": "",
+    "escopo": {
+      "dentro": [],
+      "fora": [],
+      "ambientes": []
+    },
+    "metodo": {
+      "testado": [],
+      "nao_testado": []
+    },
+    "resumo": {
+      "parecer": "",
+      "riscos_principais": []
+    },
+    "nao_cobre": []
+  },
+  "achados": [
+    {
+      "id": "SEG-001",
+      "titulo": "",
+      "gravidade": "",
+      "area": "",
+      "onde": [],
+      "consegue": "",
+      "precisa": "",
+      "cenario": "",
+      "evidencia": "",
+      "estado": "",
+      "correcao": "",
+      "esforco": "",
+      "situacao": "aberto"
+    }
+  ]
+}

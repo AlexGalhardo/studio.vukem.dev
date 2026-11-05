@@ -1,0 +1,132 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Pedido: demo 9:16 de 11 s no estilo "dossiê investigativo" (referências: fichas de arquivo em xerox P&B, tarjas de censura,
+     fotos 3x4 com cópias desbotadas e anotações à mão, digitais carimbadas, painel de fotos ligadas por fios).
+     Caso FICTÍCIO "Arquivo RL-0417 — Quem apagou Vila Aurora?": nomes, lugares e fatos inventados; retratos gerados por código
+     (DS.retrato), nenhum órgão real. Página 1 = ficha do sujeito; corte seco; página 2 = painel percorrido pela câmera. -->
+<script>VIDEO={w:1080,h:1920,fps:30,dur:11,bpm:90,music:{style:'dossie',key:'D',gain:0}}</script>
+<script>LIBS=['dossie.js']</script>
+<script src="../../lib/boot.js"></script>
+<style>
+#stage{background:#0d0d0d;overflow:hidden}
+:root{--ds-acento:#d8481e}   /* o ÚNICO acento, e pequeno: os três fios que descem até o título */
+</style></head><body>
+<div id="stage"></div>
+<script>
+// T: tempos (s). Página 1 (ficha) 0–5 · corte seco · página 2 (painel) 5–11, com respiro final de ~1,2 s.
+const T = { cod: 0, regua: .3, foto: .2, ficha: .95, olhos: .8, dig: [3.15, 3.38], circ: 3.62, nota: 3.78, carimbo: 4.3, corte: 5.0,
+  f1: 5.08, usina: 5.36, linha: 5.5, f2: 6.55, vila: 7.5, f3: 7.8, dig3: 8.2, conv: 8.42, tit: 8.72, arq: 9.4, ass: 9.6 };
+
+window.SETUP = () => {
+  const S = document.querySelector('#stage');
+
+  // ══ PÁGINA 1 — ficha do sujeito (folha 1080×1920) ══
+  const m1 = DS.mundo(S, { w: 1080, h: 1920 });
+  DS.papel(m1, { x: -8, y: -8, w: 1096, h: 1936, seed: 4, furos: true, vinco: [.52], verso: true });
+  DS.rotulo(m1, ['ARQUIVO INTERNO · SETOR 9', 'FL. 014 · VIA 2/3 · USO RESTRITO'], { x: 84, y: 56, fs: 20, cps: 90 });
+  DS.colunas(m1, { x: 800, y: 58, n: 6, cols: 2, larg: 112, fs: 15, t0: .1, seed: 3 });
+  DS.codigo(m1, 'RL-0417', { x: 80, y: 158, fs: 158, t0: T.cod, rotulo: 'ID DO SUJEITO' });
+  DS.rotulo(m1, ['PERFIL', '02 — [07-12]'], { x: 806, y: 262, fs: 22, t0: .45 });
+  DS.regua(m1, { x: 84, y: 364, w: 912, t0: T.regua });
+
+  const F = DS.foto(m1, { x: 290, y: 500, w: 500, h: 635, seed: 7, retrato: { cabelo: 'curto', roupa: 'terno' }, t0: T.foto, rot: -.6, fita: true,
+    copias: [{ dx: -372, op: .55 }, { dx: 372, op: .4 }] });
+  F.medida('REG. 3×4 — FRONTAL');
+  F.olhos({ t0: T.olhos });
+
+  const fi = DS.ficha(m1, { x: 84, y: 1195, fs: 36, lh: 62, t0: T.ficha, cps: 50, campos: [
+    { r: 'NOME', v: 'DÁRIO QUENTAL', tarja: true },            // nasce tarjado: o valor nunca aparece
+    { r: 'CODINOME', v: 'O RELOJOEIRO' },
+    { r: 'NASCIMENTO', tarja: 8 },
+    { r: 'VISTO EM', v: 'VILA AURORA, 03H12' },
+    { r: 'SITUAÇÃO', v: 'DESAPARECIDO', forte: true } ] });
+
+  DS.digital(m1, { x: 104, y: 1575, w: 176, seed: 2, tipo: 'laco', t0: T.dig[0], rot: -4, rotulo: 'POLEGAR D.', caixa: true });
+  DS.digital(m1, { x: 344, y: 1575, w: 176, seed: 4, tipo: 'espiral', t0: T.dig[1], rot: 3, rotulo: 'INDICADOR D.', caixa: true });
+
+  const cx = fi.caixa(4);                                        // anotações à mão sobre a ficha
+  DS.circulo(m1, { x: cx.x - 10, y: cx.y - 4, w: cx.w + 20, h: cx.h + 8, t0: T.circ, seed: 2 });
+  DS.garrancho(m1, { x: 630, y: 1240, w: 380, alt: 18, linhas: 2, seed: 5, t0: T.nota });
+  DS.seta(m1, { x0: 806, y0: 1196, x1: 748, y1: 1100, curva: -.3, t0: T.nota + .45 });
+  DS.carimbo(m1, { texto: 'CONFIDENCIAL', sub: 'SETOR 9 · VIA ÚNICA', cx: 780, cy: 1690, fs: 62, rot: -10, t0: T.carimbo, seed: 3 });
+
+  DS.camera(m1, [
+    { t: 0, x: 440, y: 742, z: 1.3 },
+    { t: .9, x: 452, y: 760, z: 1.29 },
+    { t: 3.0, x: 472, y: 1150, z: 1.26, ease: 'power1.inOut' },
+    { t: 4.5, x: 540, y: 960, z: 1.012, ease: 'power2.inOut' },
+    { t: 5.0, x: 540, y: 960, z: 1.0 } ]);
+
+  // ══ PÁGINA 2 — painel investigativo (mural 2000×3556, a câmera percorre e abre no fim) ══
+  const m2 = DS.mundo(S, { w: 2000, h: 3556 });
+  DS.papel(m2, { w: 2000, h: 3556, seed: 9, vinco: [.34, .68], manchas: 1.2, verso: true });
+  DS.codigo(m2, 'MURAL 02', { x: 1330, y: 236, fs: 96, t0: T.corte + .1, rotulo: 'OPERAÇÃO VAGA-LUME', som: false });
+  DS.colunas(m2, { x: 1336, y: 420, n: 5, cols: 4, larg: 132, fs: 19, t0: T.corte + .2, seed: 8 });
+  DS.regua(m2, { x: 1336, y: 590, w: 520, t0: T.corte + .3 });
+  [[90, 90], [1910, 90], [90, 3466], [1910, 3466], [1000, 2540]].forEach(([x, y]) => DS.cruz(m2, { x, y, s: 26, t0: T.corte }));
+  const foto = (o, nome, sub, n, tOlhos) => {                    // retrato + alfinete + etiqueta de nome (+ tarja nos olhos)
+    const f = DS.foto(m2, Object.assign({ cruzes: false, moldura: 10 }, o));
+    DS.alfinete(m2, { x: f.pino[0], y: f.pino[1], t0: o.t0 + .1 });
+    DS.etiqueta(m2, { x: o.x, y: o.y - 130, texto: nome, sub, n, fs: 60, t0: o.t0 + .2 });
+    if (tOlhos) f.olhos({ t0: tOlhos });
+    return f;
+  };
+  const P1 = foto({ x: 150, y: 420, w: 440, h: 560, seed: 7, retrato: { cabelo: 'curto', roupa: 'terno' }, t0: T.f1, rot: -1.2 }, 'Dário Quental', 'codinome: O Relojoeiro', 1);
+  DS.cartao(m2, { x: 150, y: 1024, w: 440, fs: 28, sub: 'FICHA RL-0417', linhas: ['Técnico da [[Usina 3]].', 'Sumiu às [[03h12]] sem', 'bater o [[ponto]].'], t0: T.f1 + .4, alfinete: false, rot: .8, seed: 2 });
+  const US = DS.cartao(m2, { x: 640, y: 300, w: 420, fs: 28, sub: 'LOCAL', titulo: 'Usina 3', linhas: ['Painel de [[controle]] aberto,', 'sem sinal de [[arrombamento]].'], t0: T.usina, rot: 1.4, seed: 3 });
+  // linha do tempo datilografada direto no mural (a última entrada nasce tarjada)
+  DS.rotulo(m2, 'LINHA DO TEMPO', { x: 660, y: 742, fs: 26, peso: 700, t0: T.linha - .1, cps: 80 });
+  DS.regua(m2, { x: 660, y: 782, w: 400, numeros: false, t0: T.linha - .05, d: .3 });
+  DS.ficha(m2, { x: 660, y: 812, fs: 28, lh: 52, t0: T.linha, cps: 70, seed: 6, campos: [
+    { r: '02H47', v: 'RONDA NO SETOR B' }, { r: '03H05', v: 'PORTA 4 ABERTA' }, { r: '03H12', v: 'APAGÃO', forte: true }, { r: '03H40', tarja: 9 } ] });
+  const P2 = foto({ x: 1420, y: 760, w: 400, h: 508, seed: 12, retrato: { cabelo: 'longo', roupa: 'camisa' }, t0: T.f2, rot: 1.5 }, 'Íris Batalha', 'supervisora do turno', 2, T.f2 + .42);
+  DS.cartao(m2, { x: 1390, y: 1322, w: 470, fs: 28, sub: 'DEPOIMENTO · 02', linhas: ['Assinou a ordem de [[desligamento]].', 'Diz que [[não estava]] na sala.'], t0: T.f2 + .5, alfinete: false, rot: -1, seed: 4 });
+  const VA = DS.cartao(m2, { x: 760, y: 1500, w: 520, fs: 30, tom: 'escuro', sub: '03H12', titulo: 'Vila Aurora', linhas: ['[[4.812]] casas sem luz por', '[[nove horas]]. Nenhum alerta.'], t0: T.vila, rot: -1.6, seed: 5 });
+  const P3 = foto({ x: 170, y: 1900, w: 400, h: 508, seed: 21, retrato: { cabelo: 'calvo', roupa: 'camiseta' }, t0: T.f3, rot: -2 }, 'Teo Marçal', 'vigia da noite', 3, T.f3 + .24);
+  const DG = DS.digital(m2, { x: 1470, y: 1900, w: 250, seed: 6, tipo: 'arco', t0: T.dig3, rot: 5, rotulo: 'PAINEL · LADO B', caixa: true });
+  DS.alfinete(m2, { x: 1595, y: 1890, t0: T.dig3 - .2 });
+
+  // fios (cada um se desenha no tempo; a câmera acompanha o fio até a próxima peça)
+  DS.fio(m2, { de: P1, para: US, t0: T.usina + .32 });
+  DS.fio(m2, { de: US, para: P2, t0: 6.15 });
+  DS.fio(m2, { de: P2, para: VA, t0: 7.2 });
+  DS.fio(m2, { de: VA, para: P3, t0: T.f3 + .2 });
+  DS.fio(m2, { de: VA, para: [1595, 1890], t0: T.dig3 + .05 });
+  DS.fio(m2, { de: P1, para: VA, t0: T.dig3 + .15 });
+  [[[330, 404], 0], [[1600, 744], .1], [[350, 1884], .2]].forEach(([p, dt]) => DS.fio(m2, { de: [236, 2716], para: p, t0: T.conv + dt, d: .55, cor: 'var(--ds-acento)', esp: 3, queda: 0, som: dt === 0 }));
+
+  DS.fio(m2, { de: P3, para: [1595, 1890], t0: T.dig3 + .25 });
+
+  // citação serifada com tarja + anotação à mão
+  DS.texto(m2, '“Às 03h12 o relógio da sala parou. Ninguém [[viu quem]] entrou.”', { x: 1090, y: 2372, w: 780, fs: 58, italico: true, t0: T.dig3 + .1, pps: 22 });
+  DS.rotulo(m2, '— DEPOIMENTO 02, FL. 31', { x: 1096, y: 2630, fs: 26, t0: T.dig3 + .6, cps: 80 });
+  DS.garrancho(m2, { x: 640, y: 2200, w: 420, alt: 26, linhas: 2, seed: 9, t0: T.f3 + .35, esp: 4 });
+  DS.seta(m2, { x0: 630, y0: 2230, x1: 584, y1: 2150, curva: .3, t0: T.f3 + .8, esp: 4, cabeca: 26 });
+
+  // fecho: título em grotesca pesada, carimbo e assinatura
+  DS.titulo(m2, ['QUEM APAGOU', 'VILA AURORA?'], { x: 140, y: 2730, fs: 250, maxw: 1720, t0: T.tit });
+  DS.rotulo(m2, 'ARQUIVO RL-0417 · PARTE 1 DE 3', { x: 150, y: 3204, fs: 38, t0: T.tit + .35, cps: 70 });
+  DS.carimbo(m2, { texto: 'ARQUIVADO', sub: 'SEM CONCLUSÃO', cx: 1450, cy: 3290, fs: 98, rot: -8, t0: T.arq, seed: 8, falha: .6 });
+  DS.assinatura(m2, { x: 180, y: 3262, w: 520, h: 120, seed: 4, t0: T.ass, d: .6, esp: 5.5 });
+
+  DS.camera(m2, [
+    { t: T.corte, x: 602, y: 904, z: 1.12 },
+    { t: 6.0, x: 640, y: 990, z: 1.04 },
+    { t: 6.85, x: 1440, y: 1120, z: 1.0, ease: 'power2.inOut' },
+    { t: 7.15, x: 1436, y: 1140, z: 1.0 },
+    { t: 7.95, x: 722, y: 2060, z: .9, ease: 'power2.inOut' },
+    { t: 8.1, x: 726, y: 2066, z: .9 },
+    { t: 9.05, x: 1000, y: 1778, z: .548, ease: 'power2.inOut' },
+    { t: 11, x: 1000, y: 1778, z: .56 } ], { seed: 2 });
+
+  // ══ por cima de tudo ══
+  DS.paginas([[0, m1], [T.corte, m2]]);
+  DS.scanner(S, { t0: .05, d: .85 });
+  DS.scanner(S, { t0: T.corte + .02, d: .55, gain: -6 });
+  DS.grao(S, { opacity: .16 });
+  DS.vinheta(S, .3);
+  DS.rodape(S, 'CASO FICTÍCIO · NOMES E FATOS INVENTADOS');
+
+  // trilha por seções
+  cue('m:ficha', 0); cue('m:painel', T.corte); cue('m:fim', T.tit); cue('m:stop', VIDEO.dur - .4);
+};
+</script></body></html>

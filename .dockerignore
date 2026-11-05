@@ -1,0 +1,14 @@
+.git
+.github
+.agents
+zip
+node_modules
+site/node_modules
+site/.next
+vukem-feedback.md
+.env
+.env.*
+*.md
+!CHANGELOG.md
+!site/**/*.md
+!site/**/*.mdx

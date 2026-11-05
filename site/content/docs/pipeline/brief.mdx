@@ -1,0 +1,32 @@
+---
+title: Brief
+description: The fields the dashboard collects before it compiles a prompt.
+---
+
+The operator fills a brief. The compiler turns those fields into one prompt. Hand-written prompts are a fallback, not the main path.
+
+## Fields
+
+| Field | Required | Used for |
+| --- | --- | --- |
+| Goal | yes | What the viewer should do or understand |
+| Audience | yes | Vocabulary and examples |
+| Offer or subject | yes | Product, event, lesson, or idea |
+| Duration | yes | Script length and edit rhythm |
+| Aspect ratio | yes | Composition and safe areas |
+| Style skill | yes | Visual system from `.agents/skills/` |
+| Spoken language | yes | Voice and captions |
+| Must-keep facts | no | Claims the script is not allowed to invent |
+| Reference links | no | Pages or clips the research step may cite |
+| Call to action | no | Last card |
+
+## Compiler rules
+
+- The skill file is the visual law. The compiler attaches it. The model does not invent a second palette.
+- Facts in "must-keep" are quoted into the prompt as constraints, not as inspiration.
+- The compiler writes the target file name, frame size, and frames per second into the prompt.
+- The compiler does not ask the model to browse the web unless the research step is enabled for that job.
+
+<Callout type="tip" title="Zero-prompt means a compiled prompt">
+The operator does not stare at a blank system prompt. The form is the interface. The prompt still exists, and the job stores it so a bad render can be explained.
+</Callout>

@@ -1,0 +1,69 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Catálogo das peças de lib/lowpoly.js (teste da API + referência visual). Não é um vídeo final. -->
+<script>VIDEO={w:1080,h:1920,fps:30,dur:4,bpm:100,music:{style:'ambient_major',key:'D',gain:-4}}</script>
+<script src="../../lib/boot.js"></script>
+<style>#stage{background:#0c0f15;overflow:hidden} .layer{position:absolute;inset:0;width:100%;height:100%}</style></head><body>
+<div id="stage"></div>
+<script type="module">
+import * as LP from '../../lib/lowpoly.js';
+const { THREE, PAL, fase } = LP;
+const S = LP.palco({ dof: { abertura: .012, max: 26 } });
+const cena = S.scene;
+
+// base: bloco de terreno quase plano (testa terreno + saia)
+const chao = (x, z) => .05 * LP.fbm(x * .8, z * .8);
+cena.add(LP.terreno({ x: [-3.7, 3.7], z: [-7.8, 7.8], seg: [20, 40], altura: chao, cor: (x, y, z) => (Math.floor(x + 8) + Math.floor(z + 8)) % 2 ? '#3a404a' : '#343a44', base: -.6, corSaia: '#2a2f37' }));
+
+// linha z=-6: árvores, nuvem, torre
+const a1 = LP.arvore({ h: 1.3, seed: 3 }); a1.position.set(-2.3, 0, -6); cena.add(a1);
+const a2 = LP.arvore({ h: 1.3, seed: 8, tipo: 'pinheiro' }); a2.position.set(-1.2, 0, -6.2); cena.add(a2);
+const nv = LP.nuvem({ tam: 1, seed: 2 }); nv.position.set(0, 2.2, -6); cena.add(nv);
+const tw = LP.torre({ h: 2.2 }); tw.position.set(2.2, 0, -6); cena.add(tw);
+// linha z=-3: casa, prédio, carro
+const cs = LP.casa({ w: 1.1, d: 1, h: .7 }); cs.position.set(-2.2, 0, -3); cena.add(cs);
+const pr = LP.predio({ w: 1, d: 1, andares: 6 }); pr.position.set(0, 0, -3); cena.add(pr);
+const cr = LP.carro({ cor: PAL.laranja, comp: 1.3 }); cr.position.set(2.2, 0, -3); cr.rotation.y = .6; cena.add(cr);
+const cid = LP.cidade({ lotes: [{ x: 0, z: -3.0, w: 1, d: 1, andares: 6, y: 0 }], acesa: '#ffcf73', forca: 2 }); cid.visible = true; cena.add(cid); pr.visible = false;
+// linha z=0: engrenagens engrenando, boneco, turbina
+const e1 = LP.engrenagem({ r: .55, dentes: 12, cor: PAL.laranja }); e1.position.set(-2.55, .2, 0); cena.add(e1);
+const e2 = LP.engrenagem({ r: .55, dentes: 12, cor: PAL.branco }); e2.position.set(-2.55 + 1.2, .2, 0); e2.rotation.y = Math.PI / 12; cena.add(e2);
+const bn = LP.boneco({ cor: PAL.branco, h: 1.5 }); bn.position.set(.6, 0, .2); cena.add(bn);
+const tb = LP.turbina({ r: .8 }); tb.position.set(2.4, 0, 0); cena.add(tb);
+// linha z=3: cano com fluxo, pino, gerador explodindo
+const cc = new THREE.CatmullRomCurve3([[-3.2, .25, 2.2], [-2.6, .9, 3], [-1.6, .25, 3.6], [-.9, .6, 2.8]].map(p => new THREE.Vector3(...p)));
+const cn = LP.cano(cc, { raio: .2, cor: PAL.gelo }); cena.add(cn);
+const corteCano = LP.corte([0, -1, 0], .55); corteCano.aplicar(cn);
+const fx = LP.fluxo(cc, { n: 16, forma: 'seta', tam: .14, cor: PAL.aguaClara, forca: 1.3 }); cena.add(fx);
+const pn = LP.pino(PAL.verde, { h: .8 }); pn.position.set(0, 0, 3); cena.add(pn);
+const gr = LP.gerador({ r: .7 }); gr.position.set(2.2, .1, 3); cena.add(gr);
+LP.prepararExplosao(gr.userData.partes.tampa, [0, 1.1, 0]); LP.prepararExplosao(gr.userData.partes.estator, [0, .6, 0]);
+// linha z=6: seta que se desenha, trilha luminosa
+const sc = new THREE.CatmullRomCurve3([[-3, .1, 6.8], [-1.8, .1, 5.4], [-.4, .1, 6.6]].map(p => new THREE.Vector3(...p)));
+const st = LP.seta(sc, { largura: .32, cor: PAL.laranja }); cena.add(st);
+const tc = new THREE.CatmullRomCurve3([[.6, .3, 6.8], [1.2, .9, 5.6], [2.0, .2, 6.2], [2.8, 1.0, 5.4], [3.2, .3, 6.6]].map(p => new THREE.Vector3(...p)));
+const tr = LP.trilha(tc, { raio: .06, cor: PAL.verde, forca: 2.2 }); cena.add(tr);
+const po = LP.poeira({ n: 120, centro: [0, 4, 0], raio: [8, 5, 9] }); cena.add(po);
+
+const cam = LP.roteiroCamera(S, [{ t0: 0, t1: 4, de: { pos: [-2, 15, 15], alvo: [0, .2, .3] }, ate: { pos: [2, 14, 14], alvo: [0, .2, .3] }, arco: true, fov: 42, abertura: .012, sombra: [0, 0, 0, 9] }]);
+S.update = t => {
+  cam(t); po.userData.update(t);
+  e1.rotation.y = t * 1.5; e2.rotation.y = Math.PI / 12 - t * 1.5;
+  tb.rotation.y = -t * 3; gr.userData.partes.rotor.rotation.y = -t * 3;
+  LP.explodir([gr.userData.partes.tampa, gr.userData.partes.estator], fase(t, 1, 1.8, 'back.inOut(1.4)'));
+  fx.userData.update(t, 1); st.userData.progresso(fase(t, .4, 1.6, 'power2.inOut')); tr.userData.progresso(fase(t, .6, 2.4));
+  LP.brotar(pn, fase(t, 1.2, 1.5, 'back.out(2.5)'));
+  const [bE, bD] = bn.userData.bracos, [pE, pD] = bn.userData.pernas, k = Math.sin(t * 6);
+  bE.rotation.x = k * .5; bD.rotation.x = -k * .5; pE.rotation.x = -k * .4; pD.rotation.x = k * .4;
+  cr.userData.rodas.forEach(r => r.rotation.x = t * 4);
+  cid.userData.acender(j => fase(t, 2 + j.k * 1.2, 2.2 + j.k * 1.2));
+};
+LP.cabecalho(S, 'COMO FUNCIONA · CATÁLOGO', [{ t: .1, txt: 'PEÇAS' }, { t: 2.2, txt: 'HUD' }]);
+LP.tituloCapitulo(S, { n: '1', txt: 'peças', t0: .2, t1: 1.6, y: 600 });
+LP.placar(S, { esq: { rot: 'peças', val: '20' }, dir: { rot: 'testadas', de: 0, para: 20 }, conta: [2.2, 3.2], t0: 2.1, top: 430 });
+LP.legenda(S, [{ t0: .3, t1: 3.9, txt: 'Todas as peças da biblioteca num lugar só.' }]);
+LP.rotulo(S, { alvo: e1, titulo: 'Engrenagem', sub: 'LP.engrenagem', t0: 1.0, dx: 40, dy: -120 });
+LP.rotulo(S, { alvo: gr, titulo: 'Gerador', sub: 'explodir()', t0: 1.8, lado: 'esq', dy: -140 });
+LP.carimbo(S, 'OK', { t0: 3.2, y: 1250 });
+LP.cota(S, [3.3, 0, -3], [3.3, 1.9, -3], { t0: 2.5, texto: 'alt.', lado: 50 });
+window.SETUP = () => {};
+</script></body></html>

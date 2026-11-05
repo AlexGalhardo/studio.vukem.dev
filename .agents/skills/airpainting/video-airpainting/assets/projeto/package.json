@@ -1,0 +1,13 @@
+{
+  "name": "airpainting-motion",
+  "private": true,
+  "description": "Animações curtas no estilo airpainting (gradiente pontilhado de risografia, mão de cartoon, selo, infográfico) renderizadas quadro a quadro (GSAP + Playwright + ffmpeg)",
+  "scripts": {
+    "preview": "node render.mjs --preview=12",
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "playwright": "^1.64.0"
+  }
+}

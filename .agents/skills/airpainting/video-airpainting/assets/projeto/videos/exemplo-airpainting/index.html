@@ -1,0 +1,78 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Exemplo "airpainting" (5 s, 9:16): uma pasta grande com gradiente pontilhado de risografia, pastas desfocadas ao fundo,
+     uma mão de cartoon que "pinta no ar" a pasta com dois toques, um selo que troca de texto e, no fim,
+     um infográfico de pastas empilhadas por cor + a marca. Todo o estilo vem de lib/riso.js (RI). -->
+<script>VIDEO={w:1080,h:1920,fps:60,dur:5,bpm:112,music:{style:'launch_bright',key:'D',gain:-4}}</script>
+<script src="../../lib/boot.js"></script>
+<style>
+#tag{position:absolute;left:0;right:0;top:1715px;text-align:center;font:600 42px/1.15 'Inter Tight';color:#2a2440;letter-spacing:-.015em}
+#tag b{color:#4a3df0;font-weight:800}
+</style></head><body>
+<div id="stage">
+ <div id="bgf"></div>
+ <!-- ordem de empilhamento: gráfico, pasta, anéis de toque, mão; o selo e os números (HTML) ficam por cima -->
+ <svg id="main" class="ri-full" viewBox="0 0 1080 1920"><g id="chart"></g><g id="fold"></g><g id="rip"></g><g id="hand"></g></svg>
+ <div id="ui"></div>
+ <div id="tag">pinte no ar. <b>suas pastas se organizam.</b></div>
+</div>
+<script>
+RI.instalar();                                   // papel, filtros (pontilhado e giz), gradientes, estilos
+const $ = s => K.$(s), E = RI.E, q = RI.q;
+
+// ── roteiro ──
+const TAP = [1.15, 1.8];                          // os dois toques do dedo
+const ORD = ['azul', 'rosa', 'ambar'];            // cor inicial e as cores que cada toque pinta
+const DEDO = [720, 1288];                         // ponta do dedo em repouso (tela)
+const STK = [[0, 'organize<br>suas<br>pastas'], [1.15, 'pinte<br>no ar'], [1.8, 'uma cor<br>por<br>tema'], [2.5, 'tudo<br>no<br>lugar'], [3.95, 'airpainting']];
+// pastas desfocadas ao fundo: x, y, escala, desfoque px, velocidade de deriva
+const BG = [[130, 300, .85, 10, 1], [950, 250, .95, 12, .7], [1010, 900, .5, 7, 1.3], [70, 1010, .55, 8, .9], [150, 1500, .8, 10, 1.1], [940, 1560, 1.0, 12, .8], [600, 1850, .7, 14, 1], [640, 90, .45, 8, 1.2]];
+// infográfico: barras feitas de pastas
+const COLS = [{ k: 'rosa', n: 4, x: 250, v: 128, nome: 'fotos' }, { k: 'azul', n: 6, x: 540, v: 214, nome: 'projetos' }, { k: 'ambar', n: 3, x: 830, v: 96, nome: 'ideias' }];
+
+// ── peças ──
+// a origem da tinta é a ponta do dedo em coordenadas da pasta: (720−540, 1288−1200) ≈ (180, 100)
+const pasta = RI.pasta($('#fold'), { cores: ORD, origem: [180, 100] });
+const mao = RI.mao($('#hand'), { pele: 'amarela' });
+const aneis = RI.aneis($('#rip'), TAP.map((t, i) => ({ t, x: DEDO[0], y: DEDO[1], cor: RI.CORES[ORD[i + 1]].deep })));
+const fundo = RI.fundo($('#bgf'), BG, { cores: ORD });
+const selo = RI.selo($('#ui'), STK, { x: 540, y: 400, lado: 200, final: { t: 3.95, w: 560, h: 160 } });
+const pilhas = RI.pilhas($('#chart'), $('#ui'), COLS, { base: 1520, passo: 62, t0: 3.05, tNum: 3.3 });
+
+onTick(t => {
+  // as pastas do fundo seguem a cor da principal (logo depois de cada toque) e somem quando o gráfico entra
+  const cor = t < TAP[0] + .15 ? 'azul' : t < TAP[1] + .15 ? 'rosa' : 'ambar';
+  fundo(t, cor, K.seg(t, 0, .4) * (1 - K.seg(t, 2.85, 3.25)));
+
+  // pasta: entra desfocada (foco de lente), abre, é pintada duas vezes, recebe papéis, fecha, encolhe e sai
+  const pOn = t < 3.3; RI.show($('#fold'), pOn);
+  if (pOn) {
+    const focus = 1 - E('power2.out', t, 0, .4), out = E('back.in(1.6)', t, 2.95, 3.28), aperto = TAP.reduce((a, tp) => a + RI.bump(t, tp + .03, .09), 0);
+    pasta.foco(26 * focus);
+    pasta.pos(540, 1200 + 30 * E('back.out(2)', t, 2.5, 2.8) + Math.sin(q(t) * 4) * 3, (1.06 - .06 * E('power2.out', t, 0, .4)) * (1 - out) * (1 - .015 * aperto), Math.sin(q(t, 8) * 3) * .8);
+    pasta.abrir(E('back.out(2.2)', t, .35, .7) * (1 - E('back.out(2)', t, 2.6, 2.85)));
+    pasta.papeis(K.seg(t, 2.4, 2.75));
+    TAP.forEach((tp, i) => pasta.pintar(i + 1, 1000 * E('power2.out', t, tp + .02, tp + .5)));   // a tinta se espalha da ponta do dedo
+  }
+  aneis(t);
+
+  // mão: sobe, toca duas vezes (levanta antes, afunda no toque), desce
+  const hOn = t > .7 && t < 2.75; mao.show(hOn);
+  if (hOn) { const up = E('back.out(1.4)', t, .72, 1.08) * (1 - E('power3.in', t, 2.3, 2.7));
+    mao.pos(DEDO[0] + Math.sin(t * 3.1) * 6, DEDO[1] + 12 + 820 * (1 - up) + RI.toqueDy(t, TAP), 6 + Math.sin(q(t, 8) * 2) * 1.5); }
+
+  selo(t);
+  pilhas(t);
+  const tg = $('#tag'); tg.style.opacity = RI.f1(K.seg(t, 4.2, 4.45)); tg.style.transform = `translateY(${RI.f1(24 * (1 - E('back.out(2)', t, 4.2, 4.5)))}px)`;
+});
+
+window.SETUP = () => {
+  cue('m:intro', 0); cue('m:main', .05); cue('m:stop', 4.7);
+  cue('whoosh_slow', 0, { gain: -8 }); cue('pop', .15, { f: 520 }); cue('paper', .38, { gain: -4 });   // foco, selo, pasta abrindo
+  cue('whoosh_in', .72, { gain: -6 });                                                                 // mão sobe
+  TAP.forEach((tp, i) => RI.somToque(tp, i));                                                          // clique + bolha + brilho
+  cue('whoosh_out', 2.3, { gain: -6 }); cue('paper', 2.45); cue('paper', 2.55, { gain: -3 }); cue('pop', 2.5, { f: 640, gain: -6 });
+  cue('swoosh', 2.95, { gain: -4 });                                                                   // pasta sai
+  pilhas.sons();                                                                                       // pops das pastas + ticks da contagem
+  cue('chime', 3.95, { gain: -6 }); cue('pop', 3.95, { f: 900, gain: -4 }); cue('ui_blip', 4.2, { gain: -6 });
+};
+</script></body></html>

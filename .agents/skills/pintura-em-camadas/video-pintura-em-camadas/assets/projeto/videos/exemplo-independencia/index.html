@@ -1,0 +1,74 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Pedido: estilo "pintura em camadas" (referência: Escola de Atenas com câmera passeando em profundidade).
+     Tema: "Independência ou Morte!" (Pedro Américo, 1888) — a câmera sai do museu, atravessa a moldura
+     e entra na tela, em camadas, até D. Pedro com a espada erguida. 9:16, 7,5 s, sem narração. -->
+<script>VIDEO={w:1080,h:1920,fps:30,dur:7.5,bpm:70,music:{style:'museu',key:'D',gain:-3}}</script>
+<script>LIBS=['pintura.js']</script>
+<script src="../../lib/boot.js"></script>
+<style>
+  #stage{background:#120605;overflow:hidden}
+  #placa{position:absolute;left:0;top:0;transform-origin:0 0;width:1720px;padding:78px 96px 84px;box-sizing:border-box;
+    background:linear-gradient(#f1e8d4,#e4d8bd);color:#2a1d12;box-shadow:0 30px 60px rgba(0,0,0,.55),0 0 0 3px rgba(80,55,25,.35) inset}
+  #placa .autor{font:600 60px/1 'Inter Tight';letter-spacing:.24em;text-transform:uppercase;color:#6b4a24}
+  #placa .obra{font:italic 600 128px/1.05 'Playfair Display';margin:34px 0 26px;letter-spacing:-.01em}
+  #placa .tec{font:400 58px/1.3 'Inter Tight';color:#4a3826}
+  #titulo{position:absolute;left:0;right:0;bottom:250px;text-align:center;color:#f6ead2;text-shadow:0 4px 30px rgba(10,4,0,.85),0 1px 3px rgba(10,4,0,.9)}
+  #titulo .sobre{font:600 27px/1 'Inter Tight';letter-spacing:.34em;text-transform:uppercase;color:#e9c987}
+  #titulo .nome{font:italic 700 84px/1.02 'Playfair Display';margin:22px 0 20px;letter-spacing:-.012em}
+  #titulo .sob{font:400 31px/1.35 'Playfair Display';color:#efe0c2}
+  #titulo .fio{width:0;height:2px;margin:0 auto;background:linear-gradient(90deg,transparent,#e9c987,transparent)}
+  #credito{position:absolute;left:0;right:0;bottom:46px;text-align:center;font:400 15px/1.3 'Inter Tight';color:rgba(246,234,210,.62);letter-spacing:.02em}
+</style></head><body>
+<div id="stage">
+  <div id="placa">
+    <div class="autor">Pedro Américo</div>
+    <div class="obra">Independência ou Morte!</div>
+    <div class="tec">1888 · óleo sobre tela<br>Museu Paulista da USP</div>
+  </div>
+  <div id="titulo">
+    <div class="sobre">7 de setembro de 1822</div>
+    <div class="nome">Independência<br>ou Morte!</div>
+    <div class="fio"></div>
+    <div class="sob" style="margin-top:20px">às margens do Ipiranga, por Pedro Américo</div>
+  </div>
+  <div id="credito">Pedro Américo, <i>Independência ou Morte!</i> (1888) · domínio público · Wikimedia Commons / Google Art Project</div>
+</div>
+<script>
+const stage = K.$('#stage');
+window.SETUP = async () => {
+  const P = await PC.carregar();
+  const [pw, ph] = P.pintura;
+  const palco = PC.palco(stage, P, { dof: 30 });
+  const sala = PC.sala(palco, P, { borda: 170, brilho: [0, 2.6], brilhoA: .4 });
+  const facho = PC.facho(stage);
+  const S0 = 940 / pw;
+  const poeira = PC.poeira(stage, { n: 60, S0, a: .2, r: 3.2 });
+  PC.acabamento(stage, { vinheta: .42, luz: .3, grao: .06 });
+  stage.appendChild(K.$('#placa')); stage.appendChild(K.$('#titulo')); stage.appendChild(K.$('#credito'));
+
+  // câmera: museu (obra inteira) → atravessa a moldura → dolly em profundidade até D. Pedro → para
+  const T = { para: 6.4, titulo: 6.55 };
+  const cam = PC.camera({
+    S: [[0, S0], [1.0, S0 * 1.32], [2.6, .58], [5.9, .93], [T.para, .95]],     // aproxima rápido no museu, dolly lento dentro da tela
+    A: [[0, pw / 2, 900], [2.6, 1790, 760], [T.para, 1690, 860]],
+    sep: [1.9, T.para], atravessa: [1.9, 3.0], voo: 1.6, dissolve: [2.0, 2.9] });
+
+  const placa = PC.placa(K.$('#placa'), { x: pw / 2 - 860, y: ph + 170 + 150 });    // presa na parede, abaixo da moldura
+  onTick(t => {
+    const c = cam(t);
+    palco.quadro(c);          // camadas da pintura (de trás para a frente, com parallax e desfoque)
+    sala(c, t);               // parede + moldura por cima (voa e some)
+    placa(c);
+    facho.style.opacity = c.sala;
+    poeira(t, c, 1);
+    K.$('.pc-poeira').style.opacity = .45 + .55 * c.sala;
+  });
+
+  // título quando a câmera para em D. Pedro; crédito da obra junto
+  PC.titulo(K.$('#titulo'), T.titulo);
+  TL.fromTo('#credito', { opacity: 0 }, { opacity: 1, duration: .4, immediateRender: true }, T.titulo + .5);
+  // som: passos e ar de museu → sopro na moldura → vento e galope → rufo e tímpano na chegada
+  PC.som({ entra: 1.9, para: T.para, fim: VIDEO.dur });
+  TL.set({}, {}, VIDEO.dur);
+};
+</script></body></html>

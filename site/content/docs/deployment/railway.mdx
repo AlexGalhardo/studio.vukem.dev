@@ -1,0 +1,26 @@
+---
+title: Railway
+description: How the documentation site is deployed, and which hostname it uses.
+---
+
+The documentation site is a container. Railway builds the root `Dockerfile` and serves Next.js.
+
+## Hostname
+
+The site is [studio.vukem.dev](https://studio.vukem.dev).
+
+The DNS record is a CNAME to the Railway target shown in the service domain settings. Railway also issues the certificate after the record matches.
+
+<Callout type="warning" title="Do not reuse another project's hostname">
+The Railway account already has a project named `trading`. This site does not attach `trading.vukem.dev`. That name showed up once in the original brief and points at a different product.
+</Callout>
+
+## Runtime
+
+The image listens on `PORT` (Railway sets it) and binds `0.0.0.0`. The process runs as the `bun` user. The health check path is `/docs/introduction`.
+
+`NEXT_PUBLIC_SITE_URL` is `https://studio.vukem.dev` at build time so canonical links match the public host.
+
+## What this service is not
+
+This service is the documentation site. The dashboard application is a later Vukem service. It can share the Railway project and must not replace this service's start command.

@@ -1,0 +1,6 @@
+{"depende": ["video-broll", "video-pauta-midia", "video-direcao-de-arte"],
+ "programas": [],
+ "python": {"PIL": "pillow"},
+ "whisper": false,
+ "node": null,
+ "chaves": ["PEXELS_API_KEY", "PIXABAY_API_KEY", "VIDEO_OPS_CONTATO"]}

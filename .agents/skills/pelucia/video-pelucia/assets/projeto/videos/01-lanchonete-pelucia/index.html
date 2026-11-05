@@ -1,0 +1,112 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Pedido: estilo "pelúcia" (ref.: "Plush Hammerhead", estudo de material — pelúcia de pelo curto flutuando num estúdio creme, HUD editorial).
+     Demo (5 s, loop): a equipe da lanchonete fictícia "Brasa Burger" como bonecos de pelúcia — o chapeiro Zé vira o hambúrguer na chapa,
+     a atendente Bia passa a bandeja (hambúrguer, batata, guaraná) e o entregador Dudu guarda o pedido na sacola. -->
+<script>VIDEO={w:1080,h:1920,fps:30,dur:5,bpm:96,music:{style:'pelucia',key:'F'}}</script>
+<script src="../../lib/boot.js"></script>
+<style>#stage{background:#e1ddd8;overflow:hidden} .layer{position:absolute;inset:0;width:100%;height:100%}</style></head><body>
+<div id="stage"></div>
+<script type="module">
+import * as PL from '../../lib/pelucia.js';
+const { THREE, PAL, lerp, clamp, onda, chaves } = PL;
+const D = 5; // tudo periódico em D (ou divisores) → loop perfeito
+
+const S = PL.palco({ fov: 22, dof: { abertura: .022, max: 7 }, grao: .016, vinheta: .1 });
+const cena = S.scene;
+const camera = PL.derivaCamera(S, { alvo: [0, .9, 0], dist: 17.6, elev: 24, az: 0, giro: 3, alt: .08, periodo: D, fov: 22 });
+PL.sombraChao(S, { y: -1.6, dir: [.42, 1, .2], tam: 9, centro: [-.4, .1], res: 384, desfoque: 1.1, passes: 3, opac: .5 });
+
+// ════════ a equipe ════════
+const ze = PL.boneco({ pele: PAL.pele[0], cabelo: PAL.cabelo[0], camisa: PAL.porDoSol, avental: PAL.bronze, chapeu: 'bone', corChapeu: PAL.laguna, cracha: 'ZÉ', bigode: '#1a1310', semente: 11 });
+const bia = PL.boneco({ pele: PAL.pele[2], cabelo: PAL.cabelo[0], cabeloTipo: 'coque', camisa: PAL.porDoSol, chapeu: 'viseira', corChapeu: PAL.laguna, cracha: 'BIA', boca: 'aberta', semente: 21 });
+const dudu = PL.boneco({ pele: PAL.pele[4], cabelo: PAL.cabelo[2], camisa: PAL.laguna, chapeu: 'bone', corChapeu: PAL.porDoSol, corMarca: PAL.creme, cracha: 'DUDU', crachaLado: -1, semente: 31 });
+const BASE = { ze: [[-1.08, .62, -.75], .5], bia: [[.0, -.12, .4], .06], dudu: [[1.1, .62, -.6], -.5] };
+for (const [k, B] of Object.entries({ ze, bia, dudu })) { B.raiz.position.set(...BASE[k][0]); B.raiz.rotation.y = BASE[k][1]; cena.add(B.raiz); }
+
+// chapa com duas carnes e espátula na mão do Zé
+const chapa = PL.chapa(); chapa.position.set(-.26, -.1, .58); chapa.rotation.y = -.2; ze.raiz.add(chapa);
+const carneVira = PL.carne({ semente: 41 }); carneVira.position.set(-.13, .028, .02); chapa.add(carneVira);
+const carne2 = PL.carne({ semente: 42 }); carne2.position.set(.15, .028, -.04); chapa.add(carne2);
+const esp = PL.espatula(); esp.rotation.x = 1.15; esp.position.set(0, -.02, .02); ze.maoD.add(esp);
+
+// sacola de entrega na frente do Dudu
+const sac = PL.sacola(); sac.position.set(0, -.12, .5); dudu.raiz.add(sac);
+
+// âncoras (onde a bandeja fica em cada estação)
+const ancZe = new THREE.Object3D(); ancZe.position.set(.5, .02, .34); ze.corpo.add(ancZe);
+const ancBia = new THREE.Object3D(); ancBia.position.set(0, .03, .56); bia.corpo.add(ancBia);
+const ancSac = new THREE.Object3D(); ancSac.position.copy(sac.userData.boca); sac.add(ancSac);
+
+// duas bandejas iguais defasadas em D: a viagem inteira (Zé → Bia → sacola) dura 2D
+const bandejas = [PL.bandeja({ semente: 31 }), PL.bandeja({ semente: 37 })]; bandejas.forEach(b => cena.add(b));
+const W = new THREE.Vector3(), W2 = new THREE.Vector3(), Q = new THREE.Quaternion();
+const pAnc = (a, v) => a.getWorldPosition(v);
+const yaw = B => B.raiz.rotation.y;
+const bez = (A, B, k, off) => { const C = A.clone().lerp(B, .5).add(off); return A.clone().multiplyScalar((1 - k) ** 2).addScaledVector(C, 2 * (1 - k) * k).addScaledVector(B, k * k); };
+const OFF1 = new THREE.Vector3(-.48, -.09, .46), OFF2 = new THREE.Vector3(.25, -.06, .29);  // desvia da cabeça da Bia
+const io = gsap.parseEase('sine.inOut'), bo = gsap.parseEase('back.out(2)'), pin = gsap.parseEase('power2.in');
+function posBandeja(b, j) {
+  let vis = true, s = 1, giro = 0, inc = 0;
+  if (j < 3.4) { pAnc(ancZe, W); giro = yaw(ze) + .3; s = j < .6 ? Math.max(.001, bo(j / .6)) : 1; }
+  else if (j < 4.6) { const k = io((j - 3.4) / 1.2); pAnc(ancZe, W); pAnc(ancBia, W2); W.copy(bez(W, W2, k, OFF1)); W.y += Math.sin(Math.PI * k) * .08; giro = lerp(yaw(ze) + .3, yaw(bia), k); inc = -Math.sin(Math.PI * k) * .12; }
+  else if (j < 6.1) { pAnc(ancBia, W); giro = yaw(bia); }
+  else if (j < 7.4) { const k = io((j - 6.1) / 1.3); pAnc(ancBia, W); pAnc(ancSac, W2); W2.y += .14; W.copy(bez(W, W2, k, OFF2)); W.y += Math.sin(Math.PI * k) * .1; giro = lerp(yaw(bia), yaw(dudu), k); inc = Math.sin(Math.PI * k) * .12; s = lerp(1, .78, k); }
+  else if (j < 8.3) { const k = pin(clamp((j - 7.5) / .8)); pAnc(ancSac, W); W.y += .14 - .58 * k; giro = yaw(dudu); s = .78; }
+  else vis = false;
+  b.visible = vis; b.position.copy(W); b.rotation.set(0, giro, inc); b.scale.setScalar(s);
+}
+
+// ════════ movimento (tudo função de t) ════════
+const H = { e: [-1.0, 0, -.05], d: [-1.0, 0, .05] };                 // Bia segurando a bandeja
+const POSE_BIA = [[0, H], [1.1, H], [1.85, { e: [-1.35, 0, .45], d: [-1.3, 0, .38] }], [2.4, { e: [-1.3, 0, .4], d: [-1.25, 0, .3] }], [2.95, { e: [-.15, 0, .16], d: [-.15, 0, -.16] }],
+  [3.35, { e: [-.2, 0, .2], d: [-.2, 0, -.2] }], [3.95, { e: [-1.25, 0, -.32], d: [-1.3, 0, -.42] }], [4.6, H], [5, H]];
+const poseBia = t => { const a = POSE_BIA.map(([tt, p]) => [tt, [...p.e, ...p.d]]); const v = chaves(t, a, { per: D }); return { e: v.slice(0, 3), d: v.slice(3) }; };
+const braçoZeE = t => chaves(t, [[0, [-1.0, 0, .38]], [3.3, [-1.0, 0, .38]], [3.8, [-1.35, 0, .62]], [4.3, [-.12, 0, .18]], [4.55, [-.12, 0, .18]], [5, [-1.0, 0, .38]]], { per: D });
+const braçoZeD = t => chaves(t, [[0, [-.85, 0, -.1]], [.14, [-.72, 0, -.1]], [.36, [-1.35, 0, -.1]], [.85, [-.85, 0, -.1]], [2.5, [-.85, 0, -.1]]], { per: 2.5 });
+const braçosDudu = t => { const up = chaves(t, [[0, 0], [2.3, 0], [2.6, .25], [3.4, .1], [3.9, 0], [5, 0]], { per: D }); return { e: [-.95 - up, 0, -.12], d: [-.95 - up, 0, .12] }; };
+
+S.update = t => {
+  camera(t);
+  ze.balancar(t, { periodo: 2.5, desloc: 0 }); bia.balancar(t, { periodo: 2.5, desloc: .33 }); dudu.balancar(t, { periodo: 2.5, desloc: .66 });
+  for (const [k, B] of Object.entries({ ze, bia, dudu })) { const [p, r] = BASE[k], d = { ze: 0, bia: .33, dudu: .66 }[k];
+    B.raiz.position.set(p[0] + .04 * onda(t, D, d + .25), p[1] + .07 * onda(t, D, d), p[2]); B.raiz.rotation.y = r + .07 * onda(t, D, d + .1); B.raiz.rotation.z = .035 * onda(t, D, d + .4); }
+  ze.bracos({ e: braçoZeE(t), d: braçoZeD(t) });
+  bia.bracos(poseBia(t));
+  dudu.bracos(braçosDudu(t));
+  // a carne vira duas vezes por ciclo (meia volta a cada 2,5 s)
+  const tf = t % 2.5, k = clamp((tf - .34) / .55), n = Math.floor(t / 2.5);
+  carneVira.position.y = .028 + Math.sin(Math.PI * k) * .3; carneVira.position.x = -.13 + Math.sin(Math.PI * k) * .03;
+  carneVira.rotation.x = Math.PI * (n + gsap.parseEase('power1.inOut')(k));
+  carne2.position.y = .028 + .006 * Math.max(0, onda(t, .5));
+  // sacola dá uma engolida quando o pedido entra
+  const g = chaves(t, [[0, 0], [3.0, 0], [3.25, 1], [3.7, 0], [5, 0]], { per: D, ease: 'sine.out' });
+  sac.scale.set(1 + .06 * g, 1 - .07 * g, 1 + .06 * g);
+  cena.updateMatrixWorld();
+  posBandeja(bandejas[0], (t + D) % (2 * D)); posBandeja(bandejas[1], t % (2 * D));
+};
+
+// ════════ HUD editorial ════════
+const ativa = t => t < 1.1 ? 0 : t < 2.5 ? 1 : t < 3.4 ? 2 : t < 4.7 ? 1 : 0;
+const DICAS = [['CHAPA', 'Vire o hambúrguer quando a borda dourar — de feltro, ele nunca queima.'],
+  ['CAIXA', 'X-burguer, fritas e guaraná na bandeja. Passe adiante com as duas mãos.'],
+  ['ENTREGA', 'Tudo na sacola, sorriso costurado. Próximo pedido!']];
+PL.cabecalhoEditorial(S, { rotulo: 'Estudos de material &nbsp;|&nbsp; Nº 028', titulo: ['Equipe', 'Pelúcia.'],
+  texto: ['Um chapeiro, uma atendente e um entregador,', 'enchidos de fibra e costurados à mão.', 'A bandeja passa de mão em mão.'], selo: 'WebGL · ao vivo' });
+PL.painel(S, { titulo: 'O turno', fig: 'fig. 28', top: 1300, rotuloPelo: 'Pelo',
+  pelos: [{ nome: 'Bronze', cor: PAL.bronze }, { nome: 'Laguna', cor: PAL.laguna }, { nome: 'Pôr do sol', cor: PAL.porDoSol }], pelo: 2,
+  sliders: [{ nome: 'Enchimento', valor: t => (.55 + .02 * onda(t, 2.5)).toFixed(2).replace('.', ','), k: t => .55 + .02 * onda(t, 2.5), min: 'frouxo', max: 'firme' },
+    { nome: 'Pelo', valor: '5 mm', k: .2, min: 'aparado', max: 'felpudo' }, { nome: 'Batida', valor: '47 /min', k: .6, min: 'calma', max: 'corrida' }],
+  acoes: ['Chapa', 'Caixa', 'Entrega', 'Montar', 'Pentear pelo', 'Pausa'], ativa, checks: [['Ciclo', true], ['¼ veloc.', false], ['Malha', false]] });
+PL.rodape(S, { dica: t => DICAS[ativa(t)], dados: [{ r: 'Pedidos', v: t => (t < 3.3 ? 214 : 215) + '' }, { r: 'Tempo', v: '3', u: 'min' }, { r: 'Sorrisos', v: '∞' }],
+  nota: 'Escala ilustrativa: 1 unid. = 10 cm (um chapeiro de 18 cm do boné ao sapato); fibra siliconada numa casca de pelo de 5 mm.' });
+
+// ════════ som ════════
+cue('m:loop', 0);
+cue('pop', .05, { gain: -10 }); cue('chiado', 0, { d: 5 });
+cue('vira', .36); cue('vira', 2.86); cue('pof', .9, { gain: -6 }); cue('pof', 3.4, { gain: -6 });
+cue('fofo', 1.15); cue('fofo', 3.45);
+cue('sacola', 3.05); cue('sino', 3.3);
+cue('clique', 1.1, { gain: -12 }); cue('clique', 2.5, { gain: -12 }); cue('clique', 3.4, { gain: -12 }); cue('clique', 4.7, { gain: -12 });
+
+window.SETUP = () => {};
+</script></body></html>

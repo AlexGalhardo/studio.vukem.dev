@@ -1,0 +1,22 @@
+---
+title: Models
+description: Which model calls exist, and which ones the first milestone refuses.
+---
+
+Studio uses a language model to write. It does not use a video-diffusion model in the first milestone.
+
+## Language model
+
+The compiler sends one prompt and expects a structured plan: script, shots, and composition source that matches the selected skill. Claude and OpenAI models are the first adapters. The provider is a setting, not a fork of the pipeline.
+
+The call stores the model id and the prompt. A later regeneration uses the same skill even if the default model changes.
+
+## What the first milestone does not call
+
+Pixel video models (local Wan, Hunyuan, LTX, CogVideo, or hosted Veo, Kling, Runway, Sora) stay off the default path. They are the right tool for a photographed look, and the wrong default for a product that must render without a GPU and without a per-second video bill.
+
+`docs/web-research.md` records when to add one.
+
+## Grounding
+
+If the brief contains facts, the research step has to fetch a page and keep a quote. The model does not invent a benchmark, a price, or a date. The fact-check skill compares the spoken script with that quote list.

@@ -1,0 +1,41 @@
+[
+ {
+  "file": "floresta_pb.jpg",
+  "title": "File:Aerial view of the Amazon Rainforest.jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "lubasi",
+  "page": "https://commons.wikimedia.org/wiki/File:Aerial_view_of_the_Amazon_Rainforest.jpg",
+  "nota": "P&B sépia gerado com tools/ilustra.py foto"
+ },
+ {
+  "file": "nuvens_pb.jpg",
+  "title": "File:Amazon CIAT (5).jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "Neil Palmer/CIAT",
+  "page": "https://commons.wikimedia.org/wiki/File:Amazon_CIAT_(5).jpg",
+  "nota": "P&B sépia gerado com tools/ilustra.py foto"
+ },
+ {
+  "file": "rio_pb.jpg",
+  "title": "File:Campo12Foto 2.JPG",
+  "license": "CC BY 3.0",
+  "artist": "Jorge.kike.medina",
+  "page": "https://commons.wikimedia.org/wiki/File:Campo12Foto_2.JPG",
+  "nota": "P&B sépia gerado com tools/ilustra.py foto"
+ },
+ {
+  "file": "chuva_pb.jpg",
+  "title": "File:Chuva em São Paulo (28646409061).jpg",
+  "license": "CC BY 2.0",
+  "artist": "Rafael Vianna Croffi from São Paulo, Brazil",
+  "page": "https://commons.wikimedia.org/wiki/File:Chuva_em_S%C3%A3o_Paulo_(28646409061).jpg",
+  "nota": "P&B sépia gerado com tools/ilustra.py foto"
+ },
+ {
+  "file": "(lib/terra.js)",
+  "title": "Natural Earth 110m land + admin 0 countries",
+  "license": "Domínio público",
+  "artist": "Natural Earth",
+  "page": "https://www.naturalearthdata.com/"
+ }
+]

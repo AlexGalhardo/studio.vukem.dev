@@ -1,0 +1,193 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Exemplo do estilo mídia mista: "Do tamanho de uma sala… pra palma da sua mão" (microchips). 9:16, 7,9 s, 30 fps, sem narração.
+     7 cenas: título datilografado · padrão de válvulas + foto do ENIAC + fitas + X de marca-texto · mesa de madeira com objetos reais e
+     mãos de passagem · chuva de adesivos · CPU explodida em 3D sobre faixa amarela · caleidoscópio → foto em cartão com legenda · lousa final.
+     Fotos do Wikimedia Commons (img/creditos.json), recortadas com o Vision (tools/recortar.py), texturas de tools/texturas.py. -->
+<script>VIDEO={w:1080,h:1920,fps:30,dur:7.9,bpm:100,music:{style:'launch',key:'A',gain:-3}}</script>
+<script src="../../lib/boot.js"></script>
+<style>
+#stage{background:#000;overflow:hidden}
+#band{position:absolute;left:300px;top:-60px;width:480px;height:2040px;background:#f1cc1c}
+.par{position:absolute;font:500 25px/1.35 'Inter Tight';color:#7f7e7a;width:360px}
+#sub{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);background:rgba(0,0,0,.62);color:#fff;font:500 38px/1.25 'Inter Tight';padding:8px 18px;white-space:nowrap;letter-spacing:-.005em}
+#board{position:absolute;left:100px;top:640px;width:880px;height:640px;background:#141414 url(img/tecido_escuro.jpg) center/cover;border:18px solid #ebe7dd;box-shadow:16px 26px 34px rgba(0,0,0,.35);transform:rotate(-2deg)}
+#mc{position:absolute;left:0;right:0;top:178px;text-align:center;font:400 86px/1 'Dela Gothic One';color:#ec3a2b;letter-spacing:.01em;-webkit-text-stroke:3px #4a0f08;paint-order:stroke fill;white-space:nowrap}
+#cer{position:absolute;left:0;right:0;top:380px;text-align:center;font:400 60px/1 'Kalam';color:#f4f1ea;white-space:nowrap}
+#cred{position:absolute;left:30px;right:30px;bottom:20px;text-align:center;font:500 15px/1.35 'Inter Tight';color:rgba(40,40,40,.75)}
+</style></head><body>
+<div id="stage"><div id="all">
+
+ <!-- 1 · título datilografado em papel cinza -->
+ <div class="sc" id="s1"><img class="bgimg" src="img/papel_cinza.jpg"><div class="cam" id="c1"><div id="ttl" style="top:800px"></div></div></div>
+
+ <!-- 2 · padrão de válvulas sobre tecido escuro, foto do ENIAC, fitas, X de marca-texto -->
+ <div class="sc" id="s2"><div class="cam" id="c2"><img class="bgimg" src="img/tecido_escuro.jpg"><div id="grid2"></div>
+  <img class="pic" id="eniac" src="img/eniac.jpg" style="left:170px;top:470px;width:740px;border:16px solid #f1eee6;border-bottom-width:64px;box-shadow:14px 22px 26px rgba(0,0,0,.6)">
+  <svg class="ann" filter="url(#mk)"><path id="x1" d="M210 560C430 820 690 1100 900 1420" stroke="#f3e46d" stroke-width="118" opacity=".93"/><path id="x2" d="M890 560C680 830 420 1120 190 1430" stroke="#f3e46d" stroke-width="118" opacity=".93"/></svg>
+  <div class="tape" id="t2a" style="left:250px;top:1180px">ENIAC · 1946</div>
+  <div class="tape" id="t2b" style="left:150px;top:1290px;font-size:46px;padding:10px 30px 14px">18 mil válvulas · 27 toneladas</div>
+  <svg class="ann" filter="url(#mk)"><path id="e2" stroke="#fff" stroke-width="7"/><path id="w2a" stroke="#fff" stroke-width="5"/><path id="w2ah" stroke="#fff" stroke-width="5"/><path id="w2b" stroke="#fff" stroke-width="5"/><path id="w2bh" stroke="#fff" stroke-width="5"/></svg>
+ </div></div>
+
+ <!-- 3 · mesa de madeira vista de cima: objetos reais, mãos de passagem, chip na palma -->
+ <div class="sc" id="s3"><div class="cam" id="c3"><img class="bgimg" src="img/madeira_nogueira.jpg">
+  <img class="pic sh" id="v3" src="img/valvula2_cut.png" style="left:150px;top:120px;height:560px;transform:rotate(72deg)">
+  <img class="pic sh" id="pen3" src="img/caneta_cut.png" style="left:520px;top:200px;width:560px;transform:rotate(-34deg)">
+  <img class="pic sh" id="hl3" src="img/marcatexto_cut.png" style="left:850px;top:560px;height:600px;transform:rotate(14deg)">
+  <img class="pic sh" id="palm" src="img/mao_cut.png" style="left:120px;top:880px;width:840px">
+  <img class="pic sh" id="chip3" src="img/chip_ouro_cut.png" style="left:410px;top:1395px;width:300px">
+  <div class="tape" id="t3" style="left:50px;top:760px">pra palma da sua mão</div>
+  <svg class="ann" filter="url(#mk)"><path id="e3" stroke="#fff" stroke-width="7"/><path id="w3" stroke="#fff" stroke-width="6"/><path id="w3h" stroke="#fff" stroke-width="6"/><path id="r3" stroke="#e53327" stroke-width="16"/></svg>
+  <img class="pic" id="hL" src="img/mao_blur.png" style="left:0;top:0;width:1000px">
+  <img class="pic" id="hR" src="img/mao_blur.png" style="left:0;top:0;width:1000px">
+ </div></div>
+
+ <!-- 4 · chuva de adesivos de chips -->
+ <div class="sc" id="s4"><div id="st4" style="position:absolute;inset:0"></div></div>
+
+ <!-- 5 · CPU explodida em 3D sobre faixa amarela, rótulos à mão -->
+ <div class="sc" id="s5"><img class="bgimg" src="img/papel_cinza.jpg"><div class="cam" id="c5"><div id="band"></div>
+  <div id="shad" style="position:absolute;left:280px;top:1440px;width:520px;height:90px;border-radius:50%;background:rgba(40,30,0,.38);filter:blur(22px)"></div>
+  <div id="iso"></div>
+  <div class="tag" id="tg5" style="left:190px;top:470px"><span id="tg5t"></span></div>
+  <div class="hand" id="si5" style="left:70px;top:1090px">silício</div>
+  <div id="ic5" style="position:absolute;left:840px;top:1240px;width:150px;height:150px;border-radius:50%;background:#151515;display:grid;place-items:center"><svg width="70" height="70" viewBox="0 0 70 70"><path d="M14 46L35 22L56 46" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="par" id="p5" style="left:60px;top:1560px">Cada transistor é uma chave liga‑desliga menor que um vírus. Um chip moderno tem bilhões delas, empilhadas em camadas de cobre e silício.</div>
+  <svg class="ann" filter="url(#mk)"><path id="e5" stroke="#e53327" stroke-width="7"/><path id="l5" d="M285 1125C360 1130 420 1090 480 1040" stroke="#2a2826" stroke-width="4"/></svg>
+ </div></div>
+
+ <!-- 6 · caleidoscópio → foto em cartão com legenda -->
+ <div class="sc" id="s6"><img class="bgimg" src="img/papel_cinza.jpg">
+  <div id="kal"></div>
+  <div id="card" style="position:absolute;overflow:hidden;background:#222"><div id="cin" style="position:absolute;inset:0;background:url(img/sala_limpa.jpg) 52% 50%/cover"></div>
+   <svg class="ann" filter="url(#mk)" style="width:100%;height:100%"><path id="e6" stroke="#fff" stroke-width="7"/></svg>
+   <div class="hand" id="h6" style="color:#fff;font-size:54px;text-shadow:0 2px 6px rgba(0,0,0,.6)">wafer de silício</div>
+   <div id="sub">feito camada por camada, em salas ultralimpas</div></div>
+ </div>
+
+ <!-- 7 · mesa de desenho: lousa com MICROCHIPS, fita amarela -->
+ <div class="sc" id="s7"><div class="cam" id="c7"><img class="bgimg" src="img/mesa_clara.jpg">
+  <div style="position:absolute;left:60px;top:300px;width:720px;height:940px;background:#f6f3ea;box-shadow:8px 14px 20px rgba(0,0,0,.18);transform:rotate(-9deg)"></div>
+  <div style="position:absolute;left:330px;top:980px;width:740px;height:980px;background:#fbfaf6;box-shadow:8px 14px 20px rgba(0,0,0,.18);transform:rotate(7deg)"></div>
+  <img class="pic sh" src="img/wafer_s.png" style="left:760px;top:-90px;width:420px;transform:rotate(18deg)">
+  <!-- lápis e régua desenhados em SVG (adereços simples não precisam de foto) -->
+  <svg class="pic" style="left:-80px;top:120px;overflow:visible" width="900" height="200"><g transform="rotate(-24 450 100)" filter="drop-shadow(8px 12px 8px rgba(0,0,0,.3))">
+   <rect x="70" y="72" width="640" height="56" fill="#3b63c9"/><rect x="70" y="72" width="640" height="18" fill="#5a82e6"/><rect x="70" y="110" width="640" height="18" fill="#2c4fa6"/>
+   <path d="M710 72L800 100L710 128Z" fill="#e8c39a"/><path d="M772 92L800 100L772 108Z" fill="#2a2a2a"/><rect x="20" y="72" width="54" height="56" fill="#c9c9c9"/><rect x="0" y="74" width="24" height="52" rx="8" fill="#f08aa0"/></g></svg>
+  <svg class="pic" style="left:240px;top:1500px;overflow:visible" width="1000" height="200"><g transform="rotate(-28 500 100)" filter="drop-shadow(8px 12px 8px rgba(0,0,0,.28))">
+   <rect x="0" y="40" width="1000" height="120" rx="6" fill="#dcbb7c"/><g id="tk7"></g></g></svg>
+  <img class="pic sh" src="img/marcatexto_cut.png" style="left:40px;top:1250px;height:520px;transform:rotate(-62deg)">
+  <div id="board"><div id="mc"></div><div id="cer"></div></div>
+  <svg class="ann" filter="url(#mk)"><path id="e7" stroke="#ec3a2b" stroke-width="9"/></svg>
+  <div class="tape" id="t7" style="left:200px;top:1220px;font-size:66px">do ENIAC ao seu bolso</div>
+  <div id="cred"></div>
+ </div></div>
+
+</div></div>
+<script>
+const W = VIDEO.w, H = VIDEO.h, { f1, $, $$, seg, E, pop, steps, slap, vis, ink, laco, seta } = M;
+
+// ── tempos das cenas (as janelas se sobrepõem nas transições) ──
+const S = { s1: [0, 1.15], s2: [1.15, 2.48], s3: [2.28, 4.16], s4: [3.66, 4.44], s5: [4.14, 5.84], s6: [5.8, 6.82], s7: [6.62, 7.9] };
+const WAFER = [830, 885];   // onde está o wafer na foto da sala limpa (px da imagem original 1920×1280)
+
+M.marcador(); M.rasgarTudo();
+const titulo = M.datilografia($('#ttl'), 'Do tamanho de uma sala…', { t0: .1, passo: .034, x0: 110, xCursor: 830 });
+const valvulas = M.padrao($('#grid2'), { imgs: ['img/valvula_s.png', 'img/valvula2_s.png'], t0: 1.15, dur: .35 });
+const adesivos = M.adesivos($('#st4'), { imgs: ['img/chip_ouro_s.png', 'img/chip_dip_s.png', 'img/chip_preto_s.png', 'img/cpu_topo_s.png', 'img/wafer_s.png'], centro: 'img/chip_ouro_s.png', t0: 3.66, tSaida: 4.14, fim: 4.4 });
+const cpu = M.explodido($('#iso'), [
+  { src: 'img/cpu_baixo_cut.png', w: 520, h: 626, z0: 0, z1: -150 },
+  { src: 'img/die_q.jpg', w: 290, z0: 10, z1: 30, css: 'box-shadow:0 0 0 4px #1c1c22' },
+  { src: 'img/cpu_topo_cut.png', w: 520, h: 624, z0: 22, z1: 212 }], { x: 540, y: 1010, rx: 56, rz0: -40, rz1: -30 });
+const kal = M.caleidoscopio($('#kal'), 'img/sala_limpa.jpg', '52% 50%');
+
+// marcações (laços e setas feitos à mão)
+$('#e2').setAttribute('d', laco(540, 1290, 470, 175, -3, 3));
+{ const a = seta([[70, 1060], [150, 1120], [190, 1190], [215, 1250]]), b = seta([[1010, 1560], [930, 1520], [890, 1450], [870, 1400]]);
+  $('#w2a').setAttribute('d', a.haste); $('#w2ah').setAttribute('d', a.ponta); $('#w2b').setAttribute('d', b.haste); $('#w2bh').setAttribute('d', b.ponta); }
+$('#e3').setAttribute('d', laco(345, 800, 340, 90, -2, 4)); $('#r3').setAttribute('d', laco(560, 1540, 235, 205, 10, 5));
+{ const s = seta([[600, 880], [690, 1010], [690, 1170], [620, 1330]]); $('#w3').setAttribute('d', s.haste); $('#w3h').setAttribute('d', s.ponta); }
+$('#e5').setAttribute('d', laco(160, 1120, 135, 62, -4, 6)); $('#e7').setAttribute('d', laco(540, 880, 415, 105, -2, 7));
+$('#tk7').innerHTML = Array.from({ length: 49 }, (_, i) => `<rect x="${20 + i * 20}" y="40" width="3" height="${i % 5 ? 22 : 42}" fill="#5a4320"/>`).join('');
+
+onTick(t => {
+  // 1 · TÍTULO: datilografado, câmera segue o cursor, sai num zoom com desfoque
+  if (vis('s1', ...S.s1, t)) { titulo.tick(t); const z = E('expo.in', t, .98, 1.15);
+    $('#c1').style.transform = `scale(${(1 + .07 * seg(t, 0, 1) + 2.6 * z).toFixed(4)}) rotate(${f1(-1 + seg(t, 0, 1.1))}deg)`;
+    $('#c1').style.transformOrigin = `${f1(Math.min(830, titulo.cursorX(t)))}px 900px`; $('#c1').style.filter = M.filtroBlur(16 * z); }
+
+  // 2 · VÁLVULAS + ENIAC + X  (sai num chicote vertical junto com a entrada da cena 3)
+  const cv = M.chicote(t, 2.28, 2.48);
+  if (vis('s2', ...S.s2, t)) { const zin = E('expo.out', t, 1.15, 1.5);
+    $('#c2').style.transform = `translateY(${f1(-H * cv.u)}px) scale(${(1.3 - .3 * zin + .05 * seg(t, 1.5, 2.45)).toFixed(4)}) rotate(${f1(1.5 - 2 * seg(t, 1.15, 2.45))}deg)`; $('#c2').style.filter = M.filtroBlur(cv.blur);
+    valvulas(t);
+    $('#eniac').style.display = t >= 1.24 ? 'block' : 'none'; $('#eniac').style.transform = `rotate(-5deg) scale(${slap(t, 1.24, .35).toFixed(3)})`;
+    [['#t2a', 1.4, -4], ['#t2b', 1.5, 2]].forEach(([s, a, r]) => { $(s).style.display = t >= a ? 'block' : 'none'; $(s).style.transform = `rotate(${r}deg) scale(${slap(t, a, .35).toFixed(3)})`; });
+    ink($('#e2'), E('power1.inOut', t, 1.6, 1.86)); ink($('#w2a'), E('power2.out', t, 1.7, 1.86)); ink($('#w2ah'), seg(t, 1.86, 1.92)); ink($('#w2b'), E('power2.out', t, 1.76, 1.92)); ink($('#w2bh'), seg(t, 1.92, 1.98));
+    ink($('#x1'), E('power2.in', t, 1.92, 2.06)); ink($('#x2'), E('power2.in', t, 2.08, 2.22)); }
+
+  // 3 · MESA DE MADEIRA
+  if (vis('s3', ...S.s3, t)) {
+    $('#c3').style.transform = `translateY(${f1(H * (1 - cv.u))}px) scale(${(1.02 + .06 * seg(t, 2.48, 3.95)).toFixed(4)}) rotate(${f1(-.8 + 1.2 * seg(t, 2.48, 3.95))}deg)`; $('#c3').style.filter = M.filtroBlur(cv.blur);
+    $('#chip3').style.display = t >= 2.76 ? 'block' : 'none'; $('#chip3').style.transform = `rotate(-14deg) scale(${slap(t, 2.76, .4).toFixed(3)})`;
+    $('#t3').style.display = t >= 2.92 ? 'block' : 'none'; $('#t3').style.transform = `rotate(-3deg) scale(${slap(t, 2.92, .35).toFixed(3)})`;
+    ink($('#e3'), E('power1.inOut', t, 3.05, 3.3)); ink($('#w3'), E('power2.out', t, 3.22, 3.42)); ink($('#w3h'), seg(t, 3.42, 3.5)); ink($('#r3'), E('power1.inOut', t, 3.4, 3.68));
+    // mãos de passagem (desfocadas): a esquerda ajeita a caneta, a direita solta o chip
+    const hl = Math.sin(Math.PI * seg(t, 2.42, 2.95)), hr = Math.sin(Math.PI * seg(t, 2.52, 3.08));
+    $('#hL').style.display = hl > .01 ? 'block' : 'none'; $('#hL').style.transform = `translate(${f1(-950 + 640 * hl)}px,${f1(1180 - 120 * hl)}px) rotate(${f1(55 - 12 * hl)}deg) scaleX(-1)`;
+    $('#hR').style.display = hr > .01 ? 'block' : 'none'; $('#hR').style.transform = `translate(${f1(1100 - 640 * hr)}px,${f1(1100 + 60 * hr)}px) rotate(${f1(-58 + 14 * hr)}deg)`;
+    const pe = 1 - E('power2.out', t, 2.5, 2.8); $('#pen3').style.transform = `rotate(${f1(-34 + 8 * pe)}deg) translate(${f1(-60 * pe)}px,0)`; }
+
+  // 4 · ADESIVOS: brotam do centro para fora cobrindo a mesa; depois voam e revelam a cena 5
+  if (vis('s4', ...S.s4, t)) adesivos(t);
+
+  // 5 · CPU EXPLODIDA
+  if (vis('s5', ...S.s5, t)) { const ex = E('back.out(1.7)', t, 4.42, 4.95), bob = Math.sin(t * 2.4) * 10;
+    $('#c5').style.transform = `scale(${(1.06 - .06 * E('expo.out', t, 4.14, 4.6) + .04 * seg(t, 4.6, 5.84)).toFixed(4)})`;
+    cpu(t, ex, seg(t, 4.14, 5.84), bob);
+    $('#shad').style.transform = `scale(${(1 + .18 * ex - bob / 300).toFixed(3)})`; $('#shad').style.opacity = f1(.9 - .3 * ex);
+    $('#tg5').style.display = t >= 4.62 ? 'block' : 'none'; $('#tg5').style.transform = `rotate(-3deg) scaleX(${E('back.out(2)', t, 4.62, 4.8).toFixed(3)})`;
+    M.digitar($('#tg5t'), 'bilhões de transistores', t, 4.72, 5.22);
+    $('#si5').style.clipPath = `inset(0 ${f1(100 - 100 * steps(t, 4.92, .3, 7))}% 0 0)`; ink($('#e5'), E('power1.inOut', t, 5.12, 5.36)); ink($('#l5'), E('power2.out', t, 5.28, 5.44));
+    $('#ic5').style.transform = `scale(${pop(t, 5.05, .35).toFixed(3)})`; $('#p5').style.opacity = f1(seg(t, 5.2, 5.45)); $('#p5').style.transform = `translateY(${f1(14 * (1 - seg(t, 5.2, 5.45)))}px)`; }
+
+  // 6 · CALEIDOSCÓPIO → FOTO EM CARTÃO  (sai num chicote horizontal junto com a entrada da cena 7)
+  const ch = M.chicote(t, 6.62, 6.82);
+  if (vis('s6', ...S.s6, t)) { const kin = 1.22 - .12 * seg(t, 5.8, 6.82); kal(t, 5.8, 6.06, kin); $('#cin').style.transform = `scale(${kin.toFixed(4)})`;
+    const sh = E('back.out(1.4)', t, 6.08, 6.36), mx = 70 * sh, my = 230 * sh, cw = W - 2 * mx, chh = H - 2 * my, card = $('#card');
+    card.style.display = t >= 6.06 ? 'block' : 'none';
+    Object.assign(card.style, { left: f1(mx) + 'px', top: f1(my) + 'px', width: f1(cw) + 'px', height: f1(chh) + 'px', borderRadius: f1(44 * sh) + 'px', boxShadow: `0 ${f1(30 * sh)}px ${f1(50 * sh)}px rgba(0,0,0,${(.35 * sh).toFixed(2)})` });
+    $('#s6').style.transform = `translateX(${f1(-W * ch.u)}px)`; $('#s6').style.filter = M.filtroBlur(ch.blur);
+    // aponta o wafer na mão dela: posição da foto convertida para o cartão (que muda de tamanho e tem zoom interno)
+    const [px, py] = M.mapaCapa(cw, chh, 1920, 1280, .52, .5, kin)(...WAFER);
+    $('#e6').setAttribute('d', laco(px, py, 120, 95, -8, 8)); M.reink($('#e6')); ink($('#e6'), E('power1.inOut', t, 6.32, 6.56));
+    Object.assign($('#h6').style, { left: f1(Math.max(28, px - 110)) + 'px', top: f1(py - 205) + 'px', clipPath: `inset(0 ${f1(100 - 100 * steps(t, 6.42, .26, 8))}% 0 0)` });
+    $('#sub').style.opacity = t >= 6.24 ? 1 : 0; }
+
+  // 7 · LOUSA FINAL
+  if (vis('s7', ...S.s7, t)) { $('#c7').style.transform = `translateX(${f1(W * (1 - ch.u))}px) scale(${(1.03 + .04 * seg(t, 6.82, 7.9)).toFixed(4)})`; $('#c7').style.filter = M.filtroBlur(ch.blur);
+    M.letras($('#mc'), 'MICROCHIPS', Math.round(10 * seg(t, 6.86, 7.16)));
+    ink($('#e7'), E('power1.inOut', t, 7.12, 7.38)); M.digitar($('#cer'), 'o cérebro de tudo', t, 7.3, 7.58);
+    $('#t7').style.display = t >= 7.52 ? 'block' : 'none'; $('#t7').style.transform = `rotate(-4deg) scale(${slap(t, 7.52, .45).toFixed(3)})`; }
+});
+
+window.SETUP = () => {
+  titulo.medir();
+  $('#cred').textContent = 'Fotos: Wikimedia Commons — Jud McCranie, Mister rf, Jacek Halicki (CC BY-SA 4.0) · Peellden (CC BY-SA 3.0) · Free Images (CC BY 2.0) · Stadidas, Jiajitan, Bango Textures, ShyAndroid, Binarysequence, Martijn Boer, U.S. DOE, ENIAC/U.S. Army (CC0 / domínio público)';
+
+  // ── som (cada cue no quadro do movimento) ──
+  cue('m:intro', 0); cue('m:build', 1.15); cue('m:drop', 2.48); cue('m:stop', 7.62);
+  titulo.sons(); cue('whoosh_in', .98, { gain: -4 });
+  cue('hit_soft', 1.15, { gain: -6 }); for (let k = 0; k < 6; k++) cue('pop', 1.17 + k * .05, { f: 300 + k * 60, gain: -12 });
+  cue('paper', 1.24); cue('paper', 1.4, { gain: -2 }); cue('paper', 1.5, { gain: -4 }); cue('marker', 1.6); cue('marker', 1.74, { gain: -6 }); cue('scratch', 1.92, { gain: -2 }); cue('scratch', 2.08, { gain: -2 });
+  cue('swoosh', 2.28); cue('whoosh_slow', 2.45, { gain: -10 }); cue('tom', 2.76, { f: 140, gain: -8 }); cue('click', 2.77, { gain: 2 }); cue('paper', 2.92, { gain: -2 });
+  cue('marker', 3.05); cue('marker', 3.22, { gain: -4 }); cue('marker', 3.4, { gain: 1 });
+  M.somAdesivos(3.66); cue('whoosh_out', 4.12, { gain: -3 });
+  cue('hit_soft', 4.42, { gain: -4 }); cue('riser', 4.3, { d: .4, gain: -8 }); cue('paper', 4.62, { gain: -3 }); for (let k = 0; k < 8; k++) cue('type', 4.72 + k * .064, { gain: -2 });
+  cue('marker', 4.92, { gain: -4 }); cue('pop', 5.05, { f: 700, gain: -4 }); cue('marker', 5.12);
+  cue('glitch', 5.8, { d: .25, gain: -6 }); cue('whoosh_in', 5.8, { gain: -6 }); cue('shutter', 6.06, { gain: -2 }); cue('marker', 6.32, { gain: -3 }); cue('ui_blip', 6.24, { gain: -10 });
+  cue('swoosh', 6.62); cue('paper', 6.82, { gain: -4 }); for (let k = 0; k < 10; k++) cue('key', 6.86 + k * .03, { gain: -6 }); cue('marker', 7.12); for (let k = 0; k < 5; k++) cue('type', 7.3 + k * .06, { gain: -4 });
+  cue('paper', 7.52); cue('impact', 7.52, { gain: -10 });
+};
+M.acabamento({ grao: .16 });
+</script></body></html>

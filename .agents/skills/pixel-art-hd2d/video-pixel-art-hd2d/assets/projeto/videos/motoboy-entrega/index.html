@@ -1,0 +1,165 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Pedido: estilo "pixel art HD-2D" (referência: vila HD-2D tipo Octopath — mundo 3D com texturas de pixel art,
+     sprites 2D em billboard, câmera alta em 3/4, tilt-shift, bloom quente). Demo: motoboy brasileiro fazendo entrega
+     numa rua de bairro no fim de tarde (18h40). 5 s, 9:16, loop curto. -->
+<meta name="formats" content="9x16,16x9">
+<script>VIDEO={w:1080,h:1920,fps:30,dur:5,bpm:96}; if (/fmt=16x9/.test(location.search)) { VIDEO.w = 1920; VIDEO.h = 1080; }</script>
+<script src="../../lib/boot.js"></script>
+<style>#stage{background:#1a1420;overflow:hidden} .layer{position:absolute;inset:0;width:100%;height:100%}</style></head><body>
+<div id="stage"></div>
+<script type="module">
+import * as HD from '../../lib/hd2d.js';
+const { THREE, lerp, clamp, fase, suave } = HD;
+const VERT = VIDEO.h > VIDEO.w;
+
+// ── tempos (s) ──
+const T = { placa: [.35, 3.2], poca: .87, curva: [2.1, 3.6], para: 3.7, buzina: 3.85, cliente: 3.95, acena: 4.5, late: 4.25 };
+
+const S = HD.palco({
+  fov: VERT ? 30 : 24, exposicao: 1.0,
+  ceu: ['#ffd49a', '#f4a96c', '#d98a6e'],
+  hemi: { ceu: '#a9b8e0', chao: '#8a6a54', forca: 1.55 },
+  sol: { cor: '#ffc27a', forca: 2.5, dir: [-.62, .42, .66], suave: 3 },
+  sombraCaixa: [1, -3, 24],
+  tilt: { faixa: 3.2, abertura: .036, max: 26, tela: { centro: .47, faixa: .24, suave: .2, max: 9 } },
+  nevoa: { cima: '#ffd7a0', baixo: '#e3ab7c', ini: 38, fim: 78, max: .55 },
+  bloom: { forca: .55, raio: .7, limiar: 1.5 },
+  grade: { sombra: '#c6d0ee', luz: '#fff0d4', sat: 1.12, contraste: .22, vinheta: .55, grao: .022, sol: { uv: [-.12, 1.02], cor: '#ffb661', forca: .14 } },
+  tintaSprite: '#fff0dc',
+});
+const cena = S.scene;
+
+// ════════ cenário: rua de bairro ════════
+const R = HD.rua({ x0: -40, x1: 40, larg: 6.4, calcLonge: 2.8, calcPerto: 2.8, paralelepipedo: { cor: '#a69886' }, pedra: { claro: '#ddcfb3' } }); cena.add(R);
+const zF = -6.0;                                   // fachadas do lado de lá
+cena.add(HD.chao(-40, 40, 6.0, 22, .16, HD.matTex(HD.tex.grama()), { variacao: .3 }));   // pracinha do lado de cá
+cena.add(HD.chao(-40, 40, -40, zF - 7, .16, HD.matTex(HD.tex.terra()), {}));
+
+const casas = [
+  HD.casa({ x: -22.4, z: zF, larg: 6.5, andares: 2, telhado: 'laje', cor: '#cfa4d6', seed: 11, caixaDagua: { x: .3 },
+    janelas: [{ x: 1.6, y: 1.1, w: 1.1, h: 1.25, grade: true }, { x: 4.9, y: 1.1, w: 1.1, h: 1.25, acesa: true }, { x: 1.6, y: 4.2, w: 1.1, h: 1.25, acesa: true }, { x: 4.9, y: 4.2, w: 1.1, h: 1.25 }] }),
+  HD.casa({ x: -15.9, z: zF, larg: 6.5, andares: 2, telhado: 'platibanda', cor: '#e7a3a0', seed: 3, plat: .8,
+    janelas: [{ x: 1.4, y: 1.1, w: 1.1, h: 1.25, grade: true, acesa: true }, { x: 1.6, y: 4.2, w: 1.1, h: 1.25, acesa: true, veneziana: '#3d7a5a' }, { x: 4.9, y: 4.2, w: 1.1, h: 1.25, veneziana: '#3d7a5a' }],
+    portas: [{ x: 4.6, y: .15, w: 1.0, h: 2.15, tipo: 'ferro', cor: '#f0ede4', acesa: true }], sacada: { x: 3.25, w: 6.0, y: 3.32 } }),
+  HD.casa({ x: -9.4, z: zF, larg: 7, andares: 2, pe: 3.6, telhado: 'platibanda', plat: .7, cor: '#f2dcae', seed: 5, rachaduras: 1,
+    barra: { azulejo: true, h: 1.0 }, loja: { x: 3.5, w: 4.8, h: 2.75 }, brilhoLoja: 1.9,
+    toldo: { x: 3.5, y: 3.08, w: 5.6, prof: 1.45, cores: ['#d8302b', '#f3ece0'] },
+    letreiro: { linhas: [{ texto: 'PADARIA', escala: 2, cor: '#ffe08a' }, { texto: 'PÃO QUENTE', cor: '#fff6e0' }], fundo: '#a8241f', borda: '#f2d27a', brilho: 1.2, x: 3.5, y: 3.95 },
+    janelas: [{ x: 1.4, y: 4.95, w: 1.1, h: 1.3, acesa: true, veneziana: '#a8241f', floreira: true }, { x: 3.5, y: 4.95, w: 1.1, h: 1.3, veneziana: '#a8241f' }, { x: 5.6, y: 4.95, w: 1.1, h: 1.3, acesa: true, veneziana: '#a8241f', cortina: '#3b6fb0' }] }),
+  HD.casa({ x: -2.4, z: zF, larg: 4, andares: 2, telhado: 'laje', cor: '#ece6da', seed: 8, tijoloAndar: true, ferragens: true, caixaDagua: { x: .3 },
+    portao: { x: 2.0, w: 3.0, h: 2.45 }, janelas: [{ x: 2.0, y: 4.3, w: 1.2, h: 1.1, acesa: true, cortina: '#3b6fb0' }] }),
+  HD.casa({ x: 1.6, z: zF, larg: 6.4, andares: 1, telhado: 'colonial', cor: '#9fc7e6', seed: 2, corTelha: '#b9583a',
+    muro: { recuo: 2.0, altura: 1.35, cor: '#f0ead8', portao: { x: 3.2, w: 1.3 } },
+    janelas: [{ x: 1.4, y: 1.1, w: 1.1, h: 1.25, veneziana: '#2f6b52', floreira: true, acesa: true }, { x: 5.0, y: 1.1, w: 1.1, h: 1.25, veneziana: '#2f6b52', floreira: '#ffd23a' }],
+    portas: [{ x: 3.2, y: .15, w: .95, h: 2.15, cor: '#6a3e22' }], numero: '47', numeroX: 2.25 }),
+  HD.casa({ x: 8.0, z: zF, larg: 6.2, andares: 2, telhado: 'colonial', cor: '#a6d6c6', seed: 7, corTelha: '#a94f34',
+    janelas: [{ x: 1.5, y: 1.1, w: 1.1, h: 1.25, grade: true }, { x: 1.5, y: 4.2, w: 1.1, h: 1.25, acesa: true, veneziana: '#8a4a2a' }, { x: 4.7, y: 4.2, w: 1.1, h: 1.25, acesa: true, veneziana: '#8a4a2a', cortina: '#e8d27a' }],
+    portas: [{ x: 4.6, y: .15, w: 1.0, h: 2.15, tipo: 'ferro', cor: '#2b2a33', vidro: '#e8dcb0' }] }),
+  HD.casa({ x: 14.2, z: zF, larg: 6, andares: 1, telhado: 'platibanda', cor: '#efa66a', seed: 9, plat: .9,
+    janelas: [{ x: 1.5, y: 1.1, w: 1.1, h: 1.25, acesa: true, grade: true }, { x: 4.6, y: 1.1, w: 1.1, h: 1.25, grade: true }], portas: [{ x: 3.0, y: .15, w: 1.0, h: 2.15, cor: '#4a6a8a' }] }),
+  HD.casa({ x: 20.2, z: zF, larg: 6.5, andares: 2, telhado: 'laje', cor: '#efd27e', seed: 4, caixaDagua: { x: .6 },
+    janelas: [{ x: 1.6, y: 1.1, w: 1.1, h: 1.25 }, { x: 4.9, y: 1.1, w: 1.1, h: 1.25, acesa: true }, { x: 3.2, y: 4.2, w: 1.4, h: 1.25, acesa: true }] }),
+];
+casas.forEach(c => cena.add(c));
+const casaDestino = casas[4];
+
+// fundo: morro com casinhas + palmeiras imperiais (a "Rua das Palmeiras")
+cena.add(HD.bairroFundo({ x0: -34, x1: 34, z0: -17, fileiras: 3, passo: 7, subida: 2.6, seed: 19 }));
+for (const [x, z, a, s] of [[-12.5, -15.2, 13.5, 1], [-4.2, -15.6, 15, 2], [5.5, -15.0, 14, 3], [12.8, -15.8, 15.5, 4], [-20, -15.4, 13, 5]]) cena.add(HD.palmeira({ x, z, altura: a, seed: s }));
+
+// postes, fios e a pipa enroscada
+const postes = [-21, -9.75, 8.65, 21].map((x, i) => HD.poste({ x, z: -3.52, trafo: i === 1, luz: i === 1 || i === 2, forcaLuz: 10, alcance: 8 }));
+postes.forEach(p => cena.add(p));
+const pW = (i, k, j) => HD.v3(postes[i].userData.fios[k][j]).add(postes[i].position);
+cena.add(HD.emaranhado(postes, { seed: 6, ramais: [
+  [pW(1, 'baixa', 0), [-8.6, 7.6, zF + .05]], [pW(1, 'baixa', 1), [-1.0, 6.2, zF + .05]], [pW(1, 'tv', 0), [-.3, 6.0, zF + .05]], [pW(1, 'baixa', 2), [-14.5, 6.6, zF + .05]],
+  [pW(2, 'baixa', 0), [6.8, 3.4, zF - 2]], [pW(2, 'baixa', 2), [9.4, 6.1, zF + .05]],
+] }));
+
+// mobiliário: banca, orelhão, mesas do boteco, ipê, mangueira, carros
+cena.add(HD.banca({ x: .05, z: -5.0, seed: 4 }));
+cena.add(HD.orelhao({ x: -1.95, z: -3.95, cor: '#ffb52a' }));
+cena.add(HD.mesaBoteco({ x: -8.3, z: -4.7, cor: '#f2c12e' }), HD.mesaBoteco({ x: -3.6, z: -4.65, cor: '#d8302b', garrafa: false }));
+const ipe = HD.arvore({ tipo: 'ipe', x: 11.2, z: -4.6, y: .16, altura: 5.6, raio: 2.5, seed: 8 }); cena.add(ipe);
+cena.add(HD.arvore({ tipo: 'mangueira', x: -15.5, z: 9.4, y: .16, altura: 5.2, raio: 3.2, seed: 3, bolhas: 11 }));
+cena.add(HD.arvore({ cor: '#4f8f3a', x: -13.2, z: -4.5, y: .16, altura: 4.4, raio: 1.8, seed: 12 }));
+cena.add(HD.carro({ x: -9.6, z: 2.3, cor: '#eeeae0' }), HD.carro({ x: 10.2, z: 2.3, cor: '#c23b2e', giro: Math.PI }), HD.carro({ tipo: 'kombi', x: 14.6, z: -2.25, cor: '#3f78b8', cor2: '#efe9dc' }));
+// densidade de detalhes: vasos nas portas, engradados, canteiros floridos no primeiro plano (desfocados)
+for (const [x, z, fl, al] of [[-9.0, -5.75, '#ff6f91', 1], [-2.6, -5.75, '#ffd23a', 1.3], [2.0, -6.2, '#ff8a3a', 1], [7.6, -6.2, '#ffffff', 1.4], [8.3, -5.75, '#ff6f91', 1], [13.6, -5.75, null, 1.5], [14.8, -5.75, '#c86bff', 1], [-15.4, -5.75, '#ffd23a', 1], [-10.2, -5.75, null, 1.4]]) cena.add(HD.vaso({ x, y: .16, z, flor: fl, alto: al }));
+cena.add(HD.engradado({ x: -2.95, y: .16, z: -5.65, pilha: 3, giro: .2 }), HD.engradado({ x: -9.75, y: .16, z: -5.6, pilha: 2, giro: -.15, cor: '#e2362f' }));
+for (const [x, sd] of [[-12, 1], [-5.5, 2], [1.2, 3], [7.8, 4], [14, 5]]) cena.add(HD.canteiro({ x, y: .16, z: 7.4, larg: 3.4, seed: sd }));
+cena.add(HD.caixa(.5, .9, .5, HD.matCor('#2f8a4a'), { pos: [5.0, .61, 5.0] }));                       // lixeira
+const banco = new THREE.Group(); banco.position.set(-2.2, .16, 9.2); banco.add(HD.caixa(2, .08, .45, HD.matTex(HD.tex.madeira('#9a6a3a')), { pos: [0, .45, 0] }), HD.caixa(2, .4, .08, HD.matTex(HD.tex.madeira('#9a6a3a')), { pos: [0, .75, -.2] }), HD.caixa(.1, .45, .4, HD.matCor('#3a3a40'), { pos: [-.8, .22, 0] }), HD.caixa(.1, .45, .4, HD.matCor('#3a3a40'), { pos: [.8, .22, 0] })); cena.add(banco);
+
+// poça (o motoboy passa por ela) + respingos
+HD.poca(S, { x: -2.3, z: .95, rx: 1.15, rz: .62, corA: '#b07a52', corB: '#3a476a', luz: '#ffe9c0', ondas: [{ x: -2.4, z: .95, t0: T.poca, forca: 1 }, { x: -1.7, z: .9, t0: T.poca + .12, forca: .8 }, { x: -2.9, z: 1.1, t0: 2.6, forca: .5 }] });
+HD.respingos(S, [{ t0: T.poca, x: -2.3, z: .95, n: 16, vx: 1.5 }, { t0: T.poca + .08, x: -1.9, z: .9, n: 10, vx: 2 }]);
+
+// ════════ sprites ════════
+const ppl = (o, pos, extra = {}) => HD.sprite(S, HD.folhaPessoa(o), { pos, ...extra });
+const moto = HD.sprite(S, HD.folhaMotoboy(), { pos: [-8.2, 0, .8], inclina: .3, blob: 1.3 });
+const balao = HD.sprite(S, HD.folhaBalao('BI-BI!'), { pos: [0, 0, 0], blob: false, sombraReal: false, inclina: .6, ancora: [.25, 0] });
+const cao = HD.sprite(S, HD.folhaCachorro(), { pos: [6.9, .16, -4.0] });
+const balaoCao = HD.sprite(S, HD.folhaBalao('AU! AU!', { cor: '#2a1d18' }), { pos: [6.95, 1.05, -4.0], blob: false, sombraReal: false, inclina: .6, ancora: [.4, 0] });
+const padeiro = ppl({ pele: HD.PELE.morena, cabelo: { estilo: 'careca' }, camisa: '#f4f1ea', calca: '#e8e4da', sapato: '#2a2222', extra: ['touca', 'bandeja'] }, [-5.7, .16, -5.3]);
+const senhora = ppl({ pele: HD.PELE.clara, cabelo: { cor: '#b8b4ae', estilo: 'coque' }, camisa: '#c95b8a', calca: '#5a4a6a', extra: 'sacola' }, [-4.6, .16, -4.4]);
+const gari = ppl({ pele: HD.PELE.negra, cabelo: { estilo: 'curto' }, camisa: '#f07a1e', calca: '#f07a1e', sapato: '#2a2222', extra: 'colete', corBone: '#f07a1e' }, [2.5, .16, -4.1]);
+const jornaleiro = ppl({ pele: HD.PELE.parda, cabelo: { estilo: 'curto', cor: '#3a2a20' }, camisa: '#3b8a5a', calca: '#3a3a48', extra: 'bone', corBone: '#2f5fae' }, [1.35, .16, -4.0]);
+const cliente = ppl({ pele: HD.PELE.media, cabelo: { estilo: 'crespo', cor: '#2a1a14' }, camisa: '#f2c12e', calca: '#2f6fb0' }, [4.8, .16, -7.6]);
+const passante = ppl({ pele: HD.PELE.parda, cabelo: { estilo: 'longo', cor: '#3a2418' }, camisa: '#3bb2a0', calca: '#2f3a5a', extra: 'sacola' }, [3.5, .16, 4.6]);
+const pipa = HD.sprite(S, HD.folhaSprite(14, 26, 1, P => { P.poli([[7, 0], [13, 7], [7, 14], [1, 7]], '#e2362f'); P.poli([[7, 0], [13, 7], [7, 7]], '#ffd23a'); P.poli([[1, 7], [7, 7], [7, 14]], '#2f7fd8'); P.linha(7, 0, 7, 14, '#5a3a2a'); P.linha(1, 7, 13, 7, '#5a3a2a'); for (let y = 15; y < 26; y += 2) P.px(7 + ((y >> 1) % 2 ? 1 : -1), y, y % 4 ? '#ffffff' : '#e2362f'); }), { pos: [1.2, 6.2, -3.52], blob: false, inclina: .5, ppu: 16 });
+
+// ════════ luz, partículas, raios ════════
+HD.poeira(S, { caixa: [-12, 14, .4, 5.5, -7, 5], n: 280, forca: 3.2 });
+HD.petalas(S, { centro: [11.2, 5.4, -4.6], raio: 2.6, n: 70, vento: 1.4 });
+HD.vagalumes(S, { caixa: [2.2, 7.6, .5, 1.8, -7.7, -6.3], n: 9 });
+HD.raios(S, { pontos: [[-14, 15, -2], [-8.5, 15, -4], [-3, 15, -1], [3, 15, -5], [-11, 15, -7], [6, 15, -2]], dir: [.5, -.78, .25], comp: [17, 15, 18, 14], larg: [3.4, 1.8, 3.8, 2.2], cor: "#ffc98a", forca: .22 });
+const luzLoja = new THREE.PointLight('#ffb35c', 12, 6, 1.6); luzLoja.position.set(-5.9, 1.8, -5.2); cena.add(luzLoja);
+const farol = new THREE.PointLight('#fff1c0', 0, 4, 1.8); cena.add(farol);
+const escape = (t) => { const x = motoX(t), z = motoZ(t); return [x - 1.2, .66, z + .05]; };
+HD.fumaca(S, escape, { intervalo: .07, vida: .7, deriva: [-.7, .45, -.08], tam: .28, alfa: .3, cor: '#d6cfc4', forca: n => n < 0 ? 0 : n < T.para ? 1 : .55 });
+
+// ════════ movimento ════════
+const X0 = -8.2, X1 = 3.95;
+function motoK(t) { return fase(t, 0, T.para, 'power2.out'); }
+function motoX(t) { return lerp(X0, X1, motoK(t)); }
+function motoZ(t) { return lerp(.8, -2.0, fase(t, T.curva[0], T.curva[1], 'sine.inOut')); }
+const roda = .183;                                         // m por quadro de roda (3 raios, 4 quadros)
+const cam = HD.travelling(S, { de: [-4.2, 2.3, -4.0], ate: [4.0, 2.3, -4.2], dist: VERT ? [42, 40.5] : [36, 35], pitch: 31, yaw: 8, fov: VERT ? 28 : 22, ease: 'none', focoExtra: -2 });
+
+S.update = t => {
+  cam(t);
+  const x = motoX(t), z = motoZ(t), andando = t < T.para - .02;
+  moto.g.position.set(x, 0, z);
+  moto.quadro(andando ? Math.floor((x - X0) / roda) % 4 : 4 + (Math.floor(t * 14) % 2));
+  farol.position.set(x + 1.6, .9, z + .2); farol.intensity = 3;
+  // buzina: balão pula em degraus (pixel), treme de leve
+  const kb = t < T.buzina ? 0 : t < T.buzina + .05 ? .55 : t < T.buzina + .1 ? 1.18 : 1;
+  balao.visivel(kb > 0); balao.g.position.set(x - .35 + (t > T.buzina && t < T.buzina + .4 ? Math.sin(t * 90) * .03 : 0), 2.25, z); balao.g.scale.setScalar(Math.max(.001, kb));
+  // cachorro: abana o rabo; late depois da buzina
+  const late = t > T.late; cao.quadro(late ? 2 + (Math.floor(t * 8) % 2) : Math.floor(t * 9) % 2);
+  const kc = t < T.late ? 0 : t < T.late + .05 ? .6 : t < T.late + .1 ? 1.15 : 1; balaoCao.visivel(kc > 0); balaoCao.g.scale.setScalar(Math.max(.001, kc));
+  // gente trabalhando
+  padeiro.quadro(12 + (Math.floor(t * 3) % 2));
+  gari.quadro(8 + (Math.floor(t * 7) % 4));
+  jornaleiro.quadro(12 + (Math.floor(t * 2.5 + .5) % 2));
+  senhora.g.position.x = -4.6 - t * .62; senhora.quadro(2 + (Math.floor(t * 6) % 4)); senhora.flip = false;
+  passante.g.position.x = 3.6 - t * .7; passante.quadro(2 + (Math.floor(t * 6.5 + 1) % 4));
+  // cliente: sai de casa e acena no portão
+  const kcl = fase(t, T.cliente, T.acena, 'sine.out'); cliente.visivel(t > T.cliente - .01); cliente.g.position.z = lerp(-7.6, -5.45, kcl); cliente.g.position.x = lerp(4.8, 5.55, fase(t, T.cliente + .3, T.acena, 'sine.inOut'));
+  if (casaDestino.userData.portao) casaDestino.userData.portao.position.x = 3.2 + 1.25 * fase(t, T.cliente - .25, T.cliente + .3, 'power2.inOut');
+  cliente.quadro(t < T.acena ? 2 + (Math.floor(t * 7) % 4) : 6 + (Math.floor(t * 6) % 2));
+  // pipa balança no fio
+  pipa.g.position.x = 1.2 + Math.sin(t * 2.1) * .05; pipa.plano.rotation.z = Math.sin(t * 1.7) * .08;
+  luzLoja.intensity = 12 + Math.sin(t * 9) * .5;
+};
+
+// ════════ HUD: placa do local ════════
+HD.placaLocal(S, 'RUA DAS PALMEIRAS', { sub: '18h40', t0: T.placa[0], t1: T.placa[1], y: VERT ? VIDEO.h * .145 : VIDEO.h * .14, escala: VERT ? 6 : 4 });
+
+// ════════ som ════════
+cue('amb:rua', 0, { d: 5 }); cue('motor', 0, { d: 5, para: T.para }); cue('respingo', T.poca, { gain: -4 });
+cue('placa', T.placa[0] + .05, { gain: -8 }); cue('buzina', T.buzina); cue('latido', T.late); cue('latido', T.late + .28, { gain: -2 });
+
+window.SETUP = () => {};
+</script></body></html>

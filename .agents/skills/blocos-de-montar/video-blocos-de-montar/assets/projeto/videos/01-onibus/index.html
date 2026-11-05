@@ -1,0 +1,167 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Demo do estilo "peças de montar — montando e desmontando": um ônibus rodoviário clássico (fictício), ~3.000 peças numa grade 1,4× mais fina que a placa, que se monta em 2,5 s a partir
+     dos montes na placa-base (chassi → rodas → mecânica/bancos → carroceria amarela → faixa preta de janelas →
+     vidros → teto com antena → letreiro que COLA), fica pronto por 1,2 s (suspensão balança, faróis acendem,
+     buzina, Seu Zé acena) e se desmonta de cima para baixo de volta aos montes até 4,8 s — o último quadro é
+     igual ao primeiro (loop perfeito).
+     Nenhuma peça tem pino no topo e o veículo não copia modelo de montadora nenhuma. -->
+<meta name="formats" content="9x16,16x9">
+<script>VIDEO={w:1080,h:1920,fps:30,dur:5,bpm:120}</script>
+<script>if (/fmt=16x9/.test(location.search)) Object.assign(VIDEO, { w: 1920, h: 1080 });</script>
+<script src="../../lib/boot.js"></script>
+<style>#stage{background:#dde7ee;overflow:hidden}</style></head><body>
+<div id="stage"></div>
+<script type="module">
+import * as B from '../../lib/blocos.js';
+const { THREE, COR, H_TIJOLO, peca, janela, fase } = B;
+const DUR = VIDEO.dur, LARGO = VIDEO.w > VIDEO.h;
+
+window.SETUP = async () => {
+  const S = B.palco({ fov: LARGO ? 30 : 46, sol: { dir: [-.5, 1, .62], forca: 2.5 }, hemi: .75, ambiente: .5, raioSombra: 64 });
+  B.cidade(S, { rua: { z: 60, largura: 24 }, seed: 8, nevoa: [150, 640], predios: { z0: 96, n: 90 }, ruas: [{ z: -66, largura: 22 }] });
+  const K = 1.4, s = 1 / K, hC = H_TIJOLO * s;
+  B.placaBase(S, { w: 168, d: 124, z: -6, escala: s });
+
+  // ════════ o ônibus em voxels (88 × 21 camadas × 22; frente em +x; lado do letreiro em +z) ════════
+  // comprido e reto, como rodoviário dos anos 80: frente chata com para-brisa inteiriço, faixa escura de
+  // janelas correndo o lado todo, teto claro. A forma é descrita em unidades do MUNDO e amostrada no voxel.
+  const X = 88, Y = 21, Z = 22, ox = -(X - 1) / 2 * s, oz = -(Z - 1) / 2 * s;
+  const W = (x, y, z) => [ox + x * s, (y + .5) * hC, oz + z * s];
+  const BASE = 3, TOPO = Y * hC;
+  const XF = 30.5, ZL = 7.86, RODAS = [-19.5, 21.5], RR = 3.1, RARCO = 3.8;
+  const JAN0 = 12, JAN1 = 16;                                   // faixa de janelas, em camadas
+  const CINTA = JAN0 * hC;                                      // onde o amarelo encontra a faixa escura
+  const caixa = (u, v, a0, a1, b0, b1, rA, rB) => {
+    const r = v > (b0 + b1) / 2 ? rA : rB, cu = Math.min(Math.max(u, a0 + r), a1 - r), cv = Math.min(Math.max(v, b0 + r), b1 - r);
+    return u >= a0 && u <= a1 && v >= b0 && v <= b1 && (u - cu) ** 2 + (v - cv) ** 2 <= r * r;
+  };
+  const solido = (x, y, z) => {
+    if (y < BASE || y >= Y || x < 1 || x > X - 2 || z < 0 || z >= Z) return false;
+    const [xw, yw, zw] = W(x, y, z), meia = ZL - Math.max(0, yw - 15) * .1;        // lados recolhem só no alto
+    if (!caixa(xw, zw, -XF, XF, -ZL, ZL, 2.6, 2.6)) return false;                  // planta quase retangular
+    if (!caixa(xw, yw, -XF, XF, BASE * hC, TOPO, 1.9, 1.1)) return false;          // perfil: frente CHATA e alta
+    if (!caixa(zw, yw, -meia, meia, BASE * hC, TOPO, 2.2, .8)) return false;       // de frente: teto levemente abaulado
+    if (Math.abs(zw) > 4.4 && RODAS.some(r => (xw - r) ** 2 + (yw - RR) ** 2 < RARCO ** 2)) return false;
+    return true;
+  };
+  const casca = (x, y, z) => solido(x, y, z) && [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].some(([a, b, c]) => !solido(x + a, y + b, z + c));
+  // colunas entre as janelas: a faixa escura é contínua, mas com montantes a cada ~7 unidades
+  const MONTANTE = xw => { const p = (xw + 26.5) % 7.1; return p < 1.15; };
+  const forma = (x, y, z) => {
+    const [xw, yw, zw] = W(x, y, z);
+    if (y === BASE && (x === 0 || x === X - 1) && Math.abs(zw) < 7.4) return 'prata';                     // para-choques
+    if (y === 2 && Math.abs(xw) < 28 && (Math.abs(Math.abs(zw) - 3.4) < .5 || (RODAS.some(r => Math.abs(xw - r) < .5) && Math.abs(zw) < 5))) return 'grafite';
+    if (casca(x, y, z)) {
+      const fr = !solido(x + 1, y, z), tr = !solido(x - 1, y, z), lado = !solido(x, y, z + 1) || !solido(x, y, z - 1);
+      const naFaixa = y >= JAN0 && y <= JAN1;
+      if (naFaixa) {
+        if (fr && xw > 26 && Math.abs(zw) < 6.3) return 'vidro';                                          // para-brisa INTEIRIÇO
+        if (tr && xw < -26 && Math.abs(zw) < 5.4) return 'vidro';                                         // vigia traseiro
+        if (lado && !fr && !tr) return MONTANTE(xw) ? 'preto' : 'vidro';                                  // faixa escura corrida
+      }
+      if (y === JAN1 + 1 && (lado || fr || tr)) return 'preto';                                           // friso preto no alto da faixa
+      if (y === JAN0 - 1 && (lado || fr || tr)) return 'preto';                                           // friso preto embaixo da faixa
+      if (tr && xw < -28 && y === 7 && Math.abs(zw) > 5) return 'vermelho';                               // lanternas
+      if (y === BASE && !lado && !fr && !tr) return 'grafite';                                            // assoalho
+      if (yw > JAN1 * hC + hC) return 'amarelo';                                                          // teto amarelo, como a carroceria
+      return 'amarelo';                                                                                   // carroceria
+    }
+    if (!solido(x, y, z)) return null;
+    // interior: poltronas em fila, painel, volante, motor atrás
+    if ((y === 5 || y === 6) && Math.abs(zw) > 2.2 && Math.abs(zw) < 6.4 && xw > -24 && xw < 24 && ((xw + 24) % 4.3) < 2.2) return 'bege';
+    if (y >= 7 && y <= 9 && Math.abs(zw) > 2.6 && Math.abs(zw) < 6.2 && xw > -24 && xw < 24 && ((xw + 24) % 4.3) < .9) return 'bege';
+    if (y === 10 && xw > 27.4) return 'painel';
+    if (y === 11 && xw > 26.4 && xw < 27.3 && zw > -5.4 && zw < -3.6) return 'preto';
+    if (y >= 4 && y <= 6 && xw < -25 && Math.abs(zw) < 4.2) return y === 6 ? 'preto' : 'cinza';
+    return null;
+  };
+  const CORES = { prata: { cor: COR.prata, fam: 'metal' }, vidro: { cor: COR.vidro, fam: 'vidro' }, painel: COR.grafite };
+  const grupo = (x, y, z, k) => k === 'grafite' ? 'chassi' : ['bege', 'painel', 'preto', 'cinza'].includes(k) ? 'mecanica'
+    : k === 'vidro' ? 'vidros' : k === 'branco' ? 'teto' : k === 'preto' ? 'faixa' : 'carroceria';
+  const pecas = B.modelo({ dim: [X, Y, Z], forma, cores: CORES, origem: [ox, 0, oz], grupo, rig: 'carroceria', max: 2, escala: s });
+  const faceX = (yw, zw) => { const y = Math.floor(yw / hC), z = Math.round((zw - oz) / s); let x = X - 2; while (x > 0 && !solido(x, y, z)) x--; return ox + x * s + s / 2; };
+
+  B.rig(S, 'onibus', { pos: [0, 0, 0] });
+  const T0 = 2.5, T1 = 3.7;
+  B.rig(S, 'carroceria', { pai: 'onibus', pivo: [0, RR, 0], fn: t => {
+    const q = t - T0, mola = q > 0 && q < 1 ? Math.exp(-q * 4.2) * Math.sin(q * 15) : 0;
+    const motor = janela(t, T0 + .15, T0 + .2, T1 - .2, T1 - .12) * Math.sin(t * 2 * Math.PI * 21) * .03;
+    const tremor = janela(t, T1 - .14, T1 - .06, T1, T1 + .02) * Math.sin(t * 2 * Math.PI * 17) * .07;
+    return { pos: [0, -.32 * mola + motor + tremor, 0], rot: [tremor * .04, 0, .010 * mola] };
+  } });
+  for (const xr of RODAS) for (const [zc, lado] of [[6.3, 1], [-6.3, -1]]) pecas.push(...B.roda([xr, RR, zc], lado, { rig: 'onibus', raio: RR, aro: 1.85 }));
+  const rz = [0, 0, -Math.PI / 2], yF = 6.6;
+  for (const zc of [-5.6, 5.6]) {
+    pecas.push(peca({ tipo: 'botao-3x3', cor: COR.luz, fam: 'luz', pos: [faceX(yF, zc), yF, zc], rot: rz, grupo: 'carroceria', rig: 'carroceria', chave: 'luz', esc: s }));
+    pecas.push(peca({ tipo: 'botao-1x1', cor: COR.laranja, pos: [faceX(9.2, zc * 1.04), 9.2, zc * 1.04], rot: rz, grupo: 'carroceria', rig: 'carroceria', chave: 'laranja', esc: s }));
+  }
+  // teto: antena parabólica e duas escotilhas — nada de carga de obra
+  const yT = TOPO, rk = (tipo, cor, x, y, z, rotY = 0, k) => pecas.push(peca({ tipo, cor, pos: [x, y, z], rotY, grupo: 'teto', rig: 'carroceria', chave: k, esc: s }));
+  const hP = .4 * s;
+  for (const x of [-6, 9]) rk('placa-5x5', '#e9ecef', x, yT - .1, 0, 0, 'cinza');                 // escotilhas
+  rk('redondo-1x1', COR.grafite, 20, yT - .1, -2.2, 0, 'grafite');                                  // haste
+  rk('redondo-1x1', COR.grafite, 20, yT - .1 + hC, -2.2, 0, 'grafite');
+  pecas.push(peca({ tipo: 'botao-5x5', cor: '#e9ecef', pos: [20, yT - .1 + 2 * hC + hP, -2.2], rot: [.5, 0, .25], grupo: 'teto', rig: 'carroceria', chave: 'cinza', esc: s }));
+
+  const prog = B.programar(pecas, { seed: 4, voo: [.55, .72], vooVolta: [.38, .5], desmonta: [T1, 4.3], grupos: {
+    chassi: [.0, .2], rodas: [.14, .28], mecanica: [.22, .52], carroceria: [.36, 1.06], faixa: [.96, 1.4], vidros: [1.3, 1.58], teto: [1.5, 1.76] } });
+  const extras = B.montes(pecas, [
+    { x: 30, z: 24, chaves: ['amarelo'] },
+    { x: -16, z: -34, chaves: ['amarelo'] },
+    { x: 20, z: 33, chaves: ['vidro', 'luz', 'laranja'] },
+    { x: -44, z: -30, chaves: ['vidro'] },
+    { x: -30, z: -25, chaves: ['preto', 'aro'] },
+    { x: 8, z: -36, chaves: ['cinza', 'aro'] },
+    { x: -28, z: -44, chaves: ['grafite', 'cinza', 'prata'] },
+    { x: -41, z: -12, resto: true },
+    { x: -9, z: -48, chaves: ['pneu'], pilha: true, passo: 2.02 },
+  ], { seed: 9, sobra: .08, voo: [.55, .72], vooVolta: [.38, .5] });
+  const todas = [...pecas, ...extras];
+
+  const ze = B.boneco(S, { nome: 'ze', pos: [40, 0, 17], rotY: .5, pele: COR.pele[1], fn: t => ({ pos: [0, .06 * Math.sin(t * 2 * Math.PI / 1.25), 0] }) });
+  S.rig['ze.cabeca'].fn = t => ({ rot: [.06 * Math.sin(t * 2 * Math.PI / 2.5), .28 * Math.sin(t * 2 * Math.PI / 5 - .6), 0] });
+  S.rig['ze.bracoD'].fn = t => { const up = janela(t, T0 - .02, T0 + .18, T1 - .22, T1 - .02); return { rot: [0, 0, up * (2.55 + .35 * Math.sin((t - T0) * 2 * Math.PI * 2.4)) + .05 * Math.sin(t * 2 * Math.PI / 1.25)] }; };
+  S.rig['ze.bracoE'].fn = t => { const up = janela(t, T0 + .04, T0 + .24, T1 - .28, T1 - .08); return { rot: [-.25 * janela(t, T1 + .02, T1 + .2, 4.6, 4.85), 0, -up * 2.3 - .05 * Math.sin(t * 2 * Math.PI / 1.25)] }; };
+  todas.push(...ze);
+
+  B.instanciar(S, todas, { centro: [0, 8, 0], seed: 3, arco: .7 });
+  const total = prog.total, conta = B.contar(pecas);
+
+  // letreiro impresso no lado (+z), abaixo da faixa de janelas: COLA no lugar com um flash
+  // a tela do adesivo é larga e BAIXA (lado de ônibus): duas linhas, não três, senão o texto
+  // não cabe na altura e sai espremido
+  const ad = B.adesivo(27, 5.2, (g, Wc, Hc) => {
+    g.save(); g.translate(Wc * .5, 0); g.transform(1, 0, -.09, 1, 0, 0);
+    g.textAlign = 'center'; g.lineJoin = 'round'; g.strokeStyle = '#1c1d20';
+    // maxWidth encolhe o texto para caber na tela: sem isso a frase passa de 1024 px e sai cortada nas pontas
+    const MW = Wc * .88;
+    g.font = '900 108px Geist'; g.lineWidth = 21; g.strokeText('O FUTURO É GLORIOSO', 0, 114, MW); g.fillStyle = '#ffffff'; g.fillText('O FUTURO É GLORIOSO', 0, 114, MW);
+    g.font = '900 54px Geist'; g.lineWidth = 13; g.strokeText('T O U R', 0, 172, MW * .5); g.fillStyle = '#ffffff'; g.fillText('T O U R', 0, 172, MW * .5);
+    g.restore();
+  }, { res: 1024 });
+  const tCola = 2.3;
+  B.colar(S, ad, { rig: 'carroceria', pos: [-1, 7.4, ZL + .04], entra: tCola, dur: .16, sai: T1 - .02 });
+  console.log('peças no modelo:', total, '· extras nos montes:', extras.length, '· boneco:', ze.length, '· fim da montagem:', prog.fimMontagem.toFixed(2), '· fim da volta:', prog.fimDesmontagem.toFixed(2));
+
+  const luz = t => (t > T0 + .08 && t < T0 + .13 ? 1 : 0) + (t >= T0 + .18 ? 1 : 0) * (1 - fase(t, T1 - .08, T1 - .03));
+  const brilhos = [-5.6, 5.6].map(zc => { const b = B.brilho('#fff0c0', 7); b.userData.p = new THREE.Vector3(faceX(yF, zc) + .6, yF, zc); S.scene.add(b); return b; });
+
+  const PERTO = (T0 + T1) / 2;
+  const cam = B.orbita(S, LARGO ? { alvo: [4, 7, 9], raio: [176, 138], azim: [48, 12, -2.33], elev: [28, -4], fov: 30, perto: PERTO }
+                                : { alvo: [3, 8.5, 1], raio: [182, 126], azim: [48, 12, -2.33], elev: [25, -4], fov: 44, perto: PERTO });
+  B.sons(S, pecas, B.projetor(S, cam));
+  for (const [g, [a]] of Object.entries({ chassi: [0], carroceria: [.36], faixa: [.96], vidros: [1.3] })) cue('whoosh', a, { dur: .45, g: .35 });
+  cue('clique', tCola + .1, { tam: 10, mat: 'abs', pan: .1, g: 1.6 });
+  cue('farol', T0 + .08); cue('farol', T0 + .18); cue('motor', T0 + .15, { dur: 1.0 }); cue('buzina', T0 + .35); cue('whoosh', T1 - .04);
+
+  S.update = t => {
+    cam(t);
+    const l = luz(t); S.mats.luz.emissiveIntensity = 2.2 * l;
+    for (const b of brilhos) { b.position.copy(b.userData.p).applyMatrix4(S.rig.carroceria.world); b.material.opacity = .85 * l; }
+  };
+
+  B.rotulo(S, { x: LARGO ? 56 : 48, y: LARGO ? 48 : 260, linha: 'O Futuro é Glorioso Tour · ônibus', total, contador: conta, cor: COR.amarelo,
+    estado: t => t < prog.fimMontagem || t >= prog.fimDesmontagem ? ['montando', '#2f7fd0'] : t < T1 ? ['pronto', '#2f9a4b'] : ['desmontando', '#e07a1f'] });
+};
+</script>
+</body></html>

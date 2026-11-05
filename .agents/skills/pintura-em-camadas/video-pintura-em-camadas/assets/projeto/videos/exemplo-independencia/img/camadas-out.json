@@ -1,0 +1,89 @@
+{
+ "pintura": [
+  3824,
+  2038
+ ],
+ "extensao": {
+  "cima": 1400,
+  "baixo": 600,
+  "lados": 160
+ },
+ "camadas": [
+  {
+   "nome": "ceu",
+   "K": 0.8,
+   "arquivo": "ceu.jpg",
+   "x": -160,
+   "y": -1400,
+   "w": 4144,
+   "h": 4038
+  },
+  {
+   "nome": "terra",
+   "K": 0.93,
+   "escala_pts": 2.4,
+   "suave": 3,
+   "arquivo": "terra.webp",
+   "x": 0,
+   "y": 570,
+   "w": 3824,
+   "h": 1468
+  },
+  {
+   "nome": "comitiva",
+   "K": 1.0,
+   "escala_pts": 2.4,
+   "mascara": "masc/v_pedro.png",
+   "suave": 1.2,
+   "arquivo": "comitiva.webp",
+   "x": 552,
+   "y": 383,
+   "w": 1312,
+   "h": 808
+  },
+  {
+   "nome": "guarda",
+   "K": 0.98,
+   "escala_pts": 2.4,
+   "suave": 1.5,
+   "mascara": [
+    "masc/v_guarda2b.png",
+    "masc/v_guarda3.png",
+    "masc/v_guarda4.png"
+   ],
+   "arquivo": "guarda.webp",
+   "x": 1942,
+   "y": 563,
+   "w": 1589,
+   "h": 606
+  },
+  {
+   "nome": "carro",
+   "K": 1.55,
+   "escala_pts": 2.4,
+   "mascara": "masc/v_carro.png",
+   "suave": 1.5,
+   "estender_baixo": 650,
+   "modo_baixo": "esticar",
+   "arquivo": "carro.webp",
+   "x": 0,
+   "y": 865,
+   "w": 982,
+   "h": 1823
+  },
+  {
+   "nome": "frente",
+   "K": 1.45,
+   "escala_pts": 2.4,
+   "mascara": "masc/v_frente.png",
+   "suave": 1.5,
+   "estender_baixo": 650,
+   "modo_baixo": "reflexo",
+   "arquivo": "frente.webp",
+   "x": 708,
+   "y": 1000,
+   "w": 3116,
+   "h": 1688
+  }
+ ]
+}

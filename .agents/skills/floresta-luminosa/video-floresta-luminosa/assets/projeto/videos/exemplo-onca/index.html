@@ -1,0 +1,116 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Exemplo do estilo "floresta luminosa": diorama noturno low-poly desenhado a lápis de cor sobre preto, água azul que
+     brilha (cachoeira, rio facetado, corte de aquário com peixes), câmera travada e tudo a 10 qps.
+     Tema: onça-pintada sai da mata, bebe no rio e encara a câmera. Tudo em three.js (lib/floresta.js), sem fotos.
+     Para um vídeo novo: copie esta pasta, troque T, o cenário (rio, árvores, plantas), o bicho e o texto. -->
+<script>VIDEO={w:1080,h:1920,fps:30,dur:8,bpm:72,music:{style:'noturno',key:'D',gain:-3}}</script>
+<script>LIBS=[]</script>
+<script src="../../lib/boot.js"></script>
+<style>
+#stage{background:#0e0a06;overflow:hidden}
+</style></head><body>
+<div id="stage"></div>
+<script type="module">
+import * as FL from '../../lib/floresta.js';
+const { THREE, PAL, clamp, lerp, suave, prog, io } = FL;
+
+// ── tempos (s) ──
+const T = { olhos: .35, pisca: [1.0, 2.15], sai: [1.3, 4.35], luz: [1.5, 3.2], titulo: [1.75, 2.75], para: [4.2, 4.95],
+  lambidas: [5.15, 5.95, 6.75], sub: [5.2, 6.1], ergue: [7.0, 7.6] };
+
+// ── palco ──
+const S = FL.palco({ fov: 32, cam: [0, 3.7, 11], alvo: [0, .5, -1.2] });
+
+// ── rio: linha do centro e largura (o terreno afunda aqui; a água em y=0 só aparece onde ele está abaixo) ──
+// o rio desce da cachoeira pela esquerda e abre num poço que ocupa toda a frente (o corte de "aquário");
+// a margem direita vira uma ponta de terra onde a onça bebe
+const rioC = z => -.75 + .25 * Math.sin(z * .5 + 1) + (z + 7) * .02;
+const rioW = z => .45 + .035 * (z + 7);
+const pocoZ = x => 1.3 + .25 * Math.sin(x * 1.3 + .4);
+const FRENTE = 2.6;
+const { altura, margem } = FL.relevoRio({ centro: rioC, largura: rioW, poco: pocoZ, fundo: -1.8 });
+FL.ceu(S);
+FL.estrelas(S, { n: 150, x: [-9, 9], y: [-3, 9], tam: [4, 8] });
+// serra ao longe + paredão com entalhe da cachoeira
+FL.paredao(S, { x: [-14, 14], z: -15, base: -.5, topo: x => .55 + .45 * FL.ruido(x * .35, 4) + .3 * Math.sin(x * .7), n: 16, linhas: 2, semente: 77, mat: { cor: '#2c3a3c', cor2: '#3e5052', amb: .3, dif: .35 } });
+const CX = rioC(-7.2);
+FL.paredao(S, { x: [-9, 9], z: -7.6, base: -.6, topo: x => (Math.abs(x - CX) < .7 ? .85 : 1.1 + .25 * FL.ruido(x * .8, 1.3)), n: 18, linhas: 3 });
+FL.cachoeira(S, { x: CX, z: -7.45, y0: -.05, y1: .9, larg: 1.15 });
+// terreno com a vala do rio e o corte da frente
+const TER = FL.terreno(S, { x: [-7, 7], z: [-7.6, FRENTE], nx: 22, nz: 14, altura, fundo: { y: -.08, cor: '#323c38' }, base: -4.5 });
+FL.rio(S, { x: [-4, 4], z: [-7.5, FRENTE], nx: 6, nz: 10 });
+FL.vidroAgua(S, TER.perfil);
+// árvores emoldurando
+FL.arvore(S, { x: -1.85, z: -1.9, alt: 3.2, raio: 1.5, inclina: .2, semente: 41, galhos: [[-1, .6], [1, .74]] });
+FL.arvore(S, { x: 2.2, z: -3.6, alt: 3.5, raio: 1.65, inclina: -.2, semente: 43, galhos: [[1, .55], [-1, .72]] });
+// plantas, pedras
+const moita = FL.roseta(S, { x: 1.55, y: .14, z: -1.2, n: 9, aneis: 3, comp: .8, larg: .19, semente: 61 });
+FL.roseta(S, { x: -1.55, y: .1, z: -.3, n: 7, aneis: 2, comp: .55, semente: 62 });
+FL.roseta(S, { x: 1.95, y: .14, z: .95, n: 7, aneis: 2, comp: .5, semente: 63 });
+FL.roseta(S, { x: 2.5, y: .14, z: -.6, n: 8, aneis: 2, comp: .65, semente: 67 });
+FL.pedra(S, { x: 1.7, y: .1, z: 1.35, r: .2, semente: 12, rot: .7 });
+FL.roseta(S, { x: -1.2, y: .1, z: -2.6, n: 8, aneis: 3, comp: .55, cor: '#8f7a64', cor2: '#c4ab90', semente: 68 });
+FL.roseta(S, { x: .35, y: .12, z: -3.4, n: 7, aneis: 2, comp: .45, cor: '#8f7a64', cor2: '#c4ab90', semente: 69 });
+FL.roseta(S, { x: -1.9, y: .1, z: 1.0, n: 8, aneis: 3, comp: .6, cor: '#8f7a64', cor2: '#c4ab90', semente: 70 });
+FL.pedra(S, { x: -1.55, y: .02, z: .55, r: .34, achatar: .35, semente: 14, rot: .2 });
+FL.pedra(S, { x: .55, y: .02, z: -2.2, r: .3, achatar: .35, semente: 15, rot: 1.1 });
+FL.capim(S, { x: 2.2, y: .12, z: .1, n: 5, alt: .7, semente: 74, cor: '#6a5a40' });
+FL.pedra(S, { x: .1, y: .02, z: -1.4, r: .26, semente: 4, rot: .4 });
+FL.pedra(S, { x: -1.15, y: 0, z: -4.2, r: .24, semente: 6 });
+FL.pedra(S, { x: -.35, y: .03, z: 1.15, r: .2, semente: 8, rot: 1.2 });
+// fundo d'água: seixos e peixes
+for (let i = 0; i < 11; i++) FL.pedra(S, { x: -1.6 + i * .3 + Math.sin(i * 7) * .08, y: -1.82 + Math.sin(i * 3) * .05, z: 1.7 + Math.cos(i * 5) * .45, r: .18 + .06 * Math.sin(i * 11), semente: 20 + i, cor: i % 3 ? '#4e5a55' : '#5d4f68', cor2: '#7a8a80' });
+const peixes = [];
+const PX = [[-.7, -.55, 1.9, .2], [.25, -.7, 2.0, 3.0], [-.25, -1.05, 1.6, .4], [.6, -1.15, 1.8, 3.3], [-.95, -1.3, 1.7, -.2], [.05, -1.42, 2.1, .15], [.5, -.45, 1.4, 2.9], [-1.25, -.85, 1.5, .3]];
+PX.forEach(([x, y, z, r], i) => peixes.push(FL.peixe(S, { x, y, z, rot: r, tam: 1.25, semente: i + 1 })));
+// frente: rosetas escuras e capim cobrindo a base do corte
+FL.roseta(S, { x: -1.6, y: -2.55, z: 3.2, n: 9, aneis: 3, comp: 1.0, larg: .2, cor: PAL.musgo, cor2: '#7f8f78', semente: 64 });
+FL.roseta(S, { x: 1.55, y: -2.6, z: 3.3, n: 9, aneis: 3, comp: 1.05, larg: .2, cor: PAL.musgo, cor2: '#7f8f78', semente: 65 });
+FL.roseta(S, { x: 0, y: -2.8, z: 3.5, n: 7, aneis: 2, comp: .7, cor: '#5a5a48', cor2: '#7f8f78', semente: 66 });
+FL.capim(S, { x: 1.75, y: -2.55, z: 3.4, n: 8, alt: 1.5, semente: 72 });
+FL.capim(S, { x: -1.9, y: -2.55, z: 3.3, n: 6, alt: 1.2, semente: 73 });
+
+// ── onça: sai da sombra atrás da moita, caminha até a beira e bebe ──
+const O = FL.onca(S, { prof: 10, escala: 1.25 });
+const P0 = new THREE.Vector2(2.45, -2.45), P1 = new THREE.Vector2(.85, .45);
+const RUMO = Math.atan2(-(P1.y - P0.y), P1.x - P0.x), RUMO_BEBE = RUMO - .25;
+const boca = new THREE.Vector3();
+
+// ── texto a lápis ──
+let TIT, SUB;
+FL.calibrar(S);
+S.update = (t) => {
+  peixes.forEach(p => FL.nadar(p, t));
+  moita.rotation.z = Math.sin(t * 7) * .04 * suave(1.3, 1.6, t) * (1 - suave(2.3, 2.8, t));    // a moita mexe quando ela passa
+  // caminhada (passo quantizado pelo próprio tempo a 10 qps)
+  const k = io(prog(t, ...T.sai)), pos = P0.clone().lerp(P1, k);
+  const anda = suave(T.sai[0], T.sai[0] + .3, t) * (1 - suave(T.sai[1] - .35, T.sai[1], t));
+  const ag = io(prog(t, ...T.para)) * (1 - io(prog(t, ...T.ergue)) * .55);
+  O.g.position.set(pos.x, margem(pos.x, pos.y) + .02, pos.y);
+  O.g.rotation.y = lerp(RUMO, RUMO_BEBE, io(prog(t, T.sai[1] - .5, T.para[1])));
+  // lambidas: a cabeça desce um pouco e volta
+  let lamb = 0; for (const tl of T.lambidas) lamb = Math.max(lamb, Math.sin(Math.PI * prog(t, tl - .2, tl + .25)));
+  const ergue = io(prog(t, ...T.ergue));
+  const pis = T.pisca.some(tp => t >= tp && t < tp + .2) || (t >= 7.4 && t < 7.55) ? 1 : 0;
+  O.pose({ t, passo: (t - T.sai[0]) * 1.45, andar: anda, agachar: ag,
+    pescoco: lerp(0, -.62, ag) - .12 * lamb + .55 * ergue, cabecaX: lerp(0, .12, ag) - .1 * lamb + .05 * ergue,
+    cabecaY: .62 * ergue, piscar: pis,
+    luz: lerp(.1, 1, suave(...T.luz, t)), brilhoOlho: 1 - suave(2.2, 3.4, t) + .25 * ergue });
+  // ondas quadradas onde o focinho toca a água
+  O.P.cabeca.localToWorld(boca.set(.44, -.11, 0));
+  T.lambidas.forEach((tl, i) => FL.anel(i, boca.x, boca.z, tl, t >= tl ? 1 : 0));
+  if (TIT) { TIT.desenhar(Math.floor(prog(t, ...T.titulo) * 10) / 10); SUB.desenhar(Math.floor(prog(t, ...T.sub) * 10) / 10); }
+};
+window.SETUP = () => {
+  TIT = FL.textoLapis({ texto: 'onça-pintada', fonte: '600 138px Fraunces', x: 540, y: 300, w: 1040, h: 230, cor: PAL.creme, esp: 3.4, semente: 3 });
+  SUB = FL.textoLapis({ texto: 'o maior felino das Américas', fonte: '500 60px Fraunces', x: 540, y: 428, w: 1000, h: 120, cor: PAL.azulTexto, esp: 2.6, larg: 1.6, comp: [8, 20], semente: 5, base: .75 });
+  // sons
+  cue('m:intro', 0); cue('m:main', 1.3); cue('m:stop', 7.8);
+  cue('brilho', T.olhos, { gain: -2 });
+  for (let i = 0; i < 9; i++) cue('passo', T.sai[0] + .15 + i * (T.sai[1] - T.sai[0] - .3) / 8, { gain: -4 + (i % 2) * -2, pan: .35 });
+  cue('folhas', 1.35, { pan: .5 });
+  cue('lapis', T.titulo[0], { d: 1.0 }); cue('lapis', T.sub[0], { d: .9, gain: -3 });
+  T.lambidas.forEach(tl => cue('lambida', tl - .02));
+  cue('brilho', T.ergue[0] + .25, { gain: -4 });
+};
+</script></body></html>

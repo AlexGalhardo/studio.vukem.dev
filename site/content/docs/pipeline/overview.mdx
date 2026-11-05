@@ -1,0 +1,36 @@
+---
+title: Overview
+description: The production path from a brief to a checked MP4.
+---
+
+Studio automates the handoff between a human brief and a rendered file. It does not hide the plan. Every job keeps the prompt, the scene list, and the check report next to the video.
+
+```text
+brief -> prompt compiler -> scene plan -> assets -> render -> ffmpeg -> qa -> mp4
+```
+
+## Who decides what
+
+| Step | Decides | Does not decide |
+| --- | --- | --- |
+| Operator | Goal, audience, length, style, claims that must stay true | Frame-level motion code |
+| Prompt compiler | The instruction sent to the model, using the selected skill | The final pixels |
+| Model | Script, shot list, and composition code inside the skill's rules | Uploading or publishing |
+| Worker | Render, encode, loudness, captions, file check | Changing the brief |
+
+A person approves the scene plan before a paid or slow render when the roadmap's review gate is on. The first milestone can render a silent motion cut without that gate so the path is testable.
+
+## Aspect ratios
+
+| Use | Frame |
+| --- | --- |
+| Shorts, Reels, TikTok | 1080x1920 (9:16) |
+| Feed square | 1080x1080 (1:1) |
+| Feed portrait | 1080x1350 (4:5) |
+| Landscape explainer | 1920x1080 (16:9) |
+
+The brief picks one primary ratio. Extra ratios are a later export, not a second creative pass, unless the operator asks.
+
+## Length
+
+Social cuts in the first milestone are 6 to 45 seconds. The worker rejects a plan whose voice track does not fit the requested duration before it spends a render.

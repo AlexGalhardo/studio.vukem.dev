@@ -1,0 +1,35 @@
+---
+title: QA
+description: The checks a video must pass before the dashboard marks it ready.
+---
+
+The worker runs these checks on the file it just wrote. A failed check keeps the job in `failed` with the report attached. The dashboard does not offer that file as the deliverable.
+
+## File
+
+- `ffprobe` reads a video stream and, when the brief asked for sound, an audio stream
+- Duration is within 0.5 seconds of the plan
+- Width and height match the brief
+- Pixel format is `yuv420p`
+- The `moov` atom is at the front (`+faststart`) so playback can start before the full download
+
+## Sound
+
+When the plan has a voice:
+
+- Integrated loudness is within 2 LU of -14 LUFS
+- True peak is at or below -1.5 dBTP
+- The voice is not clipped at the sample peaks of the mix
+
+A silent motion piece skips the loudness check and must have no audio stream, or a stream that is actually silent. It must not ship a forgotten music bed.
+
+## Captions
+
+When the plan has words on screen:
+
+- A caption file exists and its last cue ends before the video ends
+- The burned-in captions match that file for the styles that burn them in
+
+## Facts
+
+When the brief has must-keep facts, the script stored in the sidecar still contains each fact. The worker does not judge taste. It checks that a required sentence was not dropped.
