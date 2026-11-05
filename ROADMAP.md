@@ -32,8 +32,8 @@ Legend: `[x]` done, `[/]` partial, `[ ]` not started. A phase is done only when 
 
 - [x] A fresh clone has `ROADMAP.md`, `site/`, and `.github/workflows/`
 - [x] `git check-ignore -v vukem-feedback.md` points at `.gitignore`
-- [ ] `bun run check` exits 0 on the docs site
-- [ ] `npm run check:mdx` and `npm run build` inside `site/` exit 0
+- [x] `bun run check` exits 0 on the docs site (`tsc --noEmit`)
+- [x] `npm run check:mdx` and `npm run build` inside `site/` exit 0
 - [ ] Scorecard workflow has run on `main` at least once
 
 ## Phase 1 — Documentation site is public
@@ -45,7 +45,7 @@ The visitor of `studio.vukem.dev` lands on the technical introduction.
 - [x] `site/` uses the vukem.dev docs shell (Next.js 16, MDX, sidebar, search, changelog page)
 - [x] `/` redirects to `/docs/introduction`
 - [x] Pages exist for the pipeline, tools, skills, and deploy
-- [/] `content/last-updated.json` is filled from git after the first commit
+- [x] `content/last-updated.json` is filled from git and `npm run check:last-updated` passes
 
 ### 1.2 Host
 
