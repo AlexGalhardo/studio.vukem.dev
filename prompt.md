@@ -10,7 +10,7 @@ Primary tools: FFmpeg, Remotion, a Claude or OpenAI model, and the catalogs in `
 
 The application itself is a Vukem app (https://vukem.dev/docs/introduction) with Inertia, React, and a sidebar. `/` is the dashboard. A signed-out visitor is redirected to `/login`, which has one Google button.
 
-Repository: https://github.com/AlexGalhardo/studio.vukem.dev
+Repository: https://github.com/AlexGalhardo/vukem-studio
 
 `vukem-feedback.md` at the repository root is gitignored and collects framework bugs found while building Studio.
 

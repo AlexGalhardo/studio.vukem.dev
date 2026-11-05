@@ -1,0 +1,106 @@
+package tests
+
+import (
+	"slices"
+	"testing"
+
+	"github.com/AlexGalhardo/vukem/i18n"
+	"github.com/AlexGalhardo/vukem/vukemtest"
+
+	"github.com/AlexGalhardo/vukem-studio/app/accounts"
+	"github.com/AlexGalhardo/vukem-studio/app/mail"
+	"github.com/AlexGalhardo/vukem-studio/bootstrap"
+)
+
+// wantLocales are the locales install:auth wrote catalogs for
+// (vukem install:auth --locales). Change it whenever you add or remove a
+// catalog in app/accounts/lang: it is the only place that lists them.
+var wantLocales = []string{"en"}
+
+// fallbackLocale is the locale accounts.loadMessages falls back to; every
+// message must exist in it.
+const fallbackLocale = "en"
+
+// Every auth message (app/accounts/lang) exists in every locale the app
+// ships, and accounts.T follows the request locale, preferring the app's
+// own catalog.
+func TestAuthMessages(t *testing.T) {
+	t.Parallel()
+
+	app := vukemtest.New(t, bootstrap.New)
+
+	acc, err := accounts.New(app.App)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	locales := acc.Messages.Locales()
+
+	sorted := slices.Sorted(slices.Values(locales))
+	if !slices.Equal(sorted, wantLocales) {
+		t.Fatalf("auth message locales = %v, want %v", sorted, wantLocales)
+	}
+
+	for _, l := range locales {
+		for key := range acc.Messages.Messages(l) { // includes the English fallback
+			if !acc.Messages.Has(l, key) || !acc.Messages.Has(fallbackLocale, key) {
+				t.Errorf("auth message %q is missing in %s or %s", key, l, fallbackLocale)
+			}
+		}
+	}
+
+	const key = "auth.password_reset"
+
+	en := acc.T(t.Context(), key)
+	if en == key {
+		t.Fatalf("T(%q) returned the key", key)
+	}
+
+	// Every locale besides the fallback translates, instead of echoing
+	// English. Driven by wantLocales, so removing a catalog is one edit.
+	for _, l := range wantLocales {
+		if l == fallbackLocale {
+			continue
+		}
+
+		if got := acc.T(i18n.WithLocale(t.Context(), l), key); got == en || got == key {
+			t.Errorf("T(%q) in %s = %q, want a translation", key, l, got)
+		}
+	}
+
+	own, err := i18n.New(i18n.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := own.Add("en", map[string]any{key: "Done."}); err != nil {
+		t.Fatal(err)
+	}
+
+	if got := acc.T(i18n.WithBundle(t.Context(), own), key); got != "Done." {
+		t.Errorf("T(%q) with the app's catalog = %q, want %q", key, got, "Done.")
+	}
+
+	// The app's "pt" catalog serves pt-BR requests too.
+	if err := own.Add("pt", map[string]any{key: "Pronto."}); err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := i18n.WithLocale(i18n.WithBundle(t.Context(), own), "pt-BR")
+	if got := acc.T(ctx, key); got != "Pronto." {
+		t.Errorf("T(%q) in pt-BR with the app's pt catalog = %q, want %q", key, got, "Pronto.")
+	}
+}
+
+// Mailables built without a translated subject keep an English one.
+func TestAuthMailSubjectFallback(t *testing.T) {
+	t.Parallel()
+
+	if got := (mail.VerifyEmail{}).Envelope().Subject; got != "Verify your email address" {
+		t.Errorf("VerifyEmail subject = %q", got)
+	}
+
+	if got := (mail.ResetPassword{}).Envelope().Subject; got != "Reset your password" {
+		t.Errorf("ResetPassword subject = %q", got)
+	}
+}

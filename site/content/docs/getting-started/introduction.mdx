@@ -17,8 +17,8 @@ One video job moves through five stages:
 4. **Render.** [Remotion](/docs/tools/renderers) or [HyperFrames](/docs/tools/renderers) draws the frames. [FFmpeg](/docs/tools/renderers) encodes the file.
 5. **Check.** Duration, loudness, captions, and a factual pass before anyone downloads the file.
 
-<Callout type="warning" title="Not built yet">
-The dashboard, Google sign-in, and the render worker are specified in the [roadmap](https://github.com/AlexGalhardo/studio.vukem.dev/blob/main/ROADMAP.md). This site documents the system that those pieces have to match.
+<Callout type="warning" title="Shell only">
+The dashboard shell and the Google login page are in the repository. The render worker is still specified in the [roadmap](https://github.com/AlexGalhardo/vukem-studio/blob/main/ROADMAP.md). This site documents the system that those pieces have to match.
 </Callout>
 
 ## Two programs, one repository
@@ -26,7 +26,7 @@ The dashboard, Google sign-in, and the render worker are specified in the [roadm
 | Path | What it is |
 | --- | --- |
 | `site/` | This documentation. Next.js, same information architecture as [vukem.dev](https://vukem.dev). |
-| Application (next) | A [Vukem](https://vukem.dev/docs/introduction) app. Inertia, React, and a sidebar dashboard. `/` is the dashboard. A signed-out visitor goes to `/login`, which has one Google button. |
+| Application | A [Vukem](https://vukem.dev/docs/introduction) app at the repository root. Inertia, React, and a sidebar dashboard. `/` is the dashboard. A signed-out visitor goes to `/login`, which has one Google button. |
 
 The framework documentation stays on vukem.dev. This site documents Studio only.
 

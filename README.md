@@ -2,12 +2,12 @@
 
 <h1><strong><a href="https://studio.vukem.dev" style="text-decoration: none" target="_blank">studio.vukem.dev</a></strong></h1>
 
-[![CI](https://github.com/AlexGalhardo/studio.vukem.dev/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexGalhardo/studio.vukem.dev/actions/workflows/ci.yml)
+[![CI](https://github.com/AlexGalhardo/vukem-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexGalhardo/vukem-studio/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Bun 1.4.4](https://img.shields.io/badge/bun-1.4.4-000000?logo=bun&logoColor=white)](package.json)
-<a href="https://github.com/AlexGalhardo/studio.vukem.dev/releases"><img src="https://img.shields.io/github/v/release/AlexGalhardo/studio.vukem.dev?include_prereleases&label=version" alt="Version"></a>
+<a href="https://github.com/AlexGalhardo/vukem-studio/releases"><img src="https://img.shields.io/github/v/release/AlexGalhardo/vukem-studio?include_prereleases&label=version" alt="Version"></a>
 
-<a href="https://scorecard.dev/viewer/?uri=github.com/AlexGalhardo/studio.vukem.dev"><img src="https://api.scorecard.dev/projects/github.com/AlexGalhardo/studio.vukem.dev/badge" alt="OpenSSF Scorecard"></a>
+<a href="https://scorecard.dev/viewer/?uri=github.com/AlexGalhardo/vukem-studio"><img src="https://api.scorecard.dev/projects/github.com/AlexGalhardo/vukem-studio/badge" alt="OpenSSF Scorecard"></a>
 
 <h3><strong>Open source studio for short-form video</strong></h3>
 
@@ -17,7 +17,7 @@
 
 Studio turns a video brief into a rendered MP4 for Shorts, Reels, and other short social cuts. The dashboard collects the goal, the audience, and the visual style. A compiler writes the prompt. A worker renders the file with open source tools.
 
-The application will be built with the [Vukem](https://vukem.dev) Go framework. This repository currently ships the documentation site, the research, and the skill kits.
+The application is a [Vukem](https://vukem.dev) app: Inertia, React, and a sidebar. `/` is the dashboard. A signed-out visitor goes to `/login`, which has one Google button. The documentation site, the research, and the skill kits live in the same repository. The public hostname still serves the docs.
 
 Opening [studio.vukem.dev](https://studio.vukem.dev) lands on the technical documentation.
 
@@ -44,7 +44,7 @@ Thank you for considering a contribution to Studio.
 
 - Read [ROADMAP.md](ROADMAP.md) and the docs under `site/content` before changing behavior.
 - Keep the repository in English.
-- Run the check that covers your change. For the docs site that is `bun run check` and `npm run check:mdx` inside `site/`.
+- Run the check that covers your change. For the app that is `go test ./...` and `bun run typecheck`. For the docs site that is `bun run check` and `npm run check:mdx` inside `site/`.
 - Update `CHANGELOG.md` under `[Unreleased]` when behavior, commands, or conventions change.
 
 The full guide is in [CONTRIBUTING.md](CONTRIBUTING.md).

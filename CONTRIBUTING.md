@@ -10,8 +10,8 @@ Thank you for working on Studio. The product goal is in [ROADMAP.md](ROADMAP.md)
 - Docker, only if you are building the image
 
 ```bash
-git clone https://github.com/AlexGalhardo/studio.vukem.dev.git
-cd studio.vukem.dev
+git clone https://github.com/AlexGalhardo/vukem-studio.git
+cd vukem-studio
 git config core.hooksPath .githooks
 bun install
 cd site
@@ -27,6 +27,8 @@ Run the ones your change can affect.
 
 | Change | Command |
 | --- | --- |
+| Go app | `go test -count=1 ./tests/` |
+| App TypeScript | `bun run typecheck` from the repository root |
 | TypeScript in `site/` | `bun run check` from the repository root |
 | MDX docs | `npm run check:mdx` inside `site/` |
 | ESLint in `site/` | `npm run lint` inside `site/` |

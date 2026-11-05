@@ -3,17 +3,20 @@ title: Repository
 description: Where the Studio source, skills, research, and roadmap live.
 ---
 
-The source is [github.com/AlexGalhardo/studio.vukem.dev](https://github.com/AlexGalhardo/studio.vukem.dev). English is the language of the code, the docs, and the commits.
+The source is [github.com/AlexGalhardo/vukem-studio](https://github.com/AlexGalhardo/vukem-studio). English is the language of the code, the docs, and the commits.
 
 ## Layout
 
 | Path | Role |
 | --- | --- |
+| Application root | Vukem app: `cmd/`, `bootstrap/`, `app/`, `routes/`, `resources/js/` |
+| `Dockerfile` | Documentation site image. Railway serves this file |
+| `Dockerfile.app` | Application image. CI builds it. It does not replace the docs service |
 | `site/` | Documentation site |
 | `docs/` | Research, the tool catalog, the studio kit, and the brainstorm |
 | `.agents/skills/` | Video and engineering skills unpacked from `zip/` |
 | `ROADMAP.md` | Phases, tasks, and audit checks |
-| `.github/workflows/` | CI, the docs build, Scorecard, and releases |
+| `.github/workflows/` | CI for the app and the docs, Scorecard, and releases |
 
 `zip/` stays on disk as the original skill archives and is not part of the git history. The unpacked skills are.
 

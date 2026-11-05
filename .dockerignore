@@ -8,6 +8,12 @@ site/.next
 vukem-feedback.md
 .env
 .env.*
+/bin/
+.vukem/
+storage/*
+!storage/.gitkeep
+/resources/public/hot
+/bootstrap/ssr/
 *.md
 !CHANGELOG.md
 !site/**/*.md

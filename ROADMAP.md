@@ -8,7 +8,7 @@ Legend: `[x]` done, `[/]` partial, `[ ]` not started. A phase is done only when 
 
 ### 0.1 Source of truth
 
-- [x] GitHub repository `AlexGalhardo/studio.vukem.dev` exists
+- [x] GitHub repository `AlexGalhardo/vukem-studio` exists
 - [x] `docs/recommend-tools.md` and `docs/video-studio-kit.md` read and translated to English
 - [x] Skill archives unpacked into `.agents/skills/`
 - [x] `docs/web-research.md` records the pipeline evidence
@@ -68,27 +68,27 @@ A Vukem app with Inertia and React. This phase produces no video.
 
 ### 2.1 App
 
-- [ ] `vukem new` (or the equivalent layout from the current vukem docs) creates the app module
-- [ ] Inertia React adapter and a sidebar layout
-- [ ] Route `/` renders the dashboard for a signed-in user
-- [ ] Missing session on any private route redirects to `/login`
-- [ ] `/login` shows one control: "Continue with Google"
-- [ ] Sign-out returns to `/login`
-- [ ] English UI strings
+- [x] `vukem new` (or the equivalent layout from the current vukem docs) creates the app module
+- [x] Inertia React adapter and a sidebar layout
+- [x] Route `/` renders the dashboard for a signed-in user
+- [x] Missing session on any private route redirects to `/login`
+- [x] `/login` shows one control: "Continue with Google"
+- [x] Sign-out returns to `/login`
+- [x] English UI strings
 
 ### 2.2 Session
 
-- [ ] Google OAuth client id and secret come from the environment, validated at boot
-- [ ] Session cookie is `HttpOnly`, `Secure`, and `SameSite` as the vukem security docs require
-- [ ] A test covers the redirect when the session is missing
-- [ ] A test covers a signed-in request reaching `/`
+- [x] Google OAuth client id and secret come from the environment, validated at boot
+- [x] Session cookie is `HttpOnly`, `Secure`, and `SameSite` as the vukem security docs require
+- [x] A test covers the redirect when the session is missing
+- [x] A test covers a signed-in request reaching `/`
 
 #### Audit — phase 2
 
-- [ ] `go test` for the auth redirect passes
-- [ ] Browser: signed out, `/` ends on `/login`
-- [ ] Browser: Google button is the only sign-in control
-- [ ] Browser: after a test session, `/` shows the sidebar
+- [x] `go test` for the auth redirect passes
+- [x] Browser: signed out, `/` ends on `/login`
+- [x] Browser: Google button is the only sign-in control
+- [x] Browser: after a test session, `/` shows the sidebar
 - [ ] Docs site on `studio.vukem.dev` still serves the introduction
 
 ## Phase 3 — Brief to a stored prompt

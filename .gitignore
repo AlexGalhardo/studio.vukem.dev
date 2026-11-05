@@ -22,3 +22,12 @@ coverage/
 Thumbs.db
 .idea/
 .vscode/
+
+# Vukem app
+/bin/
+.vukem/
+storage/*
+!storage/.gitkeep
+/resources/public/hot
+/resources/public/build/
+/bootstrap/ssr/

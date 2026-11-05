@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- GitHub repository is [AlexGalhardo/vukem-studio](https://github.com/AlexGalhardo/vukem-studio). The public site stays `studio.vukem.dev`
+
 ### Added
 
+- Vukem application shell: Inertia React, sidebar dashboard at `/`, Google-only login page, and session redirect tests
+- App CI jobs: gofmt, `go vet`, `go test -race`, govulncheck, Betterleaks, and a `Dockerfile.app` image build
+- Dependabot for Go modules, GitHub Actions, Docker, and the npm lockfiles
 - Documentation site in `site/`, using the vukem.dev docs shell, with the Studio pipeline, tools, skills, and deploy guides
 - Research notes, translated tool catalog, translated studio kit, and brainstorm record under `docs/`
 - Video and engineering skill kits unpacked into `.agents/skills/`
