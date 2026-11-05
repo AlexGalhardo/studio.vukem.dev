@@ -110,15 +110,15 @@ Do not wrap those products as the core. The core has to render with FFmpeg and o
 
 ## Sources
 
-- OpenReels — https://github.com/tsensei/OpenReels
-- OpenMontage overview — https://metavert.io/openmontage — 2026-10-24
-- Remotion overview — https://metavert.io/remotion — 2026-10-24
-- HyperFrames repository — https://github.com/heygen-com/hyperframes
-- HyperFrames vs Remotion — https://hyperframes.heygen.com/guides/hyperframes-vs-remotion — 2026-10-26
-- Open Skills, HyperFrames vs Remotion — https://openskills.app/guides/hyperframes-vs-remotion — 2026-10-07
-- Motionflare comparison — https://motionflare.ai/compare/hyperframes-vs-remotion — 2026-10-10
-- Socialvik, license and a timed render — https://www.socialvik.com/blog/hyperframes-vs-remotion-render-time — 2026-10-16
-- Open source AI video generators, eight compared — https://www.opensourcealternatives.to/blog/open-source-ai-video-generators — 2026-10-17
-- video-wizard — https://github.com/el-frontend/video-wizard
-- short-form-video-generator — https://github.com/CosmoJelly/short-form-video-generator
-- OpenSSF Scorecard badge — https://github.com/ossf/scorecard#scorecard-badges
+- OpenReels — <https://github.com/tsensei/OpenReels>
+- OpenMontage overview — <https://metavert.io/openmontage> — 2026-10-24
+- Remotion overview — <https://metavert.io/remotion> — 2026-10-24
+- HyperFrames repository — <https://github.com/heygen-com/hyperframes>
+- HyperFrames vs Remotion — <https://hyperframes.heygen.com/guides/hyperframes-vs-remotion> — 2026-10-26
+- Open Skills, HyperFrames vs Remotion — <https://openskills.app/guides/hyperframes-vs-remotion> — 2026-10-07
+- Motionflare comparison — <https://motionflare.ai/compare/hyperframes-vs-remotion> — 2026-10-10
+- Socialvik, license and a timed render — <https://www.socialvik.com/blog/hyperframes-vs-remotion-render-time> — 2026-10-16
+- Open source AI video generators, eight compared — <https://www.opensourcealternatives.to/blog/open-source-ai-video-generators> — 2026-10-17
+- video-wizard — <https://github.com/el-frontend/video-wizard>
+- short-form-video-generator — <https://github.com/CosmoJelly/short-form-video-generator>
+- OpenSSF Scorecard badge — <https://github.com/ossf/scorecard#scorecard-badges>

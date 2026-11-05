@@ -157,7 +157,7 @@ The definition of done for this phase is one silent 9:16 file from a brief, chec
 - [ ] Music bed only with a license record, ducked under the voice
 - [ ] Fact list: each must-keep fact still appears in the stored script
 
-#### Audit — phase 5
+### Audit — phase 5
 
 - [ ] Fixture with a 5-second voice passes loudness and caption checks
 - [ ] Fixture that drops a must-keep fact fails the job
@@ -170,7 +170,7 @@ The definition of done for this phase is one silent 9:16 file from a brief, chec
 - [ ] Publish pack: title, description, hashtags, and `.srt`, validated against the limits in the publication skill
 - [ ] No automatic post to a social network in this phase
 
-#### Audit — phase 6
+### Audit — phase 6
 
 - [ ] Two jobs from one user do not leak across a second test user
 - [ ] Publish pack rejects a title over the platform limit named in the skill

@@ -41,4 +41,6 @@ regexTarget = "secret"
 regexes = [
 	'''_FAKE_|(?i)placeholder|changeme|example''',
 	'''(?i)x{8,}|\.\.\.$''',
+	'''correct horse battery|another long password|a brand new password''',
+	'''^(wrong|guess|Show password|Hide password)$''',
 ]

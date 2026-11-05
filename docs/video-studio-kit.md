@@ -41,8 +41,8 @@ Translated from the Portuguese kit notes. This is the reference shelf and the lo
 
 ### Design systems named in the kit
 
-- https://designmd.ai/
-- https://www.designmd.co/
+- <https://designmd.ai/>
+- <https://www.designmd.co/>
 
 ### One automated editor, as a reference
 
@@ -76,7 +76,7 @@ Revid generates social shorts. It is a product reference, not a library of still
 
 ## One video the kit points at
 
-https://www.youtube.com/watch?v=PAPpoXbErT8
+<https://www.youtube.com/watch?v=PAPpoXbErT8>
 
 ## How the original kit was installed
 

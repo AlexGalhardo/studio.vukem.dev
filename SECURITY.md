@@ -14,7 +14,7 @@ Do not open a public issue for a security problem.
 
 Use GitHub private vulnerability reporting:
 
-https://github.com/AlexGalhardo/vukem-studio/security/advisories/new
+<https://github.com/AlexGalhardo/vukem-studio/security/advisories/new>
 
 Include what you can do, the version or commit, and the smallest steps that show the problem. You will get an acknowledgement within 7 days, and a plan or a reason the report is out of scope within 30 days.
 
