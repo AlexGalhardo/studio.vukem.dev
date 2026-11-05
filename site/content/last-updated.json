@@ -1,1 +1,16 @@
-{}
+{
+  "docs/deployment/railway.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/deployment/releases.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/getting-started/introduction.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/getting-started/repository.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/getting-started/status.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/pipeline/brief.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/pipeline/overview.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/pipeline/qa.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/pipeline/render.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/skills/catalog.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/tools/audio.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/tools/models.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/tools/overview.mdx": "2026-11-04T21:41:52-03:00",
+  "docs/tools/renderers.mdx": "2026-11-04T21:41:52-03:00"
+}
