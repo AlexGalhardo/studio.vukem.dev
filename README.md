@@ -17,7 +17,7 @@
 
 Studio turns a video brief into a rendered MP4 for Shorts, Reels, and other short social cuts. The dashboard collects the goal, the audience, and the visual style. A compiler writes the prompt. A worker renders the file with open source tools.
 
-The application is a [Vukem](https://vukem.dev) app: Inertia, React, and a sidebar. `/` is the dashboard. A signed-out visitor goes to `/login`, which has one Google button. The documentation site, the research, and the skill kits live in the same repository. The public hostname still serves the docs.
+The application is a [Vukem](https://vukem.dev) app: Inertia, React, and a sidebar. `/` is the dashboard. A signed-out visitor goes to `/login`, which has one Google button. **Videos** is the library. A brief compiles a prompt, a local planner writes the scene plan, and FFmpeg writes one MP4. The job stores the prompt. Download is offered only when the check passes. The documentation site, the research, and the skill kits live in the same repository. The public hostname is still the docs site.
 
 Opening [studio.vukem.dev](https://studio.vukem.dev) lands on the technical documentation.
 
@@ -44,7 +44,7 @@ Thank you for considering a contribution to Studio.
 
 - Read [ROADMAP.md](ROADMAP.md) and the docs under `site/content` before changing behavior.
 - Keep the repository in English.
-- Run the check that covers your change. For the app that is `go test ./...` and `bun run typecheck`. For the docs site that is `bun run check` and `npm run check:mdx` inside `site/`.
+- Run the check that covers your change. For the app that is `go test ./...` and `bun run typecheck`. The render tests need `ffmpeg` and `ffprobe` on `PATH`. For the docs site that is `bun run check` and `npm run check:mdx` inside `site/`.
 - Update `CHANGELOG.md` under `[Unreleased]` when behavior, commands, or conventions change.
 
 The full guide is in [CONTRIBUTING.md](CONTRIBUTING.md).

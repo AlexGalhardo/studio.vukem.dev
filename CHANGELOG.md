@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Video jobs: a brief form, server-side validation, a prompt compiler, a local scene planner, an FFmpeg renderer, QA, captions, loudness, a music bed that requires a license, a job library, and a publish pack that is not posted
+- Optional HyperFrames and Remotion renderer commands selected with `STUDIO_RENDERER`
+- English visual law `SKILL.en.md` for `traco-simples`, the style the default brief attaches
 - Vukem application shell: Inertia React, sidebar dashboard at `/`, Google-only login page, and session redirect tests
 - App CI jobs: gofmt, `go vet`, `go test -race`, govulncheck, Betterleaks, and a `Dockerfile.app` image build
 - Dependabot for Go modules, GitHub Actions, Docker, and the npm lockfiles
