@@ -30,7 +30,7 @@ The app reads its configuration from the environment and an optional `.env` file
 | `STUDIO_MODEL` | see below | `claude-sonnet-5-5`, `claude-opus-5-5`, an OpenAI model id, or `local-planner` |
 | `ANTHROPIC_API_KEY` | none | Claude models |
 | `OPENAI_API_KEY` | none | OpenAI models. Any model id that does not start with `claude-` |
-| `STUDIO_MAX_OUTPUT_TOKENS` | `4000` | Output cap of one model call |
+| `STUDIO_MAX_OUTPUT_TOKENS` | `4000` | Base output cap of one model call. 30 tokens per second of video are added |
 | `STUDIO_MAX_JOB_COST_CENTS` | `100` | Worst-case cost cap per job in US cents, from a built-in price table. `0` means no cap |
 
 With `STUDIO_MODEL` unset the app uses `claude-sonnet-5-5` when `ANTHROPIC_API_KEY` is set, and the deterministic local planner otherwise. A model set without its key fails each job with a message that names the missing variable.
