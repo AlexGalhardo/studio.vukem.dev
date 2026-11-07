@@ -1,0 +1,57 @@
+---
+title: Quickstart
+description: Run the Studio app locally and render a first video from a brief.
+---
+
+Studio is a Go application built on [Vukem](https://vukem.dev/docs) with an Inertia and React front end. It needs Go, Bun, and FFmpeg.
+
+## Requirements
+
+| Tool | Why |
+| --- | --- |
+| Go 1.27 | Builds the app |
+| Bun 1.4.4 | Builds the front end assets |
+| FFmpeg and `ffprobe` on `PATH` | Renders and checks the MP4 |
+| A `.ttf` font | Draws the text cards. The app finds DejaVu or Arial, or reads `STUDIO_FONT_FILE` |
+
+## Run it
+
+```bash
+cp .env.example .env
+bun install
+bun run build
+go run ./cmd/app migrate
+go run ./cmd/app
+```
+
+Open `http://localhost:3000`. A signed-out visitor lands on `/login`.
+
+Set `SOCIAL_GOOGLE_CLIENT_ID` and `SOCIAL_GOOGLE_CLIENT_SECRET` in `.env` for Google sign-in, and `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` for a model. The [configuration](/docs/configuration) page lists every variable.
+
+## Make a video
+
+1. Sign in, open **New video**, and fill the brief.
+2. Submit. The job page shows `queued`, `planning`, `rendering`, and then `ready`.
+3. Download the MP4.
+
+Without a model key the job still runs: it fails with a message that names the missing variable.
+
+## Try it without a key
+
+`STUDIO_PROVIDER=fake` swaps the model for a deterministic plan and the renderer for a placeholder file. It exists for tests and demos, and the app refuses to boot with it when `APP_ENV=production`.
+
+## Run the checks
+
+```bash
+gofmt -l .
+go vet ./...
+go test ./...
+bun run typecheck
+```
+
+Two tests spend resources and are off by default:
+
+| Flag | Test |
+| --- | --- |
+| `STUDIO_TEST_FFMPEG=1` | Renders a real MP4 and checks the QA rules, including a truncated file |
+| `STUDIO_TEST_REAL_MODEL=1` | One paid Claude call, then a real render. Needs `ANTHROPIC_API_KEY` |

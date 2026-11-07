@@ -16,12 +16,12 @@ export const navigation: NavCategory[] = [
     title: "Getting started",
     dir: "getting-started",
     prefix: "",
-    pages: ["introduction", "repository", "status"],
+    pages: ["introduction", "quickstart", "configuration", "repository", "status"],
   },
   {
     title: "Pipeline",
     dir: "pipeline",
-    pages: ["overview", "brief", "render", "qa"],
+    pages: ["overview", "brief", "jobs", "render", "qa"],
   },
   {
     title: "Tools",
@@ -36,6 +36,11 @@ export const navigation: NavCategory[] = [
   {
     title: "Deployment",
     dir: "deployment",
-    pages: ["railway", "releases"],
+    pages: ["railway", "app", "releases"],
+  },
+  {
+    title: "Security",
+    dir: "security",
+    pages: ["overview"],
   },
 ];

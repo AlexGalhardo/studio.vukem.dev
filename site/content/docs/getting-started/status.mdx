@@ -3,22 +3,23 @@ title: Status
 description: What is in the repository today, and what the roadmap still owns.
 ---
 
-Studio is at `v0.1.0` of the repository, not of a video product. The first slice is the documentation site, the research, the unpacked skills, and the release tooling.
+Studio is a working app and a documentation site. A signed-in user fills a brief, a model writes the scene plan, FFmpeg renders a silent MP4, and the job page offers the download.
 
-## In this repository
+## Working today
 
-- Documentation site with the same docs shell as vukem.dev
-- Research notes in `docs/web-research.md`
-- Skill kits under `.agents/skills/`
-- GitHub Actions for markdown, the site, OpenSSF Scorecard, pull request titles, and version tags
-- Docker image for the documentation site
-- Roadmap with audit checks
+- Google sign-in, sessions, and redirect to `/login` when signed out
+- Brief form with server-side validation and a compiled prompt
+- Claude and OpenAI adapters, with a fake adapter for tests
+- Scene plan as validated structured data
+- FFmpeg text-card renderer with `ffprobe` QA
+- Job queue with progress, retry, a job list, download, per-user isolation, and cost and usage limits
+- Documentation site on the vukem.dev shell, built with Astro
 
-## Not in this repository yet
+## Not built yet
 
-- The Vukem dashboard application
-- Google sign-in
-- A render queue
-- An end-to-end brief that produces an MP4
+- Voice, captions, music, and the loudness gate (phase 5)
+- Publish pack and re-run that keeps the previous file (phase 6)
+- Remotion or HyperFrames styles. The kits under `.agents/skills/` can be chosen in the form, but only the text-card style renders as written
+- Direct upload to a social network
 
-Those items are phases in `ROADMAP.md`. A box is `[x]` when the audit checks under it pass, `[/]` when the work is only partly true, and `[ ]` when it has not started.
+`ROADMAP.md` is the source of truth. A box is `[x]` when the audit checks under it pass, `[/]` when the work is only partly true, and `[ ]` when it has not started.

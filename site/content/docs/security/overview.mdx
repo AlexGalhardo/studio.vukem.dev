@@ -1,0 +1,34 @@
+---
+title: Security
+description: How Studio handles sign-in, user data, secrets, model calls, and FFmpeg.
+---
+
+## Sign-in and sessions
+
+Google is the only sign-in control on `/login`. The session cookie is `HttpOnly` and `SameSite=Lax`, and `Secure` in production. A signed-out request to any private route redirects to `/login`, and JSON clients get `401`.
+
+## Isolation
+
+Every job query includes the signed-in user's id. Another user's job, status, download, and retry all answer `404`, so job ids do not reveal what exists.
+
+## Input
+
+The brief is validated on the server. The style skill must be an id found in the skill catalog, which is built by scanning `.agents/skills/` once, so a brief cannot name a path. Facts and links have count and length limits, and links must be `http` or `https`.
+
+## Secrets
+
+API keys, the OAuth secret, and `APP_KEY` come from the environment. They are not in the repository, the image, logs, or job rows. A provider error is reduced to its HTTP status before it is stored.
+
+## FFmpeg
+
+Commands are argument lists, never shell strings. Scene text goes through files read by `drawtext`, so quotes and colons in a brief cannot change the filter. The output is accepted only after `ffprobe` confirms one H.264 `yuv420p` video stream, no audio, the right frame size and duration, and `+faststart`.
+
+## Spend
+
+Each job is capped by output tokens and by a cost limit, each user has a rolling 24-hour job limit, and a job runs at most three times. The limits are enforced inside database transactions and conditional updates, so parallel requests cannot pass them.
+
+## Continuous checks
+
+The `security-audit` skill (Cloudflare, vendored under `.agents/skills/security-audit`) runs in guidance mode on pull requests together with `govulncheck`. Betterleaks scans for committed secrets, and OpenSSF Scorecard tracks repository hygiene.
+
+Report a vulnerability as described in `SECURITY.md`.

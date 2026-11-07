@@ -1,0 +1,62 @@
+---
+title: App service
+description: Deploy the authenticated Studio app at app.studio.vukem.dev.
+---
+
+Two Railway services serve two hostnames from one repository.
+
+| Host | Service | Config | Health check |
+| --- | --- | --- | --- |
+| `studio.vukem.dev` | `studio` (documentation) | `railway.toml`, `Dockerfile` | `/docs/introduction` |
+| `app.studio.vukem.dev` | `studio-app` (the app) | `railway.app.toml`, `Dockerfile.app` | `/up` |
+
+## Image
+
+`Dockerfile.app` builds the Vite assets and a static Go binary. The runtime image adds `ffmpeg`, a font, and only the `SKILL.md` files of `.agents/skills/`. It runs as a non-root user.
+
+The image sets `QUEUE_CONNECTION=database`, so `serve` runs the render worker beside the web server.
+
+## Before traffic
+
+`railway.app.toml` sets `preDeployCommand = ["/app/app migrate"]`. Railway runs it before the new release receives requests, and a failed migration stops the deploy.
+
+## Variables
+
+Set these on the `studio-app` service. Values are never committed.
+
+| Variable | Notes |
+| --- | --- |
+| `APP_KEY` | Generate once. Keep it stable |
+| `APP_URL` | `https://app.studio.vukem.dev` |
+| `DATABASE_URL` | PostgreSQL URL from the Railway database, or a SQLite file on the volume |
+| `SOCIAL_GOOGLE_CLIENT_ID` | From the Google OAuth client |
+| `SOCIAL_GOOGLE_CLIENT_SECRET` | From the Google OAuth client |
+| `ANTHROPIC_API_KEY` | Claude models |
+| `OPENAI_API_KEY` | Optional, OpenAI models |
+| `STUDIO_MAX_JOBS_PER_DAY` | Optional |
+| `STUDIO_MAX_JOB_COST_CENTS` | Optional |
+
+The image already sets `APP_ENV`, `HOST`, `PORT`, `QUEUE_CONNECTION`, `STUDIO_SKILLS_DIR`, `STUDIO_OUTPUT_DIR`, and `STUDIO_FONT_FILE`. See [Configuration](/docs/configuration) for the rest.
+
+## Volume
+
+Mount a Railway volume at `/app/storage`. It holds the MP4 files in `/app/storage/videos`, and the SQLite file when `DATABASE_URL` points there. Without a volume, files vanish on every deploy.
+
+## Google OAuth
+
+In the Google Cloud console, add these **Authorized redirect URIs** to the OAuth client:
+
+| Environment | Redirect URI |
+| --- | --- |
+| Production | `https://app.studio.vukem.dev/auth/google/callback` |
+| Local | `http://localhost:3000/auth/google/callback` |
+
+The callback is `APP_URL` plus `/auth/google/callback`. A mismatch shows Google's `redirect_uri_mismatch` page, so check `APP_URL` first.
+
+## DNS
+
+| Type | Host | Value |
+| --- | --- | --- |
+| CNAME | `app.studio` | The target Railway shows for the custom domain |
+
+Railway shows the exact target and any verification TXT record when the domain is added to the service.
