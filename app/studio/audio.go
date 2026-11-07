@@ -360,6 +360,10 @@ func DecodeWAV(path string) (samples []float64, rate int, err error) {
 	}
 
 	data := b[44:]
+	if declared := int64(binary.LittleEndian.Uint32(b[40:44])); declared < int64(len(data)) {
+		data = data[:declared]
+	}
+
 	samples = make([]float64, len(data)/2)
 
 	for i := range samples {
