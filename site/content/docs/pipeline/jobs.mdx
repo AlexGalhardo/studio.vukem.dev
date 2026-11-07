@@ -37,7 +37,7 @@ A failure is a stored state, never a silent queue retry, because each model call
 
 | Limit | Default | Enforcement |
 | --- | --- | --- |
-| Jobs per user in any rolling 24 hours | 20 (`STUDIO_MAX_JOBS_PER_DAY`, `0` is unlimited) | Counted inside the insert transaction, behind a per-user lock |
+| Renders per user in any rolling 24 hours | 20 (`STUDIO_MAX_JOBS_PER_DAY`, `0` is unlimited) | A new job and each retry take a slot, counted in the same transaction as the insert or requeue, behind a per-user lock. A refused retry takes none |
 | Duration of one video | 5 to 300 seconds | Brief validation, on the server |
 | Model output tokens per call | 4000 plus 30 per second of video (`STUDIO_MAX_OUTPUT_TOKENS` sets the base) | Sent to the provider |
 | Worst-case cost per job | 100 cents (`STUDIO_MAX_JOB_COST_CENTS`) | Checked before the call |

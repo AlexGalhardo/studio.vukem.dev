@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Next.js dependencies and configuration from `site/`, and the pt-br redirect component (an open redirect)
 
 ### Fixed
+- **security:** A retry takes a slot of the rolling 24-hour quota like a new job, atomically behind the per-user lock; a refused retry takes none, and an exhausted quota answers 429 (ST-SEC-004)
 
 - **security:** The Railway start command no longer runs a recursive `chown` as root over the volume; it changes the mount point and then entries with another owner with `chown -h` (ST-SEC-006). Update the live `studio-app` start command to match
 - **security:** The publish pack and the worker save only their own columns, so a stale read can no longer undo a claim or requeue (ST-SEC-003)

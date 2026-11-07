@@ -187,9 +187,13 @@ func (h *JobController) Retry(c *web.Ctx) error {
 		return err
 	}
 
-	if err := jobs.Requeue(c.Context(), db, row.ID, h.app.Now()); err != nil {
+	if err := jobs.RequeueWithQuota(c.Context(), db, row.ID, row.UserID, jobs.JobsPerDay(h.app.Source.Get), h.app.Now()); err != nil {
 		if errors.Is(err, jobs.ErrBusy) || errors.Is(err, jobs.ErrExhausted) {
 			return errs.Wrap(http.StatusConflict, err)
+		}
+
+		if errors.Is(err, jobs.ErrQuota) {
+			return errs.Wrap(http.StatusTooManyRequests, err)
 		}
 
 		return err
