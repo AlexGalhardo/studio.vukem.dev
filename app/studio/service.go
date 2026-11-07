@@ -47,20 +47,12 @@ func NewService(db *database.DB, cfg Config, log *slog.Logger, now func() time.T
 	}
 }
 
-// Create validates the brief against the catalog and limits, compiles the
-// prompt and stores a queued job.
+// Create validates the brief, compiles the prompt and stores a queued job.
+// The daily limit is taken inside the same transaction as the insert: the
+// counter row is bumped with a conditional UPDATE, so parallel submits
+// cannot pass MaxJobsPerDay (SQLite serialises writers, PostgreSQL locks the
+// counter row).
 func (s *Service) Create(ctx context.Context, userID int64, b Brief) (models.Video, error) {
-	since := s.Now().Add(-24 * time.Hour)
-
-	n, err := orm.QueryOf[models.Video](s.DB).Where("user_id", userID).Where("created_at", ">=", since).Count(ctx)
-	if err != nil {
-		return models.Video{}, err
-	}
-
-	if s.Cfg.MaxJobsPerDay > 0 && int(n) >= s.Cfg.MaxJobsPerDay {
-		return models.Video{}, fmt.Errorf("%w (%d per 24 hours)", ErrDailyLimit, s.Cfg.MaxJobsPerDay)
-	}
-
 	sk, err := s.Skills.Get(b.Skill)
 	if err != nil {
 		return models.Video{}, err
@@ -81,11 +73,46 @@ func (s *Service) Create(ctx context.Context, userID int64, b Brief) (models.Vid
 		Brief: string(raw), SkillID: b.Skill, ModelID: b.Model, Prompt: prompt,
 	}
 
-	if err := orm.Create(ctx, s.DB, &v); err != nil {
+	err = s.DB.Tx(ctx, func(tx *database.Tx) error {
+		if err := s.takeQuota(ctx, tx, userID); err != nil {
+			return err
+		}
+
+		return orm.Create(ctx, tx, &v)
+	})
+	if err != nil {
 		return models.Video{}, err
 	}
 
 	return v, nil
+}
+
+func (s *Service) takeQuota(ctx context.Context, tx *database.Tx, userID int64) error {
+	limit := s.Cfg.MaxJobsPerDay
+	if limit <= 0 {
+		return nil
+	}
+
+	day := s.Now().UTC().Format("2006-01-02")
+
+	if _, err := tx.ExecContext(ctx, database.Rebind(tx.Dialect(),
+		"INSERT INTO video_quotas (user_id, day, used) VALUES (?, ?, 0) ON CONFLICT (user_id, day) DO NOTHING"), userID, day); err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, database.Rebind(tx.Dialect(),
+		"UPDATE video_quotas SET used = used + 1 WHERE user_id = ? AND day = ? AND used < ?"), userID, day, limit)
+	if err != nil {
+		return err
+	}
+
+	if n, err := res.RowsAffected(); err != nil {
+		return err
+	} else if n == 0 {
+		return fmt.Errorf("%w (%d per UTC day)", ErrDailyLimit, limit)
+	}
+
+	return nil
 }
 
 // Retry puts a failed job back in the queue.
