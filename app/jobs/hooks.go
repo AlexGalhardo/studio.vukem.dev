@@ -1,6 +1,8 @@
 package jobs
 
 import (
+	"strconv"
+	"strings"
 	"sync"
 
 	vukem "github.com/AlexGalhardo/vukem"
@@ -29,7 +31,42 @@ func PlannerFor(app *vukem.App) studio.Planner {
 		}
 	}
 
-	return studio.LocalPlanner{}
+	return plannerFromEnv(app)
+}
+
+// plannerFromEnv picks the hosted model: STUDIO_MODEL when set, else
+// claude-sonnet-5-5 when ANTHROPIC_API_KEY is set, else the local planner.
+// An explicit model without its key fails each job with a readable reason.
+func plannerFromEnv(app *vukem.App) studio.Planner {
+	if app == nil {
+		return studio.LocalPlanner{}
+	}
+
+	model := app.Source.Get("STUDIO_MODEL")
+	if model == "" && app.Source.Get("ANTHROPIC_API_KEY") != "" {
+		model = studio.ModelClaudeSonnet
+	}
+
+	if model == "" || model == "local-planner" {
+		return studio.LocalPlanner{}
+	}
+
+	key := app.Source.Get("OPENAI_API_KEY")
+	if strings.HasPrefix(model, "claude-") {
+		key = app.Source.Get("ANTHROPIC_API_KEY")
+	}
+
+	maxTokens, _ := strconv.Atoi(app.Source.Get("STUDIO_MAX_OUTPUT_TOKENS"))
+
+	costCents := 100
+	if v, err := strconv.Atoi(app.Source.Get("STUDIO_MAX_JOB_COST_CENTS")); err == nil && v >= 0 {
+		costCents = v
+	}
+
+	return studio.NewLLMPlanner(studio.LLMConfig{
+		Model: model, Key: key, MaxTokens: maxTokens, MaxCostMicros: int64(costCents) * 10_000,
+		BaseURL: app.Source.Get("STUDIO_LLM_BASE_URL"),
+	})
 }
 
 // UseRenderer makes app encode with r. The default follows STUDIO_RENDERER.
