@@ -34,6 +34,15 @@ func handleRender(app *vukem.App) func(context.Context, Render) error {
 			return err
 		}
 
+		claimed, err := Claim(ctx, db, row.ID, app.Now())
+		if err != nil {
+			return err
+		}
+
+		if !claimed {
+			return nil
+		}
+
 		root := RootFor(app)
 		voice := ""
 

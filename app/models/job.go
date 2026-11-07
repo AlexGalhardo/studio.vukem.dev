@@ -32,4 +32,8 @@ type Job struct {
 	PackTitle       string `json:"pack_title"`
 	PackDescription string `json:"pack_description"`
 	PackHashtags    string `json:"pack_hashtags"`
+	Attempts        int    `json:"attempts"`
+	// CreatedUnix is epoch milliseconds written by the quota code; the 24-hour
+	// window compares it as an integer, never the timestamp text.
+	CreatedUnix int64 `json:"-"`
 }
