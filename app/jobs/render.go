@@ -64,21 +64,7 @@ func handleRender(app *vukem.App) func(context.Context, Render) error {
 			Planner:  PlannerFor(app),
 			Renderer: RendererFor(app),
 			Save: func(ctx context.Context, st studio.State) error {
-				current, err := orm.QueryOf[models.Job](db).Find(ctx, st.ID)
-				if err != nil {
-					return err
-				}
-
-				current.Status = st.Status
-				current.Failure = st.Failure
-				current.Script = st.Script
-				current.PlanJSON = st.PlanJSON
-				current.RawModel = st.RawModel
-				current.SidecarJSON = st.Sidecar
-				current.ModelID = st.ModelID
-				current.Prompt = st.Prompt
-
-				return orm.Update(ctx, db, &current)
+				return SaveRun(ctx, db, st)
 			},
 		})
 	}

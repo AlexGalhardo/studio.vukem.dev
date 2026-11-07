@@ -277,7 +277,9 @@ func (h *JobController) Pack(c *web.Ctx) error {
 	row.PackDescription = in.Description
 	row.PackHashtags = in.Hashtags
 
-	if err := orm.Update(c.Context(), db, &row); err != nil {
+	// Only the pack columns: a whole-row write of this earlier read would undo a
+	// claim or requeue that happened since.
+	if err := jobs.SavePack(c.Context(), db, row.ID, in.Platform, in.Title, in.Description, in.Hashtags); err != nil {
 		return err
 	}
 
