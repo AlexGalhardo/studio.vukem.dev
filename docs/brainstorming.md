@@ -13,7 +13,7 @@ Confidence: about 80%. Hostname is `studio.vukem.dev`. Still open: whether the f
 ## What was taken as given
 
 - English in the repository: docs, UI, commits, comments.
-- The docs site is Next.js and matches the vukem.dev docs shell. `/` on that site redirects to the introduction.
+- The docs site is Astro (static build) and matches the vukem.dev docs shell. `/` on that site redirects to the introduction.
 - The product application is a separate Vukem app: Inertia, React, shadcn-style sidebar. `/` is the dashboard. A signed-out session redirects to `/login` with a single Google button.
 - The render path is FFmpeg plus Remotion, with a language model writing the plan. HyperFrames is the permissive alternative recorded in the research.
 - Skills from `zip/` live in `.agents/skills/`.
