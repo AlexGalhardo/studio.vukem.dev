@@ -1,0 +1,13 @@
+# The authenticated app at https://app.studio.vukem.dev. Point the Railway
+# service at this file (Settings, Config-as-code, /railway.app.toml).
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.app"
+
+[deploy]
+# Migrations run before the new release takes traffic.
+preDeployCommand = ["/app/app migrate"]
+healthcheckPath = "/up"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
