@@ -1,39 +1,47 @@
 ---
 title: Jobs
-description: Job states, progress, retries, limits, storage, and the JSON endpoints.
+description: Job states, retries, limits, storage, and the JSON endpoints.
 ---
 
-A brief becomes a job row. A queue worker runs it.
+A brief becomes a job row. A queue worker plans, renders, and checks it.
 
 ## States
 
 | Status | Meaning |
 | --- | --- |
 | `queued` | Stored with its compiled prompt, waiting for a worker |
-| `planning` | The model is writing the scene plan |
-| `rendering` | FFmpeg is rendering and QA is pending. Progress runs from 20 to 100 |
+| `rendering` | The model is writing the plan, then FFmpeg encodes and QA checks the file |
 | `ready` | The MP4 passed QA and can be downloaded |
 | `failed` | A readable reason is stored on the job |
 
-A job row keeps the brief, the skill id, the model id, the prompt, the raw model reply, the parsed plan, token counts, the estimated cost, and a sidecar with the FFmpeg version.
+A job row keeps the brief, the style, the model id, the prompt, the raw model reply, the parsed plan, the script, the sidecar with the renderer and FFmpeg versions, and the publish pack.
 
 ## Failures
 
-A failure is a stored state, never a silent retry, because each model call costs money.
+A failure is a stored state, never a silent queue retry, because each model call costs money.
 
 | Cause | What the job shows |
 | --- | --- |
-| No API key | The variable to set |
+| Hosted model without its key | The variable to set, for example `ANTHROPIC_API_KEY` |
 | Model error or timeout | The provider status, without the response body |
-| Reply is not a valid plan | The validation error. The raw reply stays on the job |
-| Worst-case or actual cost over the cap | Both amounts and the variable to change |
-| Encoder crash or failed QA | The FFmpeg or QA message |
+| Worst-case cost over the cap | Both amounts and the variable to change |
+| Reply is not a scene plan | `the model output is not a scene plan`. The raw reply stays on the job |
+| A must-keep fact missing from the script | The fact |
+| Encoder crash, timeout, or failed QA | The encoder or QA message |
 
-**Try again** re-queues a failed job. A job may run three times in total.
+## Re-run
 
-## Output
+**Retry** renders a `ready` or `failed` job again. The previous ready file stays in place until the new file passes QA, so one job never owns two public files. A job may be rendered five times in total. Parallel retries queue it at most once, and a retry of a job that is queued or rendering answers `409`.
 
-The renderer writes to a temporary directory and moves the file into `STUDIO_OUTPUT_DIR/<user id>/<job id>.mp4` only after QA passes. A retry replaces that one file, so a job never owns two public files. Download is offered only when the status is `ready`.
+## Limits
+
+| Limit | Default | Enforcement |
+| --- | --- | --- |
+| Jobs per user in any rolling 24 hours | 20 (`STUDIO_MAX_JOBS_PER_DAY`, `0` is unlimited) | Counted inside the insert transaction, behind a per-user lock |
+| Model output tokens per call | 4000 (`STUDIO_MAX_OUTPUT_TOKENS`) | Sent to the provider |
+| Worst-case cost per job | 100 cents (`STUDIO_MAX_JOB_COST_CENTS`) | Checked before the call |
+| One encoder or probe process | 5 minutes | Killed at the deadline |
+| Plan size | 200 shots, 500 characters per caption | Plan validation |
 
 ## Endpoints
 
@@ -41,12 +49,13 @@ All routes need a signed-in user with a verified email. A job of another user an
 
 | Method and path | Purpose |
 | --- | --- |
-| `GET /videos` | List your jobs |
-| `GET /videos/create` | The brief form |
-| `POST /videos` | Create a job. `201` with JSON, or a redirect for the web UI |
-| `GET /videos/{id}` | One job |
-| `GET /videos/{id}/status` | State, stage, progress, error. Used for polling |
-| `GET /videos/{id}/download` | The MP4. `409` until the job is ready |
-| `POST /videos/{id}/retry` | Re-queue a failed job. `409` when it is not failed or has no attempts left |
+| `GET /jobs` | List your jobs |
+| `GET /jobs/create` | The brief form |
+| `POST /jobs` | Create a job. `201` with JSON, or a redirect for the web UI |
+| `GET /jobs/{id}` | One job with its prompt and plan |
+| `POST /jobs/{id}/retry` | Re-render. `409` when it is queued, rendering, or out of attempts |
+| `GET /jobs/{id}/download` | The MP4. `404` until the job is ready |
+| `GET /jobs/{id}/captions.srt` | The caption file |
+| `POST /jobs/{id}/pack` | Build the publish pack for a platform |
 
-Send `Accept: application/json` to get JSON instead of Inertia pages. An invalid brief answers `422` with a `{field: [messages]}` body.
+Send `Accept: application/json` to get JSON instead of Inertia pages. An invalid brief answers `422` with a `{field: [messages]}` body, and a signed-out JSON request answers `401`.
