@@ -10,10 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **security:** Vendor the Cloudflare security-audit skill and run it on pull requests (guidance mode)
+- **app:** Video jobs at `/videos`: validated brief, compiled prompt, Claude and OpenAI adapters plus a fake adapter, validated scene plan, FFmpeg text-card renderer with ffprobe QA, queue worker with progress, job list and detail, download, retry, and per-user isolation
+- **app:** Limits: output-token and cost cap per job, rolling 24-hour job quota behind a per-user lock, at most three attempts per job
+- **app:** `video-text-cards` style skill that the FFmpeg renderer renders as written
+- **deploy:** `Dockerfile.app` ships ffmpeg, a font, the skill catalog and `QUEUE_CONNECTION=database`; `railway.app.toml` runs `migrate` before traffic and checks `/up`
+- **docs:** Quickstart, configuration, jobs, app deployment and security pages
+- **test:** Go flow tests and parallel-request tests for quota, claim and retry; env-flagged real FFmpeg and real Claude tests
 
 ### Changed
 
 - Bump vukem to v0.38.0
+- **site:** The documentation site is built with Astro on the vukem.dev site shell instead of Next.js. Build `npm run build` (writes `dist/`), start `npm start`; `/` and `/docs` answer 307 to `/docs/introduction`
+- The posts example resource is gone; the dashboard links to videos
+
+### Removed
+
+- Next.js dependencies and configuration from `site/`
 
 ### Fixed
 

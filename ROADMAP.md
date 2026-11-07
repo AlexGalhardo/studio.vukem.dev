@@ -97,24 +97,24 @@ No pixels yet. The dashboard writes a job the worker can read.
 
 ### 3.1 Brief form
 
-- [ ] Fields from [the brief page](site/content/docs/pipeline/brief.mdx): goal, audience, subject, duration, ratio, style skill, language, facts, links, call to action
-- [ ] Server-side validation. The browser is not the gate
-- [ ] Style skill must be an id that exists under `.agents/skills/`
-- [ ] Empty required field returns a field error, not a 500
+- [x] Fields from [the brief page](site/content/docs/pipeline/brief.mdx): goal, audience, subject, duration, ratio, style skill, language, facts, links, call to action
+- [x] Server-side validation. The browser is not the gate
+- [x] Style skill must be an id that exists under `.agents/skills/`
+- [x] Empty required field returns a field error, not a 500
 
 ### 3.2 Compiler
 
-- [ ] Compiler builds one prompt from the brief plus the chosen skill
-- [ ] Must-keep facts are copied in as constraints
-- [ ] Frame size and duration are in the prompt
-- [ ] The job row stores the prompt text, the skill id, and the model id
-- [ ] The operator can read the prompt in the dashboard
+- [x] Compiler builds one prompt from the brief plus the chosen skill
+- [x] Must-keep facts are copied in as constraints
+- [x] Frame size and duration are in the prompt
+- [x] The job row stores the prompt text, the skill id, and the model id
+- [x] The operator can read the prompt in the dashboard
 
 #### Audit — phase 3
 
-- [ ] Test: missing goal is rejected
-- [ ] Test: unknown style id is rejected
-- [ ] Test: a fact string in the brief is present in the stored prompt
+- [x] Test: missing goal is rejected
+- [x] Test: unknown style id is rejected
+- [x] Test: a fact string in the brief is present in the stored prompt
 - [ ] Browser: submit a valid brief and see the stored prompt
 
 ## Phase 4 — First MP4
@@ -123,29 +123,29 @@ The definition of done for this phase is one silent 9:16 file from a brief, chec
 
 ### 4.1 Plan
 
-- [ ] Model adapter (one provider) returns a scene plan as structured data
-- [ ] Invalid model output is a failed job with the raw response stored
-- [ ] Duration on the plan fits the brief
+- [x] Model adapter (one provider) returns a scene plan as structured data
+- [x] Invalid model output is a failed job with the raw response stored
+- [x] Duration on the plan fits the brief
 
 ### 4.2 Render
 
-- [ ] Worker renders the silent style through HyperFrames or Remotion
-- [ ] FFmpeg encodes H.264, `yuv420p`, `+faststart`, no audio stream
-- [ ] Job status moves `queued -> rendering -> ready` or `failed`
-- [ ] Retry does not leave a second public file for the same job
-- [ ] Sidecar stores renderer version, FFmpeg version, skill id, prompt
+- [/] Worker renders the silent style through HyperFrames or Remotion (the text-card style renders with FFmpeg alone; Remotion and HyperFrames styles are not wired)
+- [x] FFmpeg encodes H.264, `yuv420p`, `+faststart`, no audio stream
+- [x] Job status moves `queued -> rendering -> ready` or `failed`
+- [x] Retry does not leave a second public file for the same job
+- [x] Sidecar stores renderer version, FFmpeg version, skill id, prompt
 
 ### 4.3 Check
 
-- [ ] QA rules on [the QA page](site/content/docs/pipeline/qa.mdx) for a silent file
-- [ ] A truncated file stays `failed`
-- [ ] Dashboard offers download only when status is `ready`
+- [/] QA rules on [the QA page](site/content/docs/pipeline/qa.mdx) for a silent file
+- [x] A truncated file stays `failed`
+- [x] Dashboard offers download only when status is `ready`
 
 #### Audit — phase 4
 
-- [ ] Fixture brief renders in CI or a documented local command (no network key required for the silent path)
-- [ ] `ffprobe` on the fixture output matches ratio, pixel format, and faststart
-- [ ] Failed fixture (killed encoder) stays `failed` and is not downloadable
+- [x] Fixture brief renders in CI or a documented local command (no network key required for the silent path)
+- [x] `ffprobe` on the fixture output matches ratio, pixel format, and faststart
+- [x] Failed fixture (killed encoder) stays `failed` and is not downloadable
 - [ ] Browser: brief, wait, download, file plays
 
 ## Phase 5 — Spoken cut
@@ -165,14 +165,14 @@ The definition of done for this phase is one silent 9:16 file from a brief, chec
 
 ## Phase 6 — Library and publish pack
 
-- [ ] Job list with status, duration, and style
+- [x] Job list with status, duration, and style
 - [ ] Re-run keeps the previous ready file until the new one passes
 - [ ] Publish pack: title, description, hashtags, and `.srt`, validated against the limits in the publication skill
 - [ ] No automatic post to a social network in this phase
 
 ### Audit — phase 6
 
-- [ ] Two jobs from one user do not leak across a second test user
+- [x] Two jobs from one user do not leak across a second test user
 - [ ] Publish pack rejects a title over the platform limit named in the skill
 - [ ] Browser: list, open, download, see the pack
 
