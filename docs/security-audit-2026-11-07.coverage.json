@@ -1,0 +1,689 @@
+[
+  {
+    "coverage_id": ".github%2Fworkflows%23CI%20and%20release::permissions%20and%20SHA%20pins::ci::ATTACK-CLASSES.md%23Chained%20vulnerabilities%20and%20trust%20boundaries",
+    "canonical_refs": {
+      "surface": ".github/workflows#CI and release",
+      "boundary": "permissions and SHA pins",
+      "subsystem": "ci",
+      "attack_class": "ATTACK-CLASSES.md#Chained vulnerabilities and trust boundaries"
+    },
+    "surface": ".github/workflows#CI and release",
+    "boundary": "permissions and SHA pins",
+    "subsystem": "ci",
+    "attack_class": "Chained vulnerabilities and trust boundaries",
+    "starting_paths": [
+      ".github/workflows/ci.yml",
+      ".github/workflows/release.yml",
+      ".github/workflows/security-audit.yml",
+      ".github/workflows/pr-title.yml"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Chained vulnerabilities and trust boundaries",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      ".github/workflows/ci.yml",
+      ".github/workflows/release.yml",
+      ".github/workflows/security-audit.yml",
+      ".github/workflows/pr-title.yml"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          ".github/workflows/ci.yml",
+          ".github/workflows/release.yml",
+          ".github/workflows/security-audit.yml",
+          ".github/workflows/pr-title.yml"
+        ],
+        "invariant": "token scopes, pinned actions, input handling",
+        "method": "source",
+        "result": "no violation found",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "app%2Fcontrollers%2Fjob_controller.go%23POST%20%2Fjobs%2F%7Bjob%7D%2F%2A::app%2Fcontrollers%2Fjob_controller.go%23find::app::ATTACK-CLASSES.md%23Access%20control",
+    "canonical_refs": {
+      "surface": "app/controllers/job_controller.go#POST /jobs/{job}/*",
+      "boundary": "app/controllers/job_controller.go#find",
+      "subsystem": "app",
+      "attack_class": "ATTACK-CLASSES.md#Access control"
+    },
+    "surface": "app/controllers/job_controller.go#POST /jobs/{job}/*",
+    "boundary": "app/controllers/job_controller.go#find",
+    "subsystem": "app",
+    "attack_class": "Access control",
+    "starting_paths": [
+      "app/controllers/job_controller.go",
+      "routes/jobs.go"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Access control",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "app/controllers/job_controller.go",
+      "routes/jobs.go"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "app/controllers/job_controller.go",
+          "routes/jobs.go"
+        ],
+        "invariant": "owner filter on every job read, download, captions, pack, retry",
+        "method": "source",
+        "result": "no violation found",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "app%2Fcontrollers%2Fjob_controller.go%23POST%20%2Fjobs%2F%7Bjob%7D%2Fpack::app%2Fjobs%2Flimits.go%23Claim::app%2Fjobs::ATTACK-CLASSES.md%23Business%20logic",
+    "canonical_refs": {
+      "surface": "app/controllers/job_controller.go#POST /jobs/{job}/pack",
+      "boundary": "app/jobs/limits.go#Claim",
+      "subsystem": "app/jobs",
+      "attack_class": "ATTACK-CLASSES.md#Business logic"
+    },
+    "surface": "app/controllers/job_controller.go#POST /jobs/{job}/pack",
+    "boundary": "app/jobs/limits.go#Claim",
+    "subsystem": "app/jobs",
+    "attack_class": "Business logic",
+    "starting_paths": [
+      "app/controllers/job_controller.go",
+      "app/jobs/render.go"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Business logic",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "app/controllers/job_controller.go",
+      "app/jobs/render.go"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "app/controllers/job_controller.go",
+          "app/jobs/render.go"
+        ],
+        "invariant": "whole-row writes versus conditional claim",
+        "method": "source",
+        "result": "candidate raised: ST-SEC-003",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "ST-SEC-003"
+    ],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "app%2Fcontrollers%2Fjob_controller.go%23POST%20%2Fjobs::app%2Frequests%2Fbrief.go%23BriefSchema::app::ATTACK-CLASSES.md%23Resource%20and%20file%20handling",
+    "canonical_refs": {
+      "surface": "app/controllers/job_controller.go#POST /jobs",
+      "boundary": "app/requests/brief.go#BriefSchema",
+      "subsystem": "app",
+      "attack_class": "ATTACK-CLASSES.md#Resource and file handling"
+    },
+    "surface": "app/controllers/job_controller.go#POST /jobs",
+    "boundary": "app/requests/brief.go#BriefSchema",
+    "subsystem": "app",
+    "attack_class": "Resource and file handling",
+    "starting_paths": [
+      "app/controllers/job_controller.go",
+      "app/requests/brief.go",
+      "app/studio/run.go",
+      "app/studio/audio.go"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Resource and file handling",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "app/controllers/job_controller.go",
+      "app/requests/brief.go",
+      "app/studio/run.go",
+      "app/studio/audio.go"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "app/controllers/job_controller.go",
+          "app/requests/brief.go",
+          "app/studio/run.go",
+          "app/studio/audio.go"
+        ],
+        "invariant": "voice upload size, type and decoded length",
+        "method": "source",
+        "result": "candidate raised: ST-SEC-001",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "ST-SEC-001"
+    ],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "app%2Fjobs%2Fhooks.go%23plannerFromEnv::app%2Fstudio%2Fllm.go%23postJSON::app%2Fjobs::ATTACK-CLASSES.md%23Cryptography%20and%20secrets",
+    "canonical_refs": {
+      "surface": "app/jobs/hooks.go#plannerFromEnv",
+      "boundary": "app/studio/llm.go#postJSON",
+      "subsystem": "app/jobs",
+      "attack_class": "ATTACK-CLASSES.md#Cryptography and secrets"
+    },
+    "surface": "app/jobs/hooks.go#plannerFromEnv",
+    "boundary": "app/studio/llm.go#postJSON",
+    "subsystem": "app/jobs",
+    "attack_class": "Cryptography and secrets",
+    "starting_paths": [
+      "app/jobs/hooks.go",
+      "app/studio/llm.go"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Cryptography and secrets",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "app/jobs/hooks.go",
+      "app/studio/llm.go"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "app/jobs/hooks.go",
+          "app/studio/llm.go"
+        ],
+        "invariant": "API key handling and cost cap",
+        "method": "source",
+        "result": "no violation found",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "app%2Fjobs%2Flimits.go%23Requeue::app%2Fjobs%2Flimits.go%23takeQuota::app%2Fjobs::ATTACK-CLASSES.md%23Business%20logic",
+    "canonical_refs": {
+      "surface": "app/jobs/limits.go#Requeue",
+      "boundary": "app/jobs/limits.go#takeQuota",
+      "subsystem": "app/jobs",
+      "attack_class": "ATTACK-CLASSES.md#Business logic"
+    },
+    "surface": "app/jobs/limits.go#Requeue",
+    "boundary": "app/jobs/limits.go#takeQuota",
+    "subsystem": "app/jobs",
+    "attack_class": "Business logic",
+    "starting_paths": [
+      "app/jobs/limits.go",
+      "app/controllers/job_controller.go"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Business logic",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "app/jobs/limits.go",
+      "app/controllers/job_controller.go"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "app/jobs/limits.go",
+          "app/controllers/job_controller.go"
+        ],
+        "invariant": "retry and quota accounting",
+        "method": "source",
+        "result": "candidate raised: ST-SEC-004",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "ST-SEC-004"
+    ],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "app%2Fstudio%2Fllm.go%23LLMPlanner.Plan::app%2Fstudio%2Fplan.go%23Plan.Valid::app%2Fstudio::ATTACK-CLASSES.md%23Injection",
+    "canonical_refs": {
+      "surface": "app/studio/llm.go#LLMPlanner.Plan",
+      "boundary": "app/studio/plan.go#Plan.Valid",
+      "subsystem": "app/studio",
+      "attack_class": "ATTACK-CLASSES.md#Injection"
+    },
+    "surface": "app/studio/llm.go#LLMPlanner.Plan",
+    "boundary": "app/studio/plan.go#Plan.Valid",
+    "subsystem": "app/studio",
+    "attack_class": "Injection",
+    "starting_paths": [
+      "app/studio/llm.go",
+      "app/studio/compile.go",
+      "app/studio/plan.go",
+      "app/studio/skills.go"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Injection",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "app/studio/llm.go",
+      "app/studio/compile.go",
+      "app/studio/plan.go",
+      "app/studio/skills.go"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "app/studio/llm.go",
+          "app/studio/compile.go",
+          "app/studio/plan.go",
+          "app/studio/skills.go"
+        ],
+        "invariant": "prompt compiler and model output validation",
+        "method": "source",
+        "result": "no violation found",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "app%2Fstudio%2Frender.go%23FFmpegRenderer.Render::app%2Fstudio%2Fexec.go%23commandCtx::app%2Fstudio::ATTACK-CLASSES.md%23Injection",
+    "canonical_refs": {
+      "surface": "app/studio/render.go#FFmpegRenderer.Render",
+      "boundary": "app/studio/exec.go#commandCtx",
+      "subsystem": "app/studio",
+      "attack_class": "ATTACK-CLASSES.md#Injection"
+    },
+    "surface": "app/studio/render.go#FFmpegRenderer.Render",
+    "boundary": "app/studio/exec.go#commandCtx",
+    "subsystem": "app/studio",
+    "attack_class": "Injection",
+    "starting_paths": [
+      "app/studio/render.go",
+      "app/studio/exec.go",
+      "app/studio/captions.go"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Injection",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "app/studio/render.go",
+      "app/studio/exec.go",
+      "app/studio/captions.go"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "app/studio/render.go",
+          "app/studio/exec.go",
+          "app/studio/captions.go"
+        ],
+        "invariant": "ffmpeg argument list, deadlines, caption text",
+        "method": "source",
+        "result": "no violation found",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "railway.app.toml%23startCommand::Dockerfile.app%23USER::deploy::ATTACK-CLASSES.md%23Chained%20vulnerabilities%20and%20trust%20boundaries",
+    "canonical_refs": {
+      "surface": "railway.app.toml#startCommand",
+      "boundary": "Dockerfile.app#USER",
+      "subsystem": "deploy",
+      "attack_class": "ATTACK-CLASSES.md#Chained vulnerabilities and trust boundaries"
+    },
+    "surface": "railway.app.toml#startCommand",
+    "boundary": "Dockerfile.app#USER",
+    "subsystem": "deploy",
+    "attack_class": "Chained vulnerabilities and trust boundaries",
+    "starting_paths": [
+      "railway.app.toml",
+      "Dockerfile.app",
+      "Dockerfile",
+      "railway.toml"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Chained vulnerabilities and trust boundaries",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "railway.app.toml",
+      "Dockerfile.app",
+      "Dockerfile",
+      "railway.toml"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "railway.app.toml",
+          "Dockerfile.app",
+          "Dockerfile",
+          "railway.toml"
+        ],
+        "invariant": "root start, chown, image defaults",
+        "method": "source",
+        "result": "candidate raised: ST-SEC-006, ST-SEC-007",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "ST-SEC-006",
+      "ST-SEC-007"
+    ],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "resources%2Fjs%23Inertia%20pages::resources%2Fviews%2Fapp.html%23Inertia::resources%2Fjs::ATTACK-CLASSES.md%23Injection",
+    "canonical_refs": {
+      "surface": "resources/js#Inertia pages",
+      "boundary": "resources/views/app.html#Inertia",
+      "subsystem": "resources/js",
+      "attack_class": "ATTACK-CLASSES.md#Injection"
+    },
+    "surface": "resources/js#Inertia pages",
+    "boundary": "resources/views/app.html#Inertia",
+    "subsystem": "resources/js",
+    "attack_class": "Injection",
+    "starting_paths": [
+      "resources/js/pages/Jobs/Show.tsx",
+      "resources/js/pages/Jobs/Index.tsx",
+      "resources/views/app.html"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Injection",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "resources/js/pages/Jobs/Show.tsx",
+      "resources/js/pages/Jobs/Index.tsx",
+      "resources/views/app.html"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "resources/js/pages/Jobs/Show.tsx",
+          "resources/js/pages/Jobs/Index.tsx",
+          "resources/views/app.html"
+        ],
+        "invariant": "no raw HTML sinks in app pages",
+        "method": "source",
+        "result": "no violation found",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "routes%2Fauth.go%23POST%20%2Flogin::app%2Faccounts%2Fusers.go%23Register::app%2Faccounts::ATTACK-CLASSES.md%23Obvious%20things",
+    "canonical_refs": {
+      "surface": "routes/auth.go#POST /login",
+      "boundary": "app/accounts/users.go#Register",
+      "subsystem": "app/accounts",
+      "attack_class": "ATTACK-CLASSES.md#Obvious things"
+    },
+    "surface": "routes/auth.go#POST /login",
+    "boundary": "app/accounts/users.go#Register",
+    "subsystem": "app/accounts",
+    "attack_class": "Obvious things",
+    "starting_paths": [
+      "routes/auth.go",
+      "app/accounts/users.go",
+      "app/accounts/passwords.go",
+      "app/controllers/account/verification.go"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Obvious things",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "routes/auth.go",
+      "app/accounts/users.go",
+      "app/accounts/passwords.go",
+      "app/controllers/account/verification.go"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "routes/auth.go",
+          "app/accounts/users.go",
+          "app/accounts/passwords.go",
+          "app/controllers/account/verification.go"
+        ],
+        "invariant": "password auth, reset, verification",
+        "method": "source",
+        "result": "candidate raised: ST-SEC-005",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "ST-SEC-005"
+    ],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "routes%2Fsocial.go%23GET%20%2Fauth%2F%7Bprovider%7D%2Fcallback::app%2Faccounts%2Fsocial.go%23FindOrCreateFromSocial::app%2Faccounts::ATTACK-CLASSES.md%23Access%20control",
+    "canonical_refs": {
+      "surface": "routes/social.go#GET /auth/{provider}/callback",
+      "boundary": "app/accounts/social.go#FindOrCreateFromSocial",
+      "subsystem": "app/accounts",
+      "attack_class": "ATTACK-CLASSES.md#Access control"
+    },
+    "surface": "routes/social.go#GET /auth/{provider}/callback",
+    "boundary": "app/accounts/social.go#FindOrCreateFromSocial",
+    "subsystem": "app/accounts",
+    "attack_class": "Access control",
+    "starting_paths": [
+      "routes/social.go",
+      "app/accounts/social.go"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Access control",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "routes/social.go",
+      "app/accounts/social.go"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "routes/social.go",
+          "app/accounts/social.go"
+        ],
+        "invariant": "Google login, account linking, state",
+        "method": "source",
+        "result": "no violation found",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": []
+  },
+  {
+    "coverage_id": "site%2Fscripts%2Fserve.ts%23static%20server::site%2Fscripts%2Fstatic-path.ts%23resolveRequest::site::ATTACK-CLASSES.md%23Resource%20and%20file%20handling",
+    "canonical_refs": {
+      "surface": "site/scripts/serve.ts#static server",
+      "boundary": "site/scripts/static-path.ts#resolveRequest",
+      "subsystem": "site",
+      "attack_class": "ATTACK-CLASSES.md#Resource and file handling"
+    },
+    "surface": "site/scripts/serve.ts#static server",
+    "boundary": "site/scripts/static-path.ts#resolveRequest",
+    "subsystem": "site",
+    "attack_class": "Resource and file handling",
+    "starting_paths": [
+      "site/scripts/serve.ts",
+      "site/scripts/static-path.ts",
+      "site/components/mdx/code-block.tsx"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Resource and file handling",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "AI-AND-LLM.md#Core discipline",
+        "reason": "not run as a separate wave; prompt and model-output paths were reviewed by the parent under Injection"
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "parent",
+    "reviewed_paths": [
+      "site/scripts/serve.ts",
+      "site/scripts/static-path.ts",
+      "site/components/mdx/code-block.tsx"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "parent",
+        "reviewed_paths": [
+          "site/scripts/serve.ts",
+          "site/scripts/static-path.ts",
+          "site/components/mdx/code-block.tsx"
+        ],
+        "invariant": "path confinement and HTML sinks",
+        "method": "source",
+        "result": "no violation found",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": []
+  }
+]

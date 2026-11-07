@@ -1,0 +1,488 @@
+[
+  {
+    "verdict": "confirmed",
+    "fingerprint": "ST-SEC-001",
+    "title": "Voice upload WAV header lies about its length and crashes the whole process (unrecoverable out-of-memory)",
+    "description": "A verified user uploads a WAV whose data-chunk size field declares a few hundred bytes at 1 Hz while the file carries megabytes of trailing data. ffprobe trusts the header and reports the requested duration, so the duration check passes. DecodeWAV then reads every byte after the header and resample multiplies the sample count by 48000/rate, requesting a slice of terabytes. Go raises a fatal out-of-memory error that cannot be recovered, ending the web server and the queue worker that run in the same process.",
+    "root_cause": "prepareVoice validates the duration reported by ffprobe (header based) but DecodeWAV ignores the declared data size and the decoded duration is never compared; resample allocates len(in)*to/from elements with no ceiling.",
+    "intended_behavior": "A voice track must last as long as the brief and the worker must never allocate more than about duration*48000 samples.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "app/controllers/job_controller.go",
+        "line": 124,
+        "scope": "JobController.Store",
+        "description": "saveVoice stores the multipart file (sniffed only as RIFF/WAVE, up to 10 MiB) as upload.wav"
+      },
+      {
+        "kind": "propagation",
+        "file": "app/studio/run.go",
+        "line": 263,
+        "scope": "prepareVoice",
+        "description": "MediaDuration (ffprobe, header based) is compared with the brief duration"
+      },
+      {
+        "kind": "propagation",
+        "file": "app/studio/audio.go",
+        "line": 362,
+        "scope": "DecodeWAV",
+        "description": "samples are taken from b[44:], ignoring the declared data size"
+      },
+      {
+        "kind": "sink",
+        "file": "app/studio/run.go",
+        "line": 314,
+        "scope": "resample",
+        "description": "make([]float64, len(in)*48000/rate) with rate taken from the file header"
+      }
+    ],
+    "evidence": [
+      {
+        "file": "app/studio/audio.go",
+        "line": 354,
+        "description": "rate is read from the header with only rate > 0 checked"
+      },
+      {
+        "file": "app/studio/run.go",
+        "line": 282,
+        "description": "resample is applied whenever the header rate differs from 48000"
+      },
+      {
+        "file": "app/requests/brief.go",
+        "line": 646,
+        "description": "z.File only sniffs the first bytes and the default body cap is 10 MiB"
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "authentication_level",
+        "description": "Signed-in user with a verified email (Google sign-in)."
+      },
+      {
+        "kind": "system_configuration",
+        "description": "Voice upload path; any deployment with the renderer worker in the serve process."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "Verified user of the app.",
+      "payloads": [
+        "WAV, 44-byte header: fmt mono 16-bit, sample rate 1, data size 600, followed by 10 MiB of arbitrary bytes"
+      ],
+      "instructions": [
+        "Build the file described above.",
+        "POST /jobs with duration=300 and voice=upload plus that file.",
+        "The worker claims the job and runs studio.Run."
+      ],
+      "observed_result": "Local run of studio.Run with that file: 'runtime: VirtualAlloc of 20132659200001455 ... fatal error: out of memory' and the process exits. ffprobe reports duration=300.000000 for the same header."
+    },
+    "remediation": {
+      "strategy": "Honor the declared data size in DecodeWAV, compare the decoded duration (samples/rate) with the brief before resampling, and cap the resample output length."
+    },
+    "severity": {
+      "likelihood": {
+        "score": "medium",
+        "reason": "Any verified account can upload; Google sign-in is open to anyone."
+      },
+      "impact": {
+        "score": "high",
+        "reason": "The whole app process, including every other user's queued renders, stops until restart."
+      },
+      "overall_severity": "high"
+    },
+    "confidence": {
+      "score": "high",
+      "reason": "Reproduced locally with studio.Run; the Go runtime aborts."
+    }
+  },
+  {
+    "verdict": "confirmed",
+    "fingerprint": "ST-SEC-003",
+    "title": "Publish pack saves a stale whole-row update and reverts job status and attempt counter",
+    "description": "Pack loads the job, then writes every column back with orm.Update. A render claimed between the load and the write is reverted to the stale status and attempts value. The worker's Save does the same read-then-write. This breaks the claim and requeue invariants that the repository requires to be conditional SQL updates.",
+    "root_cause": "Full-row orm.Update on a row read earlier instead of an UPDATE that sets only the columns the handler owns.",
+    "intended_behavior": "Status, attempts and claim state change only through the conditional Claim and Requeue statements.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "app/controllers/job_controller.go",
+        "line": 246,
+        "scope": "JobController.Pack",
+        "description": "find loads the row"
+      },
+      {
+        "kind": "sink",
+        "file": "app/controllers/job_controller.go",
+        "line": 280,
+        "scope": "JobController.Pack",
+        "description": "orm.Update writes all columns of the stale row"
+      }
+    ],
+    "evidence": [
+      {
+        "file": "app/jobs/render.go",
+        "line": 336,
+        "description": "worker Save also writes the whole row"
+      },
+      {
+        "file": "app/jobs/limits.go",
+        "line": 93,
+        "description": "Claim increments attempts in a conditional UPDATE that Pack can overwrite"
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "timing_dependency",
+        "description": "The pack write must land after a claim that follows a retry of the same job."
+      },
+      {
+        "kind": "authentication_level",
+        "description": "Owner of the job."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "Job owner.",
+      "payloads": [
+        "Stale row loaded while status=ready, attempts=1"
+      ],
+      "instructions": [
+        "Load the job row.",
+        "Requeue and Claim the job (status rendering, attempts 2).",
+        "orm.Update the stale row."
+      ],
+      "observed_result": "Local run: the row ends with status=ready attempts=1 after the update, undoing the claim."
+    },
+    "remediation": {
+      "strategy": "Update only the pack columns in Pack and only the worker-owned columns in Save, with a column-scoped Update."
+    },
+    "severity": {
+      "likelihood": {
+        "score": "low",
+        "reason": "Needs a narrow race that only the owner can try."
+      },
+      "impact": {
+        "score": "low",
+        "reason": "Owner can re-run one job beyond MaxAttempts or run two renders in one directory; effect confined to own job."
+      },
+      "overall_severity": "low"
+    },
+    "confidence": {
+      "score": "medium",
+      "reason": "The primitive is reproduced deterministically; winning the race over HTTP was not attempted."
+    }
+  },
+  {
+    "verdict": "confirmed",
+    "fingerprint": "ST-SEC-004",
+    "title": "Retries bypass the daily job quota and nothing caps total model spend",
+    "description": "The rolling 24-hour quota counts rows created by Store. Retry re-renders (and re-calls the paid model) up to MaxAttempts=5 per job without touching the quota, so one account can cause about five times the intended calls. Sign-in is open to any Google account and there is no global budget, so the multiplier scales with accounts.",
+    "root_cause": "takeQuota counts jobs, not renders; Requeue only checks attempts < MaxAttempts.",
+    "intended_behavior": "STUDIO_MAX_JOBS_PER_DAY bounds model calls per user per 24 hours.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "app/controllers/job_controller.go",
+        "line": 179,
+        "scope": "JobController.Retry",
+        "description": "re-queues without quota"
+      },
+      {
+        "kind": "sink",
+        "file": "app/jobs/limits.go",
+        "line": 107,
+        "scope": "Requeue",
+        "description": "conditional update checks attempts only"
+      }
+    ],
+    "evidence": [
+      {
+        "file": "app/jobs/limits.go",
+        "line": 76,
+        "description": "quota query counts jobs rows"
+      },
+      {
+        "file": "app/jobs/hooks.go",
+        "line": 197,
+        "description": "per-call cost cap only; no aggregate cap"
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "authentication_level",
+        "description": "Verified user."
+      },
+      {
+        "kind": "system_configuration",
+        "description": "A hosted model is configured (ANTHROPIC_API_KEY or STUDIO_MODEL)."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "Verified user.",
+      "payloads": [
+        "20 briefs, then retry each four times"
+      ],
+      "instructions": [
+        "Create jobs up to the limit.",
+        "POST /jobs/{id}/retry after each finishes."
+      ],
+      "observed_result": "Source trace: Retry succeeds with the quota exhausted; up to 100 renders per day per account instead of 20."
+    },
+    "remediation": {
+      "strategy": "Owner decision: count renders (create and retry) in the same locked window, add a global daily budget or an allow-list. Not implemented here."
+    },
+    "severity": {
+      "likelihood": {
+        "score": "medium",
+        "reason": "Needs only accounts and a form."
+      },
+      "impact": {
+        "score": "medium",
+        "reason": "Bounded per-call cost, multiplied by retries and accounts; money only."
+      },
+      "overall_severity": "medium"
+    },
+    "confidence": {
+      "score": "high",
+      "reason": "Direct source path; no hosted model was called."
+    }
+  },
+  {
+    "verdict": "confirmed",
+    "fingerprint": "ST-SEC-005",
+    "title": "Email and password registration, login and reset remain active although login is meant to be Google-only",
+    "description": "routes/auth.go still registers /register, /login, /forgot-password and /reset-password. The studio rules say login is Google-only. Each extra credential path adds credential stuffing, mail sending and account-farming surface.",
+    "root_cause": "The install:auth scaffold routes were kept.",
+    "intended_behavior": "Only the Google sign-in creates sessions.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "routes/auth.go",
+        "line": 390,
+        "scope": "Auth",
+        "description": "POST /login with guest, throttle and per-account limits"
+      },
+      {
+        "kind": "sink",
+        "file": "app/accounts/users.go",
+        "line": 47,
+        "scope": "Accounts.Register",
+        "description": "creates password accounts"
+      }
+    ],
+    "evidence": [
+      {
+        "file": "routes/auth.go",
+        "line": 392,
+        "description": "POST /register creates accounts and queues mail"
+      },
+      {
+        "file": ".agents/rules/studio.md",
+        "line": 3,
+        "description": "product rule: Google-only login"
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "authentication_level",
+        "description": "None for registration; a verified email is needed before jobs."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "Anonymous visitor.",
+      "payloads": [
+        "POST /register with name, email, 12+ character password"
+      ],
+      "instructions": [
+        "Register with an address you control.",
+        "Open the verification link.",
+        "Use /jobs."
+      ],
+      "observed_result": "Source trace: a password account can reach the product without Google."
+    },
+    "remediation": {
+      "strategy": "Owner decision: remove the password routes; tests/auth_test.go covers the scaffold and would change. Not implemented here."
+    },
+    "severity": {
+      "likelihood": {
+        "score": "low",
+        "reason": "Throttled and needs mailbox access."
+      },
+      "impact": {
+        "score": "low",
+        "reason": "Widens surface; no boundary crossed by itself."
+      },
+      "overall_severity": "low"
+    },
+    "confidence": {
+      "score": "high",
+      "reason": "Routes are registered unconditionally."
+    }
+  },
+  {
+    "verdict": "confirmed",
+    "fingerprint": "ST-SEC-006",
+    "title": "Start command runs chown -R as root over a directory the app user controls",
+    "description": "The Railway start command runs as root and executes chown -R 10001:10001 /app/storage before dropping to app. BusyBox chown dereferences symlinks by default, so a symlink planted in the volume by the app user (after any code execution in the app) makes the next boot hand an arbitrary container file to uid 10001.",
+    "root_cause": "Recursive ownership change as root over attacker-writable content, without -h.",
+    "intended_behavior": "Root touches only the volume mount point; the app user cannot influence what root changes.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "railway.app.toml",
+        "line": 11,
+        "scope": "startCommand",
+        "description": "root shell runs before su app"
+      },
+      {
+        "kind": "sink",
+        "file": "railway.app.toml",
+        "line": 11,
+        "scope": "startCommand",
+        "description": "chown -R follows symlinks in /app/storage"
+      }
+    ],
+    "evidence": [
+      {
+        "file": "Dockerfile.app",
+        "line": 42,
+        "description": "/app/storage is app-owned and the image default user is app"
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "environmental_dependency",
+        "description": "Prior code execution as the app user; Railway start command from railway.app.toml."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "Code running as the app user.",
+      "payloads": [
+        "ln -s /etc/passwd /app/storage/renders/x"
+      ],
+      "instructions": [
+        "Plant the symlink.",
+        "Restart the service."
+      ],
+      "observed_result": "Code-path argument from BusyBox chown semantics; not executed (no container runtime used in this audit)."
+    },
+    "remediation": {
+      "strategy": "chown only the mount point (no -R), then chown -h only entries not already owned by 10001 with find -xdev."
+    },
+    "severity": {
+      "likelihood": {
+        "score": "low",
+        "reason": "Requires prior compromise."
+      },
+      "impact": {
+        "score": "low",
+        "reason": "Container-local privilege gain after compromise."
+      },
+      "overall_severity": "low"
+    },
+    "confidence": {
+      "score": "medium",
+      "reason": "Relies on BusyBox default dereference behaviour, not executed."
+    }
+  },
+  {
+    "verdict": "needs_validation",
+    "fingerprint": "ST-SEC-007",
+    "title": "Image default MAIL_MAILER=log writes reset and verification links to the logs",
+    "description": "Dockerfile.app sets MAIL_MAILER=log. If the studio-app deployment does not override it, each message, including password reset and email verification links, goes to the JSON log, readable by anyone with log access.",
+    "claimed_root_cause": "Safe-looking default that exposes bearer links to the log sink.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "Dockerfile.app",
+        "line": 50,
+        "scope": "ENV",
+        "description": "MAIL_MAILER=log default"
+      }
+    ],
+    "evidence": [
+      {
+        "file": "Dockerfile.app",
+        "line": 46,
+        "description": "comment states log writes each message to the JSON log"
+      }
+    ],
+    "blockers": [
+      "The deployed MAIL_MAILER value and who can read the Railway logs are not in the repository."
+    ],
+    "validation_plan": {
+      "deployment": "Owner checks the studio-app MAIL_MAILER variable; it should be resend or smtp.",
+      "local": "Run the image with the default and send a reset request; observe the link in the log."
+    }
+  },
+  {
+    "verdict": "rejected",
+    "fingerprint": "ST-SEC-R01",
+    "title": "ASS override tags reach libass on the spoken path",
+    "description": "Plan.Script and brief facts are not run through safeCaption on the spoken path.",
+    "claimed_root_cause": "Script words become SRT cues without caption validation.",
+    "trace": [
+      {
+        "kind": "sink",
+        "file": "app/studio/captions.go",
+        "line": 761,
+        "scope": "CuesFromWords",
+        "description": "words copied into cues"
+      }
+    ],
+    "evidence": [
+      {
+        "file": "app/studio/plan.go",
+        "line": 641,
+        "description": "safeCaption applies only to shots"
+      }
+    ],
+    "reason": "Local ffmpeg 9.0.2 SRT to ASS conversion strips the backslashes of override tags ({\\an8\\fs120} became {n8s120}), leaving at most the anN position tag; no demonstrated impact."
+  },
+  {
+    "verdict": "rejected",
+    "fingerprint": "ST-SEC-R02",
+    "title": "Crafted upload makes ffmpeg read local files or fetch URLs through a playlist demuxer",
+    "description": "The uploaded file is passed to ffprobe and ffmpeg.",
+    "claimed_root_cause": "Content-probed demuxer on user input.",
+    "trace": [
+      {
+        "kind": "sink",
+        "file": "app/studio/render.go",
+        "line": 656,
+        "scope": "DecodeMono",
+        "description": "ffmpeg -i upload.wav"
+      }
+    ],
+    "evidence": [
+      {
+        "file": "app/requests/brief.go",
+        "line": 646,
+        "description": "upload must sniff as RIFF/WAVE"
+      }
+    ],
+    "reason": "The file must begin with a RIFF/WAVE signature, which the WAV demuxer wins; no playlist or concat format can be selected."
+  },
+  {
+    "verdict": "rejected",
+    "fingerprint": "ST-SEC-R03",
+    "title": "Docs static server path traversal",
+    "description": "scripts/serve.ts joins request paths under dist.",
+    "claimed_root_cause": "Path join of decoded URL.",
+    "trace": [
+      {
+        "kind": "sink",
+        "file": "site/scripts/serve.ts",
+        "line": 48,
+        "scope": "createServer",
+        "description": "join(root, candidate)"
+      }
+    ],
+    "evidence": [
+      {
+        "file": "site/scripts/static-path.ts",
+        "line": 20,
+        "description": "decoded path normalised and confined to root; NUL and backslash refused"
+      }
+    ],
+    "reason": "resolveRequest rejects every path that leaves the root and has unit tests."
+  }
+]
