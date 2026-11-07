@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"context"
 	"strconv"
 	"strings"
 	"sync"
@@ -63,8 +64,18 @@ func plannerFromEnv(app *vukem.App) studio.Planner {
 		costCents = v
 	}
 
+	budget := int64(DailyBudgetCents(app.Source.Get)) * 10_000
+
 	return studio.NewLLMPlanner(studio.LLMConfig{
 		Model: model, Key: key, MaxTokens: maxTokens, MaxCostMicros: int64(costCents) * 10_000,
+		Reserve: func(ctx context.Context, micros int64) error {
+			db, err := app.DB()
+			if err != nil {
+				return err
+			}
+
+			return ReserveModelSpend(ctx, db, micros, budget, app.Now())
+		},
 		BaseURL: app.Source.Get("STUDIO_LLM_BASE_URL"),
 	})
 }

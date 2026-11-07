@@ -15,6 +15,7 @@
 - Skill kits are still Portuguese. Translate the kit you are wiring, not the whole tree, unless the task says otherwise.
 - Do not commit `zip/`.
 - Apply the vendored `security-audit` skill (`.agents/skills/security-audit`, Cloudflare) during development, in guidance mode unless the task is an explicit full audit. CI runs it in `.github/workflows/security-audit.yml`.
+- Every render (a new job and each retry) takes a quota slot, and every model call reserves its worst-case cost against `STUDIO_DAILY_BUDGET_CENTS` (rolling 24 hours, atomic). Login is Google only; the app has no password route and sends no mail.
 - The `jobs` pipeline on `main` is canonical. The quota is an atomic rolling 24 hours (integer epoch, per-user lock); claim and requeue are conditional updates; ffmpeg runs under per-process deadlines and caption text is validated first. A brief lasts 5 to 300 seconds.
 - Tests: Go unit and race tests, Playwright e2e in `e2e/`. Real-model tests run only with `STUDIO_TEST_REAL_MODEL=1`.
 - Railway: a root `railway.toml` applies to every service built from the repo, so it holds shared settings only; each service picks its image with `RAILWAY_DOCKERFILE_PATH` (`Dockerfile` for the docs site, `Dockerfile.app` for `studio-app`). Per-service config-as-code files are deprecated; set service settings in the dashboard or API.

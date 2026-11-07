@@ -41,6 +41,7 @@ A failure is a stored state, never a silent queue retry, because each model call
 | Duration of one video | 5 to 300 seconds | Brief validation, on the server |
 | Model output tokens per call | 4000 plus 30 per second of video (`STUDIO_MAX_OUTPUT_TOKENS` sets the base) | Sent to the provider |
 | Worst-case cost per job | 100 cents (`STUDIO_MAX_JOB_COST_CENTS`) | Checked before the call |
+| Global model spend in any rolling 24 hours | 500 cents (`STUDIO_DAILY_BUDGET_CENTS`, `0` disables) | Worst-case cost reserved before each call, in one transaction behind a lock; not refunded |
 | One encoder or probe process | 5 minutes | Killed at the deadline |
 | One queued job | 10 minutes | Queue timeout |
 | Plan size | At most the duration in seconds plus 10 shots (400 at most), 500 characters per caption | Plan validation |

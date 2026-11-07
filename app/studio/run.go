@@ -65,7 +65,7 @@ func Run(ctx context.Context, st State, run Runner) error {
 	st.RawModel = raw
 	st.ModelID = run.Planner.ID()
 
-	if errors.Is(err, ErrNoKey) || errors.Is(err, ErrModelCall) || errors.Is(err, ErrOverCost) {
+	if errors.Is(err, ErrNoKey) || errors.Is(err, ErrModelCall) || errors.Is(err, ErrOverCost) || errors.Is(err, ErrOverBudget) {
 		return run.fail(ctx, st, dir, err.Error())
 	}
 

@@ -13,5 +13,6 @@ func All() []schema.Migration {
 		m20261105120000CreateJobsTable(),
 		m20261107000000AddJobLimits(),
 		m20261107120000AddRenderSlots(),
+		m20261107130000AddModelBudget(),
 	}
 }
