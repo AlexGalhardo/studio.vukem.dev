@@ -5,8 +5,9 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.app"
 
 [deploy]
-# Migrations run before the new release takes traffic.
-preDeployCommand = ["/app/app migrate"]
+# The SQLite file lives on the volume at /app/storage, which a pre-deploy container never mounts, so the start
+# command migrates once the volume is there and then execs the server.
+startCommand = "/bin/sh -c \"/app/app migrate && exec /app/app\""
 healthcheckPath = "/up"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"

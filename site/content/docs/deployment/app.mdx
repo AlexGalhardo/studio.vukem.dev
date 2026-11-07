@@ -18,7 +18,7 @@ The image sets `QUEUE_CONNECTION=database`, so `serve` runs the render worker be
 
 ## Before traffic
 
-`railway.app.toml` sets `preDeployCommand = ["/app/app migrate"]`. Railway runs it before the new release receives requests, and a failed migration stops the deploy.
+`railway.app.toml` sets the start command to `/bin/sh -c "/app/app migrate && exec /app/app"`. The database is a SQLite file on the volume mounted at `/app/storage`, and Railway mounts volumes only for the running container, never for a pre-deploy command. Migrating at start runs against the real file before the server listens; a failed migration exits and fails the deploy. Keep the service at one replica.
 
 ## Variables
 
