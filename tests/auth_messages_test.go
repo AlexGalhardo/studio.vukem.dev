@@ -8,7 +8,6 @@ import (
 	"github.com/AlexGalhardo/vukem/vukemtest"
 
 	"github.com/AlexGalhardo/vukem-studio/app/accounts"
-	"github.com/AlexGalhardo/vukem-studio/app/mail"
 	"github.com/AlexGalhardo/vukem-studio/bootstrap"
 )
 
@@ -49,7 +48,7 @@ func TestAuthMessages(t *testing.T) {
 		}
 	}
 
-	const key = "auth.password_reset"
+	const key = "auth.social.email_taken"
 
 	en := acc.T(t.Context(), key)
 	if en == key {
@@ -89,18 +88,5 @@ func TestAuthMessages(t *testing.T) {
 	ctx := i18n.WithLocale(i18n.WithBundle(t.Context(), own), "pt-BR")
 	if got := acc.T(ctx, key); got != "Pronto." {
 		t.Errorf("T(%q) in pt-BR with the app's pt catalog = %q, want %q", key, got, "Pronto.")
-	}
-}
-
-// Mailables built without a translated subject keep an English one.
-func TestAuthMailSubjectFallback(t *testing.T) {
-	t.Parallel()
-
-	if got := (mail.VerifyEmail{}).Envelope().Subject; got != "Verify your email address" {
-		t.Errorf("VerifyEmail subject = %q", got)
-	}
-
-	if got := (mail.ResetPassword{}).Envelope().Subject; got != "Reset your password" {
-		t.Errorf("ResetPassword subject = %q", got)
 	}
 }

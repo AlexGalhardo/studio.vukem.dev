@@ -14,12 +14,9 @@ import (
 	"github.com/AlexGalhardo/vukem"
 	"github.com/AlexGalhardo/vukem/auth"
 	"github.com/AlexGalhardo/vukem/auth/hash"
-	"github.com/AlexGalhardo/vukem/cache"
 	"github.com/AlexGalhardo/vukem/database"
 	"github.com/AlexGalhardo/vukem/i18n"
-	"github.com/AlexGalhardo/vukem/mail"
 	"github.com/AlexGalhardo/vukem/session"
-	"github.com/AlexGalhardo/vukem/signed"
 
 	"github.com/AlexGalhardo/vukem-studio/app/models"
 )
@@ -27,25 +24,16 @@ import (
 // Accounts holds the authentication services.
 type Accounts struct {
 	DB     *database.DB
-	Mailer *mail.Mailer
 	Users  *auth.ORMProvider[models.User]
 	Web    *auth.SessionGuard[models.User]
 	API    *auth.TokenGuard[models.User]
 	Tokens *auth.Tokens
 	Hasher hash.Hasher
-	Signer *signed.Signer
 	// Messages holds the auth messages of lang/ (see T).
 	Messages *i18n.Bundle
-	// URL is the public base URL used in emails (APP_URL).
-	URL string
-	// ResetTTL is how long password reset links work.
-	ResetTTL time.Duration
-	// VerifyTTL is how long email verification links work.
-	VerifyTTL time.Duration
-	now       func() time.Time
-	sessions  func() (*session.Manager, error)
-	cache     func() (*cache.Cache, error)
-	log       *slog.Logger
+	now      func() time.Time
+	sessions func() (*session.Manager, error)
+	log      *slog.Logger
 }
 
 // RevokeOtherSessions signs userID out of every browser session except
@@ -102,11 +90,6 @@ func New(app *vukem.App) (*Accounts, error) {
 		return nil, err
 	}
 
-	mailer, err := app.Mailer()
-	if err != nil {
-		return nil, err
-	}
-
 	hasher := hash.Default()
 	if app.Kind == vukem.KindTest {
 		hasher = hash.Fake() // fast hashing keeps tests quick
@@ -125,28 +108,15 @@ func New(app *vukem.App) (*Accounts, error) {
 	tokens.Now = app.Now // a fake app clock also drives token expiry
 	tokens.Log = app.Log
 
-	signingKey, err := app.DeriveKey("signed.urls", 32)
-	if err != nil {
-		return nil, err
-	}
-
 	web := auth.NewSessionGuard("web", users, hasher, auth.NewRememberStore(db))
 	web.InsecureCookies = !app.Config.IsProduction() && !strings.HasPrefix(app.Config.URL, "https://")
 
 	return &Accounts{
-		DB: db, Mailer: mailer, Users: users, Web: web, Tokens: tokens, Hasher: hasher,
-		API: auth.NewTokenGuard("api", users, tokens),
-		// Links signed before an APP_KEY rotation verify until the old key leaves APP_PREVIOUS_KEYS.
-		Signer: signed.New(signingKey).
-			WithPreviousKeys(app.DerivePreviousKeys("signed.urls", 32)...).
-			WithClock(app.Now),
-		Messages:  messages,
-		URL:       strings.TrimSuffix(app.Config.URL, "/"),
-		ResetTTL:  time.Hour,
-		VerifyTTL: time.Hour,
-		now:       time.Now,
-		sessions:  app.Sessions,
-		cache:     app.Cache,
-		log:       app.Log,
+		DB: db, Users: users, Web: web, Tokens: tokens, Hasher: hasher,
+		API:      auth.NewTokenGuard("api", users, tokens),
+		Messages: messages,
+		now:      time.Now,
+		sessions: app.Sessions,
+		log:      app.Log,
 	}, nil
 }

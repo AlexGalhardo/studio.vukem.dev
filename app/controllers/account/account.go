@@ -1,21 +1,13 @@
-// Package account holds the login, registration, password reset and
-// email verification handlers (vukem install:auth), rendered with Inertia
-// pages in resources/js/pages/Auth.
+// Package account holds the login page, logout and dashboard handlers,
+// rendered with Inertia pages in resources/js/pages. Google is the only
+// sign-in (routes/social.go).
 package account
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-	"net/http"
-	"strings"
-
-	"github.com/AlexGalhardo/vukem/auth"
 	"github.com/AlexGalhardo/vukem/inertia"
-	"github.com/AlexGalhardo/vukem/ratelimit"
 	"github.com/AlexGalhardo/vukem/web"
 
 	"github.com/AlexGalhardo/vukem-studio/app/accounts"
-	"github.com/AlexGalhardo/vukem-studio/app/requests"
 )
 
 // Handlers serves the account pages.
@@ -26,68 +18,8 @@ type Handlers struct {
 // New returns the handlers.
 func New(a *accounts.Accounts) *Handlers { return &Handlers{a: a} }
 
-// RegisterThrottleKey limits sign-ups per address. It keys on a hash of
-// the normalized email, so the limiter store holds no addresses.
-func RegisterThrottleKey(r *http.Request) string {
-	if r.Method != http.MethodPost {
-		return ""
-	}
-
-	email := loginEmail(r)
-	if email == "" {
-		// Unreadable email: a bucket per IP, never one shared by everybody.
-		return "register-unparsed:" + ratelimit.ByIP(r)
-	}
-
-	sum := sha256.Sum256([]byte(email))
-
-	return "register:" + hex.EncodeToString(sum[:])
-}
-
-// loginEmail is the normalized email of the request, shared with the login throttle.
-func loginEmail(r *http.Request) string { return auth.RequestEmail(r, "email") }
-
 // ShowLogin renders the login page.
 func (*Handlers) ShowLogin(c *web.Ctx) error { return inertia.Render(c, "Auth/Login", nil) }
-
-// Login signs the user in and goes to the page they wanted.
-func (h *Handlers) Login(c *web.Ctx) error {
-	in, err := web.Parse(c, requests.LoginSchema)
-	if err != nil {
-		return err
-	}
-
-	creds := map[string]string{"email": strings.ToLower(in.Email), "password": in.Password}
-	if _, err := h.a.Web.Attempt(c, creds, auth.Remember(in.Remember)); err != nil {
-		return err
-	}
-
-	target, _ := c.Session().Pull(auth.IntendedKey).(string)
-
-	return c.Redirect(web.SafeRedirect(c.Request(), target, "/dashboard"))
-}
-
-// ShowRegister renders the registration page.
-func (*Handlers) ShowRegister(c *web.Ctx) error { return inertia.Render(c, "Auth/Register", nil) }
-
-// Register answers the same for new and existing emails (no account
-// enumeration) and does not log in: the user is asked to check the inbox,
-// where the verification link (or an "account exists" notice) waits.
-func (h *Handlers) Register(c *web.Ctx) error {
-	in, err := web.Parse(c, requests.RegisterSchema)
-	if err != nil {
-		return err
-	}
-
-	if _, err := h.a.Register(c.Context(), in); err != nil {
-		return err
-	}
-
-	return c.Redirect("/register/check-email")
-}
-
-// CheckEmail is the page shown after every sign-up attempt.
-func (*Handlers) CheckEmail(c *web.Ctx) error { return inertia.Render(c, "Auth/CheckEmail", nil) }
 
 // Logout signs the user out and rotates the history encryption key.
 func (h *Handlers) Logout(c *web.Ctx) error {

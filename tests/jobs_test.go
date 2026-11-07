@@ -420,7 +420,7 @@ func download(t *testing.T, app *vukemtest.App, email, path string) []byte {
 	t.Helper()
 
 	plain := app.Client(t)
-	plain.PostJSON("/login", map[string]any{"email": email, "password": testPassword}).AssertRedirect("/dashboard")
+	actAs(t, app, plain, email)
 
 	res := plain.Get(path)
 	res.AssertOK()

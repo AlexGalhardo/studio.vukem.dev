@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **security:** Email and password registration, login, password reset, email verification, their pages and mails: Google is the only sign-in and the app sends no mail, so the image default `MAIL_MAILER=log` is moot (ST-SEC-005, ST-SEC-007)
 - The starter's posts CRUD (it was public, unauthenticated), its seeder, factory and pages
 - Next.js dependencies and configuration from `site/`, and the pt-br redirect component (an open redirect)
 
