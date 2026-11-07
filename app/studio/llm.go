@@ -20,9 +20,10 @@ const (
 
 // Errors a model adapter returns. Run shows them to the operator as written.
 var (
-	ErrNoKey     = errors.New("API key for this model's provider is not configured")
-	ErrModelCall = errors.New("the model call failed")
-	ErrOverCost  = errors.New("the worst-case cost is over the per-job limit")
+	ErrNoKey      = errors.New("API key for this model's provider is not configured")
+	ErrModelCall  = errors.New("the model call failed")
+	ErrOverCost   = errors.New("the worst-case cost is over the per-job limit")
+	ErrOverBudget = errors.New("the daily model budget is used up; try again later")
 )
 
 const maxReplyBytes = 1 << 20
@@ -37,6 +38,9 @@ type LLMConfig struct {
 	// MaxCostMicros caps the worst-case cost of one call in USD micros; zero
 	// means no cap.
 	MaxCostMicros int64
+	// Reserve books the worst-case cost of one call against a shared budget and
+	// returns ErrOverBudget when it does not fit. Nil means no budget.
+	Reserve func(ctx context.Context, micros int64) error
 }
 
 // LLMPlanner asks Claude or OpenAI for the scene plan. The prompt the job
@@ -88,6 +92,16 @@ func (p LLMPlanner) Plan(ctx context.Context, prompt string, brief Brief) (Plan,
 		if worst := EstimateCostMicros(p.Model, int64(len(full)/3), int64(tokens)); worst > p.MaxCostMicros {
 			return Plan{}, "", fmt.Errorf("%w: $%.4f against $%.4f; lower STUDIO_MAX_OUTPUT_TOKENS, pick a cheaper model or raise STUDIO_MAX_JOB_COST_CENTS",
 				ErrOverCost, float64(worst)/1e6, float64(p.MaxCostMicros)/1e6)
+		}
+	}
+
+	if p.Reserve != nil {
+		if err := p.Reserve(ctx, EstimateCostMicros(p.Model, int64(len(full)/3), int64(tokens))); err != nil {
+			if errors.Is(err, ErrOverBudget) {
+				return Plan{}, "", err
+			}
+
+			return Plan{}, "", fmt.Errorf("%w: the budget check failed", ErrModelCall)
 		}
 	}
 

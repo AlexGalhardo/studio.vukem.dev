@@ -40,6 +40,7 @@ With `STUDIO_MODEL` unset the app uses `claude-sonnet-5-5` when `ANTHROPIC_API_K
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `STUDIO_MAX_JOBS_PER_DAY` | `20` | Renders per user in any rolling 24 hours: a new job and every retry each take one slot. `0` means unlimited |
+| `STUDIO_DAILY_BUDGET_CENTS` | `500` | Global model budget in US cents for any rolling 24 hours, shared by every user. Each call reserves its worst-case cost before it runs, and a job fails with a readable reason when the budget is used up. `0` disables it |
 
 ## Rendering and storage
 
