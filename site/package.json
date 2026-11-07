@@ -10,7 +10,7 @@
     "last-updated": "node scripts/last-updated.ts",
     "check:mdx": "node scripts/check-mdx.ts",
     "check:last-updated": "node scripts/check-last-updated.ts",
-    "test:scripts": "node --test scripts/check-last-updated.test.ts scripts/committed-dates.test.ts",
+    "test:scripts": "node --test scripts/check-last-updated.test.ts scripts/committed-dates.test.ts scripts/static-path.test.ts",
     "start": "node scripts/serve.ts",
     "check": "tsc --noEmit"
   },
