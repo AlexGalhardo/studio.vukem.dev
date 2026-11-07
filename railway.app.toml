@@ -8,7 +8,7 @@ dockerfilePath = "Dockerfile.app"
 # The SQLite file lives on the volume at /app/storage, which a pre-deploy container never mounts, so the start
 # command migrates once the volume is there and then execs the server. Railway volumes are owned by root, so
 # the service sets RAILWAY_RUN_UID=0 and the command hands /app/storage to uid 10001, then drops to `app`.
-startCommand = "/bin/sh -c \"chown -R 10001:10001 /app/storage && exec su app -s /bin/sh -c '/app/app migrate && exec /app/app'\""
+startCommand = "/bin/sh -c \"chown 10001:10001 /app/storage && find /app/storage -xdev ! -user 10001 -exec chown -h 10001:10001 {} + && exec su app -s /bin/sh -c '/app/app migrate && exec /app/app'\""
 healthcheckPath = "/up"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
