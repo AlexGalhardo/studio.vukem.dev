@@ -51,10 +51,11 @@ USER app
 # mailer stops every command at boot, serve and `about` alike, as soon as a
 # route needs one. "log" writes each message to the JSON log, so nothing is
 # lost silently; set smtp, resend or mailtrap on the deploy to send for real.
+# The app owns a `jobs` table (render jobs), so the vukem database queue uses queue_jobs/queue_failed_jobs.
 # QUEUE_CONNECTION=database lets serve run the render worker beside the web
 # server; the default sync would render inside the request.
 ENV APP_ENV=production HOST=0.0.0.0 PORT=3000 LOG_FORMAT=json MAIL_MAILER=log \
-	QUEUE_CONNECTION=database \
+	QUEUE_CONNECTION=database QUEUE_TABLE=queue_jobs QUEUE_FAILED_TABLE=queue_failed_jobs \
 	STUDIO_STORAGE=/app/storage/renders
 # A platform start command (Railway, Fly) replaces this entrypoint, so it has
 # to name the binary: "/app/app queue:work", never "queue:work".
