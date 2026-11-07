@@ -18,12 +18,12 @@ Coverage is partial in these ways, stated so nobody reads "no finding" as "prove
 
 | Id | Severity | CWE | Title | State |
 | --- | --- | --- | --- | --- |
-| ST-SEC-001 | High | CWE-789 | Lying WAV header crashes the whole process (fatal OOM) | fix in Phase B |
-| ST-SEC-004 | Medium | CWE-770 | Retries bypass the daily quota; no global model spend cap | owner decision |
-| ST-SEC-003 | Low | CWE-362 | Stale whole-row update reverts status and attempts | fix in Phase B |
-| ST-SEC-005 | Low | CWE-1188 | Password auth routes still active (rule says Google-only) | owner decision |
-| ST-SEC-006 | Low | CWE-61 | Root `chown -R` over an app-writable volume | fix in Phase B |
-| ST-SEC-007 | not rated | CWE-532 | `MAIL_MAILER=log` image default may log reset links | needs validation |
+| ST-SEC-001 | High | CWE-789 | Lying WAV header crashes the whole process (fatal OOM) | fixed, c87a374 |
+| ST-SEC-004 | Medium | CWE-770 | Retries bypass the daily quota; no global model spend cap | fixed, 091cf04 and 02efbea |
+| ST-SEC-003 | Low | CWE-362 | Stale whole-row update reverts status and attempts | fixed, 3e63a6c |
+| ST-SEC-005 | Low | CWE-1188 | Password auth routes still active (rule says Google-only) | fixed, 32787ee |
+| ST-SEC-006 | Low | CWE-61 | Root `chown -R` over an app-writable volume | fixed, 9bd0b15 |
+| ST-SEC-007 | not rated | CWE-532 | `MAIL_MAILER=log` image default may log reset links | resolved, 32787ee |
 
 Counts: 1 high, 1 medium, 3 low confirmed; 1 needs validation; 3 rejected.
 
@@ -92,3 +92,15 @@ Fix: `chown` only the mount point, then `find -xdev ... chown -h` for entries wi
 - ST-SEC-R03, docs server path traversal: `resolveRequest` confines every decoded path and has tests.
 
 Reviewed without finding: owner filter on every `/jobs/{job}` route (`find` scopes by `user_id`), download and captions names (fixed by the server), ffmpeg and renderer argument lists and `commandCtx` deadlines, caption validation on the plan shots, model reply cap and key handling (`postJSON` drops provider bodies), Google account linking (verified email only, state in cache), `composition.html` escaping, Inertia pages (no raw HTML sinks), CI (actions pinned by SHA, scoped tokens, inputs passed through `env`), Dockerfile base images pinned, no secrets in git history (sampled).
+
+## Remediation status
+
+All findings are fixed or resolved on the branch; each fix has a regression test and a CHANGELOG entry.
+
+- ST-SEC-001, `c87a374`: `DecodeWAV` honors the declared data size and `prepareVoice` compares the decoded length with the brief before resampling.
+- ST-SEC-003, `3e63a6c`: `Pack` and the worker save only their own columns (`jobs.SavePack`, `jobs.SaveRun`).
+- ST-SEC-006, `9bd0b15`: the start command changes the mount point and then entries with another owner with `chown -h`. The live `studio-app` start command was updated by the owner.
+- ST-SEC-005 and ST-SEC-007, `32787ee`: the password register, login, reset and verification routes, controllers, pages and mails are removed. Google is the only sign-in and nothing in the app builds a mailer, so the `MAIL_MAILER=log` image default can no longer log a link; it stays only as a no-op default that stops the framework refusing to boot.
+- ST-SEC-004, `091cf04` and `02efbea`: a retry takes a slot of the rolling 24-hour quota (`job_renders`, atomic behind the per-user lock; 429 when exhausted), and a global rolling budget `STUDIO_DAILY_BUDGET_CENTS` (default 500, `0` disables) reserves each call's worst-case cost atomically before the call.
+
+Residual: the reservation is the worst case and is not refunded, so the budget is conservative. Unused `auth.*` password messages remain in `app/accounts/lang/en/auth.json` (harmless). Legacy password accounts in the production database stay but cannot sign in; they sign in with Google, which verifies the address.
