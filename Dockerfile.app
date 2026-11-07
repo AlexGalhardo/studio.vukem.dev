@@ -32,11 +32,11 @@ RUN tags="$(sed 's/#.*//' .buildtags 2>/dev/null | tr -s ', \t\r\n' ',' | sed 's
 
 # Only the SKILL files ship: the prompt compiler reads them, the kits' assets
 # and scripts stay out of the image.
-FROM alpine:3.24.2 AS skills
+FROM alpine:3.24.3 AS skills
 COPY .agents/skills /in
 RUN mkdir /out && cd /in && find . \( -name SKILL.md -o -name SKILL.en.md \) | tar cf - -T - | tar xf - -C /out
 
-FROM alpine:3.24.2
+FROM alpine:3.24.3
 RUN apk add --no-cache ca-certificates tzdata ffmpeg font-dejavu \
 	&& adduser -D -H -u 10001 app \
 	&& mkdir -p /app/storage \
