@@ -101,6 +101,8 @@ func TestQuotaWindowIsRollingAndCountsIntegers(t *testing.T) {
 		if err := orm.Create(context.Background(), db, &row); err != nil {
 			t.Fatal(err)
 		}
+
+		seedRender(t, db, row.UserID, row.CreatedUnix)
 	}
 
 	create := func(at time.Time) error {
@@ -202,5 +204,109 @@ func TestRequeueCannotPassTheAttemptLimit(t *testing.T) {
 
 	if err := jobs.Requeue(context.Background(), db, row.ID, time.Now()); !errors.Is(err, jobs.ErrExhausted) {
 		t.Fatalf("got %v, want ErrExhausted", err)
+	}
+}
+
+func seedRender(t *testing.T, db *database.DB, userID, createdUnix int64) {
+	t.Helper()
+
+	if _, err := db.ExecContext(context.Background(),
+		database.Rebind(db.Dialect(), "INSERT INTO job_renders (user_id, created_unix) VALUES (?, ?)"), userID, createdUnix); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func renderSlots(t *testing.T, db *database.DB) int {
+	t.Helper()
+
+	var n int
+	if err := db.QueryRowContext(context.Background(), "SELECT COUNT(*) FROM job_renders").Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+
+	return n
+}
+
+func setStatus(t *testing.T, db *database.DB, id int64, status string) {
+	t.Helper()
+
+	if _, err := db.ExecContext(context.Background(),
+		database.Rebind(db.Dialect(), "UPDATE jobs SET status = ? WHERE id = ?"), status, id); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// A retry calls the model again, so it takes a slot of the rolling quota like
+// a new job; a retry that is refused takes none.
+func TestRetryTakesAQuotaSlot(t *testing.T) {
+	t.Parallel()
+
+	_, db := limitsApp(t)
+	ctx := context.Background()
+	now := time.Now()
+
+	row := newJob(studio.StatusQueued)
+	if err := jobs.CreateWithQuota(ctx, db, &row, 2, now); err != nil {
+		t.Fatal(err)
+	}
+
+	// Still queued: busy, and no slot is spent.
+	if err := jobs.RequeueWithQuota(ctx, db, row.ID, row.UserID, 2, now); !errors.Is(err, jobs.ErrBusy) {
+		t.Fatalf("queued job: got %v, want busy", err)
+	}
+
+	if n := renderSlots(t, db); n != 1 {
+		t.Fatalf("%d slots after a refused retry, want 1", n)
+	}
+
+	setStatus(t, db, row.ID, studio.StatusReady)
+
+	if err := jobs.RequeueWithQuota(ctx, db, row.ID, row.UserID, 2, now); err != nil {
+		t.Fatalf("second slot: %v", err)
+	}
+
+	setStatus(t, db, row.ID, studio.StatusReady)
+
+	if err := jobs.RequeueWithQuota(ctx, db, row.ID, row.UserID, 2, now); !errors.Is(err, jobs.ErrQuota) {
+		t.Fatalf("third render in the window: got %v, want the quota error", err)
+	}
+
+	cur, err := orm.QueryOf[models.Job](db).Find(ctx, row.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if cur.Status != studio.StatusReady {
+		t.Fatalf("status %q after a refused retry, want ready", cur.Status)
+	}
+}
+
+func TestParallelRetriesStayInsideTheQuota(t *testing.T) {
+	_, db := limitsApp(t)
+	ctx := context.Background()
+	now := time.Now()
+
+	var rows [4]models.Job
+
+	for i := range rows {
+		rows[i] = newJob(studio.StatusReady)
+		rows[i].CreatedUnix = now.UnixMilli()
+
+		if err := orm.Create(ctx, db, &rows[i]); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	var ok atomic.Int32
+
+	inParallel(len(rows)*3, func(i int) {
+		r := rows[i%len(rows)]
+		if jobs.RequeueWithQuota(ctx, db, r.ID, r.UserID, 3, now) == nil {
+			ok.Add(1)
+		}
+	})
+
+	if ok.Load() != 3 || renderSlots(t, db) != 3 {
+		t.Fatalf("%d retries passed with %d slots, want 3 and 3", ok.Load(), renderSlots(t, db))
 	}
 }

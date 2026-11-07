@@ -54,6 +54,10 @@ func CreateWithQuota(ctx context.Context, db *database.DB, row *models.Job, limi
 			if err := takeQuota(ctx, tx, row.UserID, limit, now); err != nil {
 				return err
 			}
+
+			if err := recordRender(ctx, tx, row.UserID, now); err != nil {
+				return err
+			}
 		}
 
 		return orm.Create(ctx, tx, row)
@@ -73,7 +77,7 @@ func takeQuota(ctx context.Context, tx *database.Tx, userID int64, limit int, no
 
 	var n int
 	if err := tx.QueryRowContext(ctx, database.Rebind(tx.Dialect(),
-		"SELECT COUNT(*) FROM jobs WHERE user_id = ? AND created_unix >= ?"),
+		"SELECT COUNT(*) FROM job_renders WHERE user_id = ? AND created_unix >= ?"),
 		userID, now.Add(-24*time.Hour).UnixMilli()).Scan(&n); err != nil {
 		return err
 	}
@@ -105,7 +109,11 @@ func Claim(ctx context.Context, db *database.DB, id int64, now time.Time) (bool,
 // conditional UPDATE decides: parallel retries re-queue it at most once, and
 // none can pass MaxAttempts. The caller dispatches only when it returns nil.
 func Requeue(ctx context.Context, db *database.DB, id int64, now time.Time) error {
-	res, err := db.ExecContext(ctx, database.Rebind(db.Dialect(),
+	return requeueOn(ctx, db, id, now)
+}
+
+func requeueOn(ctx context.Context, ex database.Executor, id int64, now time.Time) error {
+	res, err := ex.ExecContext(ctx, database.Rebind(ex.Dialect(),
 		"UPDATE jobs SET status = ?, updated_at = ? WHERE id = ? AND status IN (?, ?) AND attempts < ?"),
 		studio.StatusQueued, now.UTC(), id, studio.StatusReady, studio.StatusFailed, MaxAttempts)
 	if err != nil {
@@ -118,7 +126,7 @@ func Requeue(ctx context.Context, db *database.DB, id int64, now time.Time) erro
 		return nil
 	}
 
-	cur, err := orm.QueryOf[models.Job](db).Find(ctx, id)
+	cur, err := orm.QueryOf[models.Job](ex).Find(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -133,4 +141,38 @@ func Requeue(ctx context.Context, db *database.DB, id int64, now time.Time) erro
 // UniqueKey is the queue uniqueness key of one render attempt.
 func UniqueKey(id int64, attempts int) string {
 	return "studio.render:" + strconv.FormatInt(id, 10) + ":" + strconv.Itoa(attempts)
+}
+
+// RequeueWithQuota is Requeue for a user's own job, and it takes a slot of the
+// same rolling 24-hour quota as a new job: a retry calls the model again. The
+// slot and the conditional update share one transaction behind the per-user
+// lock, so a refused retry (busy, exhausted) consumes nothing. A limit of
+// zero is unlimited.
+func RequeueWithQuota(ctx context.Context, db *database.DB, id, userID int64, limit int, now time.Time) error {
+	now = now.UTC()
+
+	return db.Tx(ctx, func(tx *database.Tx) error {
+		if limit > 0 {
+			if err := takeQuota(ctx, tx, userID, limit, now); err != nil {
+				return err
+			}
+		}
+
+		if err := requeueOn(ctx, tx, id, now); err != nil {
+			return err
+		}
+
+		if limit > 0 {
+			return recordRender(ctx, tx, userID, now)
+		}
+
+		return nil
+	})
+}
+
+func recordRender(ctx context.Context, tx *database.Tx, userID int64, now time.Time) error {
+	_, err := tx.ExecContext(ctx, database.Rebind(tx.Dialect(),
+		"INSERT INTO job_renders (user_id, created_unix) VALUES (?, ?)"), userID, now.UnixMilli())
+
+	return err
 }
