@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -98,7 +97,10 @@ func (HyperFramesRenderer) Name() string { return "hyperframes" }
 // Version asks the binary, or reports that it is not installed.
 func (h HyperFramesRenderer) Version(ctx context.Context) string {
 	bin := h.bin()
-	out, err := exec.CommandContext(ctx, bin, "--version").CombinedOutput()
+	cmd, cancel := commandCtx(ctx, bin, "--version")
+	defer cancel()
+
+	out, err := cmd.CombinedOutput()
 
 	if err != nil {
 		return "hyperframes (not installed)"
@@ -141,7 +143,10 @@ func (RemotionRenderer) Name() string { return "remotion" }
 
 // Version asks the binary, or reports that it is not installed.
 func (r RemotionRenderer) Version(ctx context.Context) string {
-	out, err := exec.CommandContext(ctx, r.bin(), "--version").CombinedOutput()
+	cmd, cancel := commandCtx(ctx, r.bin(), "--version")
+	defer cancel()
+
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "remotion (not installed)"
 	}
@@ -178,7 +183,8 @@ func runEncode(ctx context.Context, bin string, args []string, req RenderRequest
 		return err
 	}
 
-	cmd := exec.CommandContext(ctx, bin, args...)
+	cmd, cancel := commandCtx(ctx, bin, args...)
+	defer cancel()
 	cmd.Dir = req.Dir
 
 	var stderr bytes.Buffer
@@ -207,7 +213,10 @@ func runEncode(ctx context.Context, bin string, args []string, req RenderRequest
 
 // FFmpegVersion is the first line of `ffmpeg -version`.
 func FFmpegVersion(ctx context.Context) string {
-	out, err := exec.CommandContext(ctx, "ffmpeg", "-version").Output()
+	cmd, cancel := commandCtx(ctx, "ffmpeg", "-version")
+	defer cancel()
+
+	out, err := cmd.Output()
 	if err != nil {
 		return "unknown"
 	}
@@ -243,7 +252,8 @@ type loudnessJSON struct {
 }
 
 func measureLoudness(ctx context.Context, path string) (loudnessJSON, error) {
-	cmd := exec.CommandContext(ctx, "ffmpeg", "-hide_banner", "-i", path, "-af", "loudnorm=print_format=json", "-f", "null", "-")
+	cmd, cancel := commandCtx(ctx, "ffmpeg", "-hide_banner", "-i", path, "-af", "loudnorm=print_format=json", "-f", "null", "-")
+	defer cancel()
 
 	out, err := cmd.CombinedOutput()
 	if err != nil && !bytes.Contains(out, []byte("input_i")) {
@@ -285,7 +295,8 @@ func MeasureLoudness(ctx context.Context, path string) (integrated, truePeak flo
 
 // DecodeMono decodes path to 48 kHz mono float samples.
 func DecodeMono(ctx context.Context, path string) ([]float64, error) {
-	cmd := exec.CommandContext(ctx, "ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", strconv.Itoa(sampleRate), "-f", "f32le", "pipe:1")
+	cmd, cancel := commandCtx(ctx, "ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", strconv.Itoa(sampleRate), "-f", "f32le", "pipe:1")
+	defer cancel()
 
 	out, err := cmd.Output()
 	if err != nil {
@@ -317,7 +328,8 @@ func jsonObject(out []byte) []byte {
 }
 
 func runFFmpeg(ctx context.Context, args ...string) error {
-	cmd := exec.CommandContext(ctx, "ffmpeg", args...)
+	cmd, cancel := commandCtx(ctx, "ffmpeg", args...)
+	defer cancel()
 
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr

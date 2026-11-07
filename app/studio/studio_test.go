@@ -209,3 +209,19 @@ func TestLoudnormHitsTheGate(t *testing.T) {
 		t.Fatalf("loudness = %.2f LUFS, %.2f dBTP", integrated, peak)
 	}
 }
+
+func TestPlanRejectsCaptionInjection(t *testing.T) {
+	base := Plan{Script: "s", Duration: 5, FPS: 30, Width: 10, Height: 10, Shots: []Shot{{Text: "ok 100% done", Start: 0, End: 5}}}
+	if !base.Valid() {
+		t.Fatal("a percent sign is plain text and must stay valid")
+	}
+
+	for _, text := range []string{"{\\fs900}huge", "line\nbreak", "tab\there", "back\\slash", strings.Repeat("x", MaxShotRunes+1)} {
+		p := base
+		p.Shots = []Shot{{Text: text, Start: 0, End: 5}}
+
+		if p.Valid() {
+			t.Errorf("shot text %q must be rejected", text)
+		}
+	}
+}

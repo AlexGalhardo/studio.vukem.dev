@@ -8,7 +8,6 @@ import (
 	"io"
 	"math"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -184,7 +183,8 @@ type Stream struct {
 
 // Inspect runs ffprobe and decodes the JSON.
 func Inspect(ctx context.Context, path string) (MediaInfo, error) {
-	cmd := exec.CommandContext(ctx, "ffprobe", "-v", "error", "-print_format", "json", "-show_streams", "-show_format", path)
+	cmd, cancel := commandCtx(ctx, "ffprobe", "-v", "error", "-print_format", "json", "-show_streams", "-show_format", path)
+	defer cancel()
 
 	out, err := cmd.Output()
 	if err != nil {
