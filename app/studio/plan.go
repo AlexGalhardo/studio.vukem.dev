@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"unicode"
 )
 
 // Shot is one card in the plan.
@@ -24,6 +25,27 @@ type Plan struct {
 	Voice    bool    `json:"voice"`
 }
 
+// Limits on what a model may put into a plan.
+const (
+	MaxShots       = 200
+	MaxShotRunes   = 500
+	MaxScriptRunes = 5000
+)
+
+// safeCaption rejects what libass would interpret instead of draw: control
+// characters, ASS override blocks ({...}) and backslash escapes. A percent
+// sign is plain text, since captions are burned from an SRT file and no
+// filter expands them.
+func safeCaption(s string) bool {
+	for _, r := range s {
+		if unicode.IsControl(r) || r == '{' || r == '}' || r == '\\' {
+			return false
+		}
+	}
+
+	return true
+}
+
 // Valid reports whether the plan has the fields the worker can render.
 func (p Plan) Valid() bool {
 	if strings.TrimSpace(p.Script) == "" || p.Duration <= 0 || p.Width <= 0 || p.Height <= 0 || p.FPS <= 0 {
@@ -34,8 +56,12 @@ func (p Plan) Valid() bool {
 		return false
 	}
 
+	if len(p.Shots) > MaxShots || len([]rune(p.Script)) > MaxScriptRunes {
+		return false
+	}
+
 	for _, shot := range p.Shots {
-		if strings.TrimSpace(shot.Text) == "" || shot.End <= shot.Start {
+		if strings.TrimSpace(shot.Text) == "" || shot.End <= shot.Start || len([]rune(shot.Text)) > MaxShotRunes || !safeCaption(shot.Text) {
 			return false
 		}
 	}
