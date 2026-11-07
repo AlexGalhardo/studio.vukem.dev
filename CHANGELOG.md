@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **site:** Doc pages are dated by the author date, so a rebase merge no longer turns the `Last updated` check red; the `.githooks/pre-push` hook refreshes `site/content/last-updated.json` before a push.
 - **security:** A global rolling 24-hour model budget, `STUDIO_DAILY_BUDGET_CENTS` (default 500, `0` disables), reserves each call's worst-case cost atomically before the call; an exhausted budget fails the job with a readable reason (ST-SEC-004)
 - **security:** A retry takes a slot of the rolling 24-hour quota like a new job, atomically behind the per-user lock; a refused retry takes none, and an exhausted quota answers 429 (ST-SEC-004)
 - **security:** The Railway start command no longer runs a recursive `chown` as root over the volume; it changes the mount point and then entries with another owner with `chown -h` (ST-SEC-006). Update the live `studio-app` start command to match
