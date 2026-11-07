@@ -21,7 +21,6 @@ func Web(r *router.Router, app *vukem.App) error {
 	r.UseServer(middleware.StaticFS(resources.Public(), middleware.StaticConfig{Prefix: "/"}))
 	r.Use(app.Inertia.Middleware, shareProps(app))
 
-
 	return nil
 }
 
