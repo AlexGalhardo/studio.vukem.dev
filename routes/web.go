@@ -8,7 +8,6 @@ import (
 	"github.com/AlexGalhardo/vukem/middleware"
 	"github.com/AlexGalhardo/vukem/router"
 
-	"github.com/AlexGalhardo/vukem-studio/app/controllers"
 	"github.com/AlexGalhardo/vukem-studio/resources"
 )
 
@@ -22,12 +21,6 @@ func Web(r *router.Router, app *vukem.App) error {
 	r.UseServer(middleware.StaticFS(resources.Public(), middleware.StaticConfig{Prefix: "/"}))
 	r.Use(app.Inertia.Middleware, shareProps(app))
 
-	db, err := app.DB()
-	if err != nil {
-		return err
-	}
-
-	r.Resource("posts", controllers.NewPostController(db))
 
 	return nil
 }
