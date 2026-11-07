@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **docs:** Agent rules cover the shared feedback file (`ST-` ids), the pinned Astro site and `last-updated`, the canonical jobs pipeline, tests, and Railway service, volume and domain rules
 - Bump vukem to v0.38.0
 - **site:** The documentation site is built with Astro on the vukem.dev site shell instead of Next.js. Build `npm run build` (writes `dist/`), start `npm start`; `/` and `/docs` answer 307 to `/docs/introduction`
 - Claim and retry of a job are conditional SQL updates, so duplicate deliveries and parallel retries cannot render or bill twice
