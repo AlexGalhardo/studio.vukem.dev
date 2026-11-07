@@ -12,7 +12,7 @@ Two Railway services serve two hostnames from one repository.
 
 ## Image
 
-`Dockerfile.app` builds the Vite assets and a static Go binary. The runtime image adds `ffmpeg`, a font, and only the `SKILL.md` files of `.agents/skills/`. It runs as a non-root user.
+`Dockerfile.app` builds the Vite assets and a static Go binary. The runtime image adds `ffmpeg`, a font, and only the `SKILL.md` and `SKILL.en.md` files of `.agents/skills/`. It runs as a non-root user.
 
 The image sets `QUEUE_CONNECTION=database`, so `serve` runs the render worker beside the web server.
 
@@ -33,14 +33,16 @@ Set these on the `studio-app` service. Values are never committed.
 | `SOCIAL_GOOGLE_CLIENT_SECRET` | From the Google OAuth client |
 | `ANTHROPIC_API_KEY` | Claude models |
 | `OPENAI_API_KEY` | Optional, OpenAI models |
+| `STUDIO_MODEL` | Optional. Defaults to `claude-sonnet-5-5` when the Anthropic key is set |
 | `STUDIO_MAX_JOBS_PER_DAY` | Optional |
 | `STUDIO_MAX_JOB_COST_CENTS` | Optional |
+| `STUDIO_MAX_OUTPUT_TOKENS` | Optional |
 
-The image already sets `APP_ENV`, `HOST`, `PORT`, `QUEUE_CONNECTION`, `STUDIO_SKILLS_DIR`, `STUDIO_OUTPUT_DIR`, and `STUDIO_FONT_FILE`. See [Configuration](/docs/configuration) for the rest.
+The image already sets `APP_ENV`, `HOST`, `PORT`, `QUEUE_CONNECTION`, and `STUDIO_STORAGE`. See [Configuration](/docs/configuration) for the rest.
 
 ## Volume
 
-Mount a Railway volume at `/app/storage`. It holds the MP4 files in `/app/storage/videos`, and the SQLite file when `DATABASE_URL` points there. Without a volume, files vanish on every deploy.
+Mount a Railway volume at `/app/storage`. It holds the job folders in `/app/storage/renders`, and the SQLite file when `DATABASE_URL` points there. Without a volume, files vanish on every deploy.
 
 ## Google OAuth
 
