@@ -47,10 +47,9 @@ COPY --from=skills /out /app/.agents/skills
 USER app
 # The platform's PORT overrides this one; HOST=0.0.0.0 makes the server
 # reachable from outside the container. Pass secrets at runtime, never here.
-# MAIL_MAILER=log keeps the image runnable: with APP_ENV=production an unset
-# mailer stops every command at boot, serve and `about` alike, as soon as a
-# route needs one. "log" writes each message to the JSON log, so nothing is
-# lost silently; set smtp, resend or mailtrap on the deploy to send for real.
+# The app sends no mail: sign-in is Google only and no route builds a mailer.
+# MAIL_MAILER=log stays as a no-op default (it only writes to the log) so the
+# framework never stops at boot for a missing mailer; no message exists to log.
 # The app owns a `jobs` table (render jobs), so the vukem database queue uses queue_jobs/queue_failed_jobs.
 # QUEUE_CONNECTION=database lets serve run the render worker beside the web
 # server; the default sync would render inside the request.

@@ -2,7 +2,7 @@
   "auth": {
     "social": {
       "no_email": "Your {provider} account did not share an email address.",
-      "email_taken": "An account with this email already exists. Log in with your password first."
+      "email_taken": "This email already has an account and the provider has not verified it. Sign in with a provider that verifies the address."
     }
   }
 }

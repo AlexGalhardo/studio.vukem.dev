@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/AlexGalhardo/vukem/social"
@@ -55,14 +54,9 @@ func TestSocialLinkEndsSquatterAccess(t *testing.T) {
 	victim := social.User{ID: "gh-9", Email: "vic@example.com", EmailVerified: true, Name: "Vic"}
 	app := vukemtest.New(t, bootstrap.New, vukemtest.Options{Env: vukemtest.FakeSocial(victim)})
 
+	seedUser(t, app, "vic@example.com", false)
 	squatter := app.Client(t)
-	squatter.PostForm("/register", url.Values{
-		"name": {"Mallory"}, "email": {"vic@example.com"},
-		"password": {testPassword}, "password_confirmation": {testPassword},
-	}).AssertRedirect("/register/check-email")
-	squatter.PostForm("/login", url.Values{
-		"email": {"vic@example.com"}, "password": {testPassword}, "remember": {"true"},
-	}).AssertRedirect("/dashboard")
+	actAs(t, app, squatter, "vic@example.com")
 
 	userID := apiTokenFor(t, app, "vic@example.com")
 
@@ -70,14 +64,10 @@ func TestSocialLinkEndsSquatterAccess(t *testing.T) {
 	signIn(t, c).AssertRedirect("/dashboard")
 	c.Get("/dashboard").AssertOK()
 
-	squatter.Get("/email/verify").AssertRedirect("/login")
-	vukemtest.AssertDatabaseMissing(t, app, "remember_tokens", map[string]any{"user_id": userID})
 	// Revoked, not deleted: the token stays listed with revoked_at.
 	vukemtest.AssertDatabaseMissing(t, app, "access_tokens", map[string]any{"user_id": userID, "revoked_at": nil})
 	vukemtest.AssertDatabaseHas(t, app, "access_tokens", map[string]any{"user_id": userID})
-	app.Client(t).WithHeader("Referer", "/login").PostForm("/login", url.Values{
-		"email": {"vic@example.com"}, "password": {testPassword},
-	}).AssertSessionHasErrors("email")
+	squatter.Get("/dashboard").AssertRedirect("/login")
 }
 
 func TestSocialDoesNotTakeOverUnverifiedEmails(t *testing.T) {
@@ -86,11 +76,7 @@ func TestSocialDoesNotTakeOverUnverifiedEmails(t *testing.T) {
 	user := social.User{ID: "gh-2", Email: "owner@example.com", EmailVerified: false, Name: "Mallory"}
 	app := vukemtest.New(t, bootstrap.New, vukemtest.Options{Env: vukemtest.FakeSocial(user)})
 
-	app.Client(t).PostForm("/register", url.Values{
-		"name": {"Owner"}, "email": {"owner@example.com"},
-		"password": {testPassword}, "password_confirmation": {testPassword},
-	})
-
+	seedUser(t, app, "owner@example.com", true)
 	signIn(t, app.Client(t)).AssertStatus(409)
 	vukemtest.AssertDatabaseCount(t, app, "social_accounts", 0)
 }

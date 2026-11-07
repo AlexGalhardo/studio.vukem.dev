@@ -35,13 +35,11 @@ func TestLogoutReturnsToLogin(t *testing.T) {
 func TestSessionCookieFlags(t *testing.T) {
 	t.Parallel()
 
-	app := vukemtest.New(t, bootstrap.New)
+	user := social.User{ID: "g-2", Email: "cookie@example.com", EmailVerified: true, Name: "Cook"}
+	app := vukemtest.New(t, bootstrap.New, vukemtest.Options{Env: vukemtest.FakeSocial(user)})
 	c := app.Client(t)
-	c.PostJSON("/register", signUpForm("Ana Silva", "cookie@example.com", testPassword)).
-		AssertRedirect("/register/check-email")
-	verifyEmail(t, app, "cookie@example.com")
 
-	res := c.PostJSON("/login", map[string]any{"email": "cookie@example.com", "password": testPassword})
+	res := signIn(t, c)
 	res.AssertRedirect("/dashboard")
 
 	var session *http.Cookie
