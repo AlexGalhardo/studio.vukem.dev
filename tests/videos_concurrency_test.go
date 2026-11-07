@@ -8,9 +8,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/AlexGalhardo/vukem/orm"
 	"github.com/AlexGalhardo/vukem/vukemtest"
 
 	"github.com/AlexGalhardo/vukem-studio/app/jobs"
+	"github.com/AlexGalhardo/vukem-studio/app/models"
 	"github.com/AlexGalhardo/vukem-studio/app/studio"
 	"github.com/AlexGalhardo/vukem-studio/bootstrap"
 )
@@ -106,5 +108,29 @@ func TestQuotaWindowIsRolling(t *testing.T) {
 	svc.Now = func() time.Time { return base.Add(24*time.Hour + time.Minute) }
 	if _, err := svc.Create(context.Background(), uid, studioBrief()); err != nil {
 		t.Fatalf("after 24h got %v, want success", err)
+	}
+}
+
+// The quota counts integer epoch milliseconds, so rows 23h59m and 24h01m old
+// land on the right side of the window whatever text the driver stores.
+func TestQuotaCountsRowsAtTheWindowEdge(t *testing.T) {
+	t.Parallel()
+
+	_, svc, uid := serviceFor(t, map[string]string{"STUDIO_MAX_JOBS_PER_DAY": "2"})
+	now := time.Now().UTC()
+
+	for _, age := range []time.Duration{23*time.Hour + 59*time.Minute, 24*time.Hour + time.Minute} {
+		v := models.Video{UserID: uid, Status: models.VideoReady, Brief: "{}", SkillID: "s", ModelID: "m", Prompt: "p", CreatedUnix: now.Add(-age).UnixMilli()}
+		if err := orm.Create(context.Background(), svc.DB, &v); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if _, err := svc.Create(context.Background(), uid, studioBrief()); err != nil {
+		t.Fatalf("one row inside the window, limit 2: %v", err)
+	}
+
+	if _, err := svc.Create(context.Background(), uid, studioBrief()); !errors.Is(err, studio.ErrDailyLimit) {
+		t.Fatalf("two rows inside the window: got %v, want the daily limit", err)
 	}
 }

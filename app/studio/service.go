@@ -71,8 +71,11 @@ func (s *Service) Create(ctx context.Context, userID int64, b Brief) (models.Vid
 		Brief: string(raw), SkillID: b.Skill, ModelID: b.Model, Prompt: prompt,
 	}
 
+	now := s.Now().UTC()
+	v.CreatedUnix = now.UnixMilli()
+
 	err = s.DB.Tx(ctx, func(tx *database.Tx) error {
-		if err := s.takeQuota(ctx, tx, userID); err != nil {
+		if err := s.takeQuota(ctx, tx, userID, now); err != nil {
 			return err
 		}
 
@@ -88,13 +91,11 @@ func (s *Service) Create(ctx context.Context, userID int64, b Brief) (models.Vid
 // takeQuota enforces a rolling 24-hour window. The lock row is touched first
 // so concurrent submits of one user queue up behind each other; the count and
 // the insert that follows then see a consistent state.
-func (s *Service) takeQuota(ctx context.Context, tx *database.Tx, userID int64) error {
+func (s *Service) takeQuota(ctx context.Context, tx *database.Tx, userID int64, now time.Time) error {
 	limit := s.Cfg.MaxJobsPerDay
 	if limit <= 0 {
 		return nil
 	}
-
-	now := s.Now().UTC()
 
 	if _, err := tx.ExecContext(ctx, database.Rebind(tx.Dialect(),
 		"INSERT INTO video_quotas (user_id, touched_at) VALUES (?, ?) ON CONFLICT (user_id) DO NOTHING"), userID, now); err != nil {
@@ -106,12 +107,16 @@ func (s *Service) takeQuota(ctx context.Context, tx *database.Tx, userID int64) 
 		return err
 	}
 
-	n, err := orm.QueryOf[models.Video](tx).Where("user_id", userID).Where("created_at", ">=", now.Add(-24*time.Hour)).Count(ctx)
-	if err != nil {
+	// Integer epoch milliseconds: the stored text format of a timestamp column
+	// differs per driver and must not decide who gets past the limit.
+	var n int
+	if err := tx.QueryRowContext(ctx, database.Rebind(tx.Dialect(),
+		"SELECT COUNT(*) FROM videos WHERE user_id = ? AND created_unix >= ?"),
+		userID, now.Add(-24*time.Hour).UnixMilli()).Scan(&n); err != nil {
 		return err
 	}
 
-	if int(n) >= limit {
+	if n >= limit {
 		return fmt.Errorf("%w (%d per 24 hours)", ErrDailyLimit, limit)
 	}
 

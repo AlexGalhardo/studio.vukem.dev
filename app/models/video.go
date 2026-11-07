@@ -34,6 +34,9 @@ type Video struct {
 	InputTokens  int64  `json:"input_tokens"`
 	OutputTokens int64  `json:"output_tokens"`
 	CostMicros   int64  `json:"cost_micros"`
+	// CreatedUnix is the creation time in epoch milliseconds, written by the
+	// quota code and compared as an integer so no timestamp text format matters.
+	CreatedUnix int64 `json:"-"`
 }
 
 // Table names the table explicitly.

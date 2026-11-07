@@ -26,8 +26,9 @@ func m20261107000000CreateVideosTable() schema.Migration {
 				t.BigInteger("input_tokens").Default(0)
 				t.BigInteger("output_tokens").Default(0)
 				t.BigInteger("cost_micros").Default(0)
+				t.BigInteger("created_unix").Default(0)
 				t.Timestamps()
-				t.Index("user_id", "created_at")
+				t.Index("user_id", "created_unix")
 			})
 		},
 		Down: func(s *schema.Schema) error { return s.DropIfExists("videos") },
