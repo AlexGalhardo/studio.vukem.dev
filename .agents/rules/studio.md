@@ -8,10 +8,15 @@
 - FFmpeg is invoked with an argument list, never a shell string built from the brief.
 - A render is not ready until the QA checks in `site/content/docs/pipeline/qa.mdx` pass.
 - External media ships only with a license record.
-- Framework bugs go in `vukem-feedback.md` at the workspace root (shared by all projects, ids `ST-<n>`). Do not fork Vukem to paper over them.
+- Framework bugs go in the shared `vukem-feedback.md` at the workspace root (ids `ST-<n>`; fields Severity, Date, Docs, Finding, Minimal repro, Suggested fix, Status). The vukem maintainer fixes entries on the release PR and updates `Status`. Per-repo copies are legacy. Do not fork Vukem to paper over them.
 - Quotas, job claims and requeues are conditional SQL updates or transactions behind a lock, never read-then-write. Window queries compare integers (`created_unix`), not timestamp text.
 - Every external process runs through `commandCtx` so it has a deadline. Plan text is validated before it reaches libass.
-- The docs site in `site/` is Astro, same shell as `vukem/site`. Run `npm run check:mdx`, `npm run lint` and `npm run build` there.
+- The docs site in `site/` is Astro, same shell as `vukem/site`. Pinned like `vukem/site` (astro 7.4.7, @astrojs/react 7.1.4). Run `npm run check:mdx`, `npm run lint` and `npm run build` there; any change under `site/content/docs` also needs `npm run last-updated`.
 - Skill kits are still Portuguese. Translate the kit you are wiring, not the whole tree, unless the task says otherwise.
 - Do not commit `zip/`.
 - Apply the vendored `security-audit` skill (`.agents/skills/security-audit`, Cloudflare) during development, in guidance mode unless the task is an explicit full audit. CI runs it in `.github/workflows/security-audit.yml`.
+- The `jobs` pipeline on `main` is canonical. The quota is an atomic rolling 24 hours (integer epoch, per-user lock); claim and requeue are conditional updates; ffmpeg runs under per-process deadlines and caption text is validated first. A brief lasts 5 to 300 seconds.
+- Tests: Go unit and race tests, Playwright e2e in `e2e/`. Real-model tests run only with `STUDIO_TEST_REAL_MODEL=1`.
+- Railway: a root `railway.toml` applies to every service built from the repo, so it holds shared settings only; each service picks its image with `RAILWAY_DOCKERFILE_PATH` (`Dockerfile` for the docs site, `Dockerfile.app` for `studio-app`). Per-service config-as-code files are deprecated; set service settings in the dashboard or API.
+- `studio-app` (`app.studio.vukem.dev`) keeps SQLite on a volume and runs the queue inside `serve`. Never migrate in `preDeployCommand` (no volume there); migrate in the start command. Railway volumes are root-owned: use `RAILWAY_RUN_UID=0` and a start command that chowns `/app/storage` to 10001, then `su app` for `migrate` and the server.
+- Custom domains: Railway custom domain, a CNAME and the `_railway-verify` TXT record. `vukem.dev` DNS is on Vercel (`vercel dns add`).
