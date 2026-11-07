@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"errors"
+	"github.com/AlexGalhardo/vukem/errs"
+	"github.com/AlexGalhardo/vukem/queue"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -110,7 +113,11 @@ func (h *JobController) Store(c *web.Ctx) error {
 		ModelID: jobs.PlannerFor(h.app).ID(),
 	}
 
-	if err := orm.Create(c.Context(), db, &row); err != nil {
+	if err := jobs.CreateWithQuota(c.Context(), db, &row, jobs.JobsPerDay(h.app.Source.Get), h.app.Now()); err != nil {
+		if errors.Is(err, jobs.ErrQuota) {
+			return z.FieldError("goal", err.Error())
+		}
+
 		return err
 	}
 
@@ -125,7 +132,7 @@ func (h *JobController) Store(c *web.Ctx) error {
 		return err
 	}
 
-	if err := q.Dispatch(c.Context(), jobs.Render{JobID: row.ID}); err != nil {
+	if err := q.Dispatch(c.Context(), jobs.Render{JobID: row.ID}, queue.Unique(jobs.UniqueKey(row.ID, row.Attempts))); err != nil {
 		return err
 	}
 
@@ -175,8 +182,17 @@ func (h *JobController) Retry(c *web.Ctx) error {
 		return err
 	}
 
-	if row.Status == studio.StatusRendering {
-		return z.FieldError("goal", "This video is already rendering.")
+	db, err := h.app.DB()
+	if err != nil {
+		return err
+	}
+
+	if err := jobs.Requeue(c.Context(), db, row.ID, h.app.Now()); err != nil {
+		if errors.Is(err, jobs.ErrBusy) || errors.Is(err, jobs.ErrExhausted) {
+			return errs.Wrap(http.StatusConflict, err)
+		}
+
+		return err
 	}
 
 	q, err := h.app.Queue()
@@ -184,7 +200,7 @@ func (h *JobController) Retry(c *web.Ctx) error {
 		return err
 	}
 
-	if err := q.Dispatch(c.Context(), jobs.Render{JobID: row.ID}); err != nil {
+	if err := q.Dispatch(c.Context(), jobs.Render{JobID: row.ID}, queue.Unique(jobs.UniqueKey(row.ID, row.Attempts))); err != nil {
 		return err
 	}
 

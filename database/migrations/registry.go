@@ -11,5 +11,6 @@ func All() []schema.Migration {
 		m20261105010356CreateAuthTables(),
 		m20261105010357CreateSocialAccountsTable(),
 		m20261105120000CreateJobsTable(),
+		m20261107000000AddJobLimits(),
 	}
 }
