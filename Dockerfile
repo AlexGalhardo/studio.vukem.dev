@@ -17,7 +17,7 @@ WORKDIR /app/site
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000
 
 COPY --from=build --chown=bun:bun /src/site/dist ./dist
-COPY --from=build --chown=bun:bun /src/site/scripts/serve.ts ./scripts/serve.ts
+COPY --from=build --chown=bun:bun /src/site/scripts/serve.ts /src/site/scripts/static-path.ts ./scripts/
 
 USER bun
 EXPOSE 3000

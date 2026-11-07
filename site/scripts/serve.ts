@@ -7,6 +7,8 @@ import { createServer } from "node:http";
 import { extname, join, resolve } from "node:path";
 import { posix } from "node:path";
 
+import { resolveRequest } from "./static-path.ts";
+
 const root = resolve(import.meta.dirname, "..", "dist");
 const port = Number(process.env.PORT ?? 3000);
 
@@ -32,8 +34,13 @@ async function isFile(path: string): Promise<boolean> {
 }
 
 createServer(async (req, res) => {
-  const pathname = decodeURIComponent(new URL(req.url ?? "/", "http://localhost").pathname);
-  const clean = posix.normalize(pathname);
+  const resolved = resolveRequest(req.url ?? "/", root);
+  if (resolved.kind === "bad") {
+    res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" }).end("Bad request");
+    return;
+  }
+
+  const clean = resolved.pathname;
 
   if (clean === "/" || clean === "/docs" || clean === "/docs/") {
     res.writeHead(307, { Location: "/docs/introduction" }).end();
