@@ -1,9 +1,11 @@
+# Railway reads this file for every service built from this repository, so it holds only what the docs
+# service (`studio`) and the app service (`studio-app`) share. Each service picks its image with the
+# RAILWAY_DOCKERFILE_PATH variable (`Dockerfile` for the docs site, `Dockerfile.app` for the app) and sets
+# its own health check, start command and volume in the service settings; see railway.app.toml and
+# site/content/docs/deployment/app.mdx.
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
 
 [deploy]
-healthcheckPath = "/docs/introduction"
-healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3

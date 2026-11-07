@@ -1,5 +1,5 @@
-# The authenticated app at https://app.studio.vukem.dev. Point the Railway
-# service at this file (Settings, Config-as-code, /railway.app.toml).
+# The authenticated app at https://app.studio.vukem.dev. Railway only reads the root railway.toml, so these are
+# the values to set on the `studio-app` service (and RAILWAY_DOCKERFILE_PATH=Dockerfile.app as a variable).
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.app"
