@@ -1,6 +1,7 @@
 .git
 .github
 .agents
+!.agents/skills/**/SKILL.md
 zip
 node_modules
 site/node_modules

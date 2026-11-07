@@ -102,7 +102,7 @@ func (vc *VideoController) Store(c *web.Ctx) error {
 		return err
 	}
 
-	if err := vc.dispatch(c, video.ID); err != nil {
+	if err := vc.dispatch(c, video.ID, video.Attempts); err != nil {
 		return err
 	}
 
@@ -161,7 +161,7 @@ func (vc *VideoController) Retry(c *web.Ctx) error {
 		return err
 	}
 
-	if err := vc.dispatch(c, video.ID); err != nil {
+	if err := vc.dispatch(c, video.ID, video.Attempts); err != nil {
 		return err
 	}
 
@@ -200,13 +200,13 @@ func (vc *VideoController) Download(c *web.Ctx) error {
 	return c.Download(root.FS(), video.OutputPath, "video-"+strconv.FormatInt(video.ID, 10)+".mp4")
 }
 
-func (vc *VideoController) dispatch(c *web.Ctx, id int64) error {
+func (vc *VideoController) dispatch(c *web.Ctx, id int64, attempts int) error {
 	q, err := vc.queue()
 	if err != nil {
 		return err
 	}
 
-	return q.Dispatch(c.Context(), jobs.RenderVideo{VideoID: id}, queue.Unique("render_video:"+strconv.FormatInt(id, 10)+":"+strconv.FormatInt(vc.svc.Now().UnixNano(), 10)))
+	return q.Dispatch(c.Context(), jobs.RenderVideo{VideoID: id}, queue.Unique("render_video:"+strconv.FormatInt(id, 10)+":"+strconv.Itoa(attempts)))
 }
 
 func (vc *VideoController) find(c *web.Ctx) (models.Video, error) {

@@ -115,32 +115,64 @@ func (s *Service) takeQuota(ctx context.Context, tx *database.Tx, userID int64) 
 	return nil
 }
 
-// Retry puts a failed job back in the queue.
+// Retry puts a failed job back in the queue with one conditional UPDATE, so
+// parallel retries re-queue it at most once and cannot pass MaxAttempts. The
+// caller dispatches only when Retry returns nil.
 func (s *Service) Retry(ctx context.Context, v *models.Video) error {
-	if v.Status != models.VideoFailed {
-		return ErrNotRetryable
+	res, err := s.DB.ExecContext(ctx, database.Rebind(s.DB.Dialect(),
+		"UPDATE videos SET status = ?, stage = ?, progress = 0, error = '', updated_at = ? WHERE id = ? AND status = ? AND attempts < ?"),
+		models.VideoQueued, "Waiting for a worker", s.Now().UTC(), v.ID, models.VideoFailed, MaxAttempts)
+	if err != nil {
+		return err
 	}
 
-	if v.Attempts >= MaxAttempts {
+	if n, err := res.RowsAffected(); err != nil {
+		return err
+	} else if n == 0 {
+		cur, err := orm.QueryOf[models.Video](s.DB).Find(ctx, v.ID)
+		if err != nil {
+			return err
+		}
+
+		if cur.Status != models.VideoFailed {
+			return ErrNotRetryable
+		}
+
 		return ErrAttemptsLimit
 	}
 
-	v.Status, v.Stage, v.Progress, v.Error = models.VideoQueued, "Waiting for a worker", 0, ""
+	fresh, err := orm.QueryOf[models.Video](s.DB).Find(ctx, v.ID)
+	if err != nil {
+		return err
+	}
 
-	return orm.Update(ctx, s.DB, v)
+	*v = fresh
+
+	return nil
 }
 
 // Run executes one queued job. It never returns the job's own failure: a
 // failed job is a stored state, not a queue retry, because every retry would
 // bill another model call. It returns only storage errors.
 func (s *Service) Run(ctx context.Context, id int64) (err error) {
-	v, err := orm.QueryOf[models.Video](s.DB).Find(ctx, id)
+	// Claim the job: only the worker whose UPDATE changes the row proceeds, so
+	// a duplicate delivery cannot bill a second model call.
+	res, err := s.DB.ExecContext(ctx, database.Rebind(s.DB.Dialect(),
+		"UPDATE videos SET status = ?, stage = ?, progress = 5, attempts = attempts + 1, error = '', updated_at = ? WHERE id = ? AND status = ?"),
+		models.VideoPlanning, "Writing the scene plan", s.Now().UTC(), id, models.VideoQueued)
 	if err != nil {
 		return err
 	}
 
-	if v.Status != models.VideoQueued {
+	if n, err := res.RowsAffected(); err != nil {
+		return err
+	} else if n == 0 {
 		return nil
+	}
+
+	v, err := orm.QueryOf[models.Video](s.DB).Find(ctx, id)
+	if err != nil {
+		return err
 	}
 
 	defer func() {
@@ -148,13 +180,6 @@ func (s *Service) Run(ctx context.Context, id int64) (err error) {
 			err = s.fail(ctx, &v, fmt.Sprintf("internal error: %v", r))
 		}
 	}()
-
-	v.Attempts++
-	v.Error = ""
-
-	if err := s.set(ctx, &v, models.VideoPlanning, "Writing the scene plan", 5); err != nil {
-		return err
-	}
 
 	var b Brief
 	if err := json.Unmarshal([]byte(v.Brief), &b); err != nil {
