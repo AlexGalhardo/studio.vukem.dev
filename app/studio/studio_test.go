@@ -225,3 +225,22 @@ func TestPlanRejectsCaptionInjection(t *testing.T) {
 		}
 	}
 }
+
+func TestShotCapScalesWithDuration(t *testing.T) {
+	plan := func(duration float64, shots int) Plan {
+		p := Plan{Script: "s", Duration: duration, FPS: 30, Width: 10, Height: 10}
+		for i := range shots {
+			p.Shots = append(p.Shots, Shot{Text: "x", Start: float64(i) * 0.5, End: float64(i)*0.5 + 0.4})
+		}
+
+		return p
+	}
+
+	if !plan(300, 310).Valid() || plan(300, 311).Valid() {
+		t.Fatal("a 300 second plan allows 310 shots and not 311")
+	}
+
+	if plan(5, 16).Valid() || !plan(5, 15).Valid() {
+		t.Fatal("a 5 second plan allows 15 shots and not 16")
+	}
+}

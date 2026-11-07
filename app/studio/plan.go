@@ -27,9 +27,9 @@ type Plan struct {
 
 // Limits on what a model may put into a plan.
 const (
-	MaxShots       = 200
+	MaxShots       = 400
 	MaxShotRunes   = 500
-	MaxScriptRunes = 5000
+	MaxScriptRunes = 20000
 )
 
 // safeCaption rejects what libass would interpret instead of draw: control
@@ -56,7 +56,7 @@ func (p Plan) Valid() bool {
 		return false
 	}
 
-	if len(p.Shots) > MaxShots || len([]rune(p.Script)) > MaxScriptRunes {
+	if len(p.Shots) > MaxShots || len(p.Shots) > int(p.Duration)+10 || len([]rune(p.Script)) > MaxScriptRunes {
 		return false
 	}
 

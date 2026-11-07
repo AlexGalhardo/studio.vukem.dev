@@ -81,14 +81,17 @@ func (p LLMPlanner) Plan(ctx context.Context, prompt string, brief Brief) (Plan,
 
 	full := prompt + planShape(brief)
 
+	// A longer cut needs a longer plan: 30 more output tokens per second.
+	tokens := p.MaxTokens + 30*brief.Duration
+
 	if p.MaxCostMicros > 0 {
-		if worst := EstimateCostMicros(p.Model, int64(len(full)/3), int64(p.MaxTokens)); worst > p.MaxCostMicros {
+		if worst := EstimateCostMicros(p.Model, int64(len(full)/3), int64(tokens)); worst > p.MaxCostMicros {
 			return Plan{}, "", fmt.Errorf("%w: $%.4f against $%.4f; lower STUDIO_MAX_OUTPUT_TOKENS, pick a cheaper model or raise STUDIO_MAX_JOB_COST_CENTS",
 				ErrOverCost, float64(worst)/1e6, float64(p.MaxCostMicros)/1e6)
 		}
 	}
 
-	raw, err := p.call(ctx, full)
+	raw, err := p.call(ctx, full, tokens)
 	if err != nil {
 		return Plan{}, "", fmt.Errorf("%w: %s", ErrModelCall, err)
 	}
@@ -130,9 +133,9 @@ func EstimateCostMicros(model string, in, out int64) int64 {
 	return (in*pin + out*pout) / 1_000_000
 }
 
-func (p LLMPlanner) call(ctx context.Context, prompt string) (string, error) {
+func (p LLMPlanner) call(ctx context.Context, prompt string, tokens int) (string, error) {
 	if isClaude(p.Model) {
-		body := map[string]any{"model": p.Model, "max_tokens": p.MaxTokens, "messages": []map[string]string{{"role": "user", "content": prompt}}}
+		body := map[string]any{"model": p.Model, "max_tokens": tokens, "messages": []map[string]string{{"role": "user", "content": prompt}}}
 
 		var res struct {
 			Content []struct {
@@ -158,7 +161,7 @@ func (p LLMPlanner) call(ctx context.Context, prompt string) (string, error) {
 	}
 
 	body := map[string]any{
-		"model": p.Model, "max_completion_tokens": p.MaxTokens,
+		"model": p.Model, "max_completion_tokens": tokens,
 		"response_format": map[string]string{"type": "json_object"},
 		"messages":        []map[string]string{{"role": "user", "content": prompt}},
 	}

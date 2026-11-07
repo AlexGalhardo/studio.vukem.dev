@@ -60,7 +60,7 @@ export default function BriefForm({ styles, ratios }: Props) {
             className={input}
             type="number"
             min={5}
-            max={45}
+            max={300}
             value={form.data.duration}
             onChange={(e) => form.setData("duration", e.target.value)}
           />

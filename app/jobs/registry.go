@@ -15,6 +15,6 @@ func All(app *vukem.App) []queue.Registration {
 	return []queue.Registration{
 		// One attempt. A failed encode is stored on the row; the operator
 		// re-runs it. A queue retry would race the same output path.
-		queue.Handle(handleRender(app), queue.Retries(0), queue.Timeout(2*time.Minute)),
+		queue.Handle(handleRender(app), queue.Retries(0), queue.Timeout(10*time.Minute)),
 	}
 }

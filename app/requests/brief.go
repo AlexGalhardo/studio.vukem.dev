@@ -32,7 +32,7 @@ var BriefSchema = z.Struct[Brief](z.Shape{
 	"goal":           z.String().Trim().Min(1).Max(500),
 	"audience":       z.String().Trim().Min(1).Max(500),
 	"subject":        z.String().Trim().Min(1).Max(500),
-	"duration":       z.Int().Min(5).Max(45),
+	"duration":       z.Int().Min(5).Max(300),
 	"ratio":          z.Enum("9:16", "1:1", "4:5", "16:9"),
 	"style_skill":    z.String().Trim().Refine(validStyle),
 	"language":       z.String().Trim().Min(2).Max(40),
