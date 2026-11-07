@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **security:** The Railway start command no longer runs a recursive `chown` as root over the volume; it changes the mount point and then entries with another owner with `chown -h` (ST-SEC-006). Update the live `studio-app` start command to match
 - **security:** The publish pack and the worker save only their own columns, so a stale read can no longer undo a claim or requeue (ST-SEC-003)
 - **security:** A voice upload whose WAV header understates its length no longer crashes the process; the declared data size is honored and the decoded length is checked before resampling (ST-SEC-001)
 - Captions with control characters, braces or backslashes are rejected in a plan instead of reaching libass
