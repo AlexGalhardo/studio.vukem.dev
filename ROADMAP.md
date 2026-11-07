@@ -42,7 +42,7 @@ The visitor of `studio.vukem.dev` lands on the technical introduction.
 
 ### 1.1 Site
 
-- [x] `site/` uses the vukem.dev docs shell (Next.js 16, MDX, sidebar, search, changelog page)
+- [x] `site/` uses the vukem.dev docs shell (Astro 7, MDX, sidebar, search, changelog page)
 - [x] `/` redirects to `/docs/introduction`
 - [x] Pages exist for the pipeline, tools, skills, and deploy
 - [x] `content/last-updated.json` is filled from git and `npm run check:last-updated` passes

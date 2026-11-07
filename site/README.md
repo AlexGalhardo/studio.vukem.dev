@@ -1,6 +1,6 @@
 # Studio documentation site
 
-The public docs at <https://studio.vukem.dev>. Next.js 16 (App Router, static generation), Tailwind CSS v4, Base UI, and MDX. The shell is the vukem.dev documentation site, with Studio content.
+The public docs at <https://studio.vukem.dev>. Astro 7 (static build), React islands, Tailwind CSS v4, Base UI, and MDX. The shell is the vukem.dev documentation site, with Studio content.
 
 `/` redirects to `/docs/introduction`.
 
@@ -9,13 +9,13 @@ The public docs at <https://studio.vukem.dev>. Next.js 16 (App Router, static ge
 ```bash
 npm ci
 npm run dev
-npm run check
 npm run lint
 npm run check:mdx
 npm run build
+npm start
 ```
 
-`check` runs `tsc --noEmit`. From the repository root, `bun run check` runs the same script with Bun 1.4.4.
+`npm run build` writes `dist/`. `npm start` serves it on `PORT` (default 3000): `/` and `/docs` answer 307 to `/docs/introduction`, and every page answers with or without a trailing slash. The root `Dockerfile` runs the same server with Bun 1.4.4.
 
 ## Last updated
 

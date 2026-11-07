@@ -8,6 +8,7 @@ zip/
 node_modules/
 site/node_modules/
 site/.next/
+site/dist/
 dist/
 coverage/
 *.log

@@ -5,6 +5,7 @@ zip
 node_modules
 site/node_modules
 site/.next
+site/dist
 vukem-feedback.md
 .env
 .env.*
