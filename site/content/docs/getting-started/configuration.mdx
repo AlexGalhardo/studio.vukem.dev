@@ -1,0 +1,63 @@
+---
+title: Configuration
+description: Every environment variable the Studio app reads.
+---
+
+The app reads its configuration from the environment and an optional `.env` file. Nothing here is committed with a value.
+
+## Framework
+
+| Variable | Purpose |
+| --- | --- |
+| `APP_ENV` | `development`, `test`, or `production` |
+| `APP_KEY` | Encrypts sessions and tokens. Required in production |
+| `APP_URL` | Public origin. `https://app.studio.vukem.dev` in production. The Google callback is built from it |
+| `DATABASE_URL` | SQLite file or PostgreSQL URL |
+| `QUEUE_CONNECTION` | `database` in production so `serve` runs the render worker. `sync` runs a job inside the request |
+| `PORT`, `HOST` | Listen address |
+
+## Sign-in
+
+| Variable | Purpose |
+| --- | --- |
+| `SOCIAL_GOOGLE_CLIENT_ID` | Google OAuth client id |
+| `SOCIAL_GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+
+## Models
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | none | Claude adapter. Models `claude-sonnet-5-5` and `claude-opus-5-5` |
+| `OPENAI_API_KEY` | none | OpenAI adapter |
+| `STUDIO_OPENAI_MODEL` | `gpt-5.5` | The OpenAI model offered in the brief form |
+| `STUDIO_MODELS` | the three above | Comma-separated list of model ids an operator may pick. An id starting with `claude-` uses Anthropic, any other id uses OpenAI |
+| `STUDIO_MAX_OUTPUT_TOKENS` | `4000` | Output cap of one model call |
+
+A model call without its key fails the job with `API key for this model's provider is not configured`.
+
+## Limits
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `STUDIO_MAX_JOBS_PER_DAY` | `20` | Jobs one user may create in any rolling 24 hours. `0` means unlimited |
+| `STUDIO_MAX_JOB_COST_CENTS` | `100` | Per-job cost cap in US cents, checked before the call (worst case) and after it (actual usage). `0` means unlimited |
+
+Cost is an estimate from a built-in per-million-token price table, not an invoice. Each job may run three times at most, retries included.
+
+## Rendering and storage
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `STUDIO_OUTPUT_DIR` | `storage/videos` | Where MP4 files and sidecars live. Mount a volume here in production |
+| `STUDIO_SKILLS_DIR` | nearest `.agents/skills` | Style skill catalog |
+| `STUDIO_FFMPEG`, `STUDIO_FFPROBE` | `ffmpeg`, `ffprobe` | Binary names or paths |
+| `STUDIO_FONT_FILE` | auto | Font for the text cards |
+| `STUDIO_RENDER_WIDTH` | `1080` | Frame width in pixels. Height follows the ratio |
+
+## Test switches
+
+| Variable | Purpose |
+| --- | --- |
+| `STUDIO_PROVIDER=fake` | Fake model and fake renderer. Refused in production |
+| `STUDIO_FAKE_PLANNER` | `ok`, `invalid`, or `error` |
+| `STUDIO_FAKE_RENDER_FAIL=true` | Every fake render fails |
