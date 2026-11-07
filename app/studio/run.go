@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -63,6 +64,10 @@ func Run(ctx context.Context, st State, run Runner) error {
 	plan, raw, err := run.Planner.Plan(ctx, st.Prompt, st.Brief)
 	st.RawModel = raw
 	st.ModelID = run.Planner.ID()
+
+	if errors.Is(err, ErrNoKey) || errors.Is(err, ErrModelCall) || errors.Is(err, ErrOverCost) {
+		return run.fail(ctx, st, dir, err.Error())
+	}
 
 	if err != nil {
 		return run.fail(ctx, st, dir, "the model output is not a scene plan")
