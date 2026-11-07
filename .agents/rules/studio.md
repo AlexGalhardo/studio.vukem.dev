@@ -8,7 +8,10 @@
 - FFmpeg is invoked with an argument list, never a shell string built from the brief.
 - A render is not ready until the QA checks in `site/content/docs/pipeline/qa.mdx` pass.
 - External media ships only with a license record.
-- Framework bugs go in `vukem-feedback.md`, which is gitignored. Do not fork Vukem to paper over them.
+- Framework bugs go in `vukem-feedback.md` at the workspace root (shared by all projects, ids `ST-<n>`). Do not fork Vukem to paper over them.
+- Quotas, job claims and requeues are conditional SQL updates or transactions behind a lock, never read-then-write. Window queries compare integers (`created_unix`), not timestamp text.
+- Every external process runs through `commandCtx` so it has a deadline. Plan text is validated before it reaches libass.
+- The docs site in `site/` is Astro, same shell as `vukem/site`. Run `npm run check:mdx`, `npm run lint` and `npm run build` there.
 - Skill kits are still Portuguese. Translate the kit you are wiring, not the whole tree, unless the task says otherwise.
 - Do not commit `zip/`.
 - Apply the vendored `security-audit` skill (`.agents/skills/security-audit`, Cloudflare) during development, in guidance mode unless the task is an explicit full audit. CI runs it in `.github/workflows/security-audit.yml`.

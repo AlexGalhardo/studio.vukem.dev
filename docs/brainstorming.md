@@ -66,7 +66,7 @@ Guess: translate the skill the first milestone actually calls, plus the art-dire
 
 Q: One hostname with the docs at `/` and the app on a path, or the docs on `studio.vukem.dev` and the app on another name?
 
-Guess: this hostname is the docs, because the brief says a visitor lands on the technical documentation. The dashboard is a second Railway service, for example `app.studio.vukem.dev`, after the app exists. Putting both in one process now would couple a Next.js docs build to a Go server before either is finished.
+Guess: this hostname is the docs, because the brief says a visitor lands on the technical documentation. The dashboard is a second Railway service, for example `app.studio.vukem.dev`, after the app exists. Putting both in one process now would couple an Astro docs build to a Go server before either is finished.
 
 ## Proposals already in the tree
 
