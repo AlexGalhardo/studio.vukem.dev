@@ -30,6 +30,12 @@ COPY --from=assets /src/resources/public/build resources/public/build
 RUN tags="$(sed 's/#.*//' .buildtags 2>/dev/null | tr -s ', \t\r\n' ',' | sed 's/^,//; s/,$//')" \
 	&& go build -trimpath -ldflags="-s -w" -tags "$tags" -o /out/app ./cmd/app
 
+# Only the SKILL files ship: the prompt compiler reads them, the kits' assets
+# and scripts stay out of the image.
+FROM alpine:3.24.2 AS skills
+COPY .agents/skills /in
+RUN mkdir /out && cd /in && find . \( -name SKILL.md -o -name SKILL.en.md \) | tar cf - -T - | tar xf - -C /out
+
 FROM alpine:3.24.2
 RUN apk add --no-cache ca-certificates tzdata ffmpeg font-dejavu \
 	&& adduser -D -H -u 10001 app \
@@ -37,6 +43,7 @@ RUN apk add --no-cache ca-certificates tzdata ffmpeg font-dejavu \
 	&& chown app:app /app/storage
 WORKDIR /app
 COPY --from=build /out/app /app/app
+COPY --from=skills /out /app/.agents/skills
 USER app
 # The platform's PORT overrides this one; HOST=0.0.0.0 makes the server
 # reachable from outside the container. Pass secrets at runtime, never here.
@@ -44,7 +51,11 @@ USER app
 # mailer stops every command at boot, serve and `about` alike, as soon as a
 # route needs one. "log" writes each message to the JSON log, so nothing is
 # lost silently; set smtp, resend or mailtrap on the deploy to send for real.
-ENV APP_ENV=production HOST=0.0.0.0 PORT=3000 LOG_FORMAT=json MAIL_MAILER=log
+# QUEUE_CONNECTION=database lets serve run the render worker beside the web
+# server; the default sync would render inside the request.
+ENV APP_ENV=production HOST=0.0.0.0 PORT=3000 LOG_FORMAT=json MAIL_MAILER=log \
+	QUEUE_CONNECTION=database \
+	STUDIO_STORAGE=/app/storage/renders
 # A platform start command (Railway, Fly) replaces this entrypoint, so it has
 # to name the binary: "/app/app queue:work", never "queue:work".
 EXPOSE 3000
