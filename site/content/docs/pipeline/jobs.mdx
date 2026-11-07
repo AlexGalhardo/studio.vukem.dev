@@ -1,0 +1,52 @@
+---
+title: Jobs
+description: Job states, progress, retries, limits, storage, and the JSON endpoints.
+---
+
+A brief becomes a job row. A queue worker runs it.
+
+## States
+
+| Status | Meaning |
+| --- | --- |
+| `queued` | Stored with its compiled prompt, waiting for a worker |
+| `planning` | The model is writing the scene plan |
+| `rendering` | FFmpeg is rendering and QA is pending. Progress runs from 20 to 100 |
+| `ready` | The MP4 passed QA and can be downloaded |
+| `failed` | A readable reason is stored on the job |
+
+A job row keeps the brief, the skill id, the model id, the prompt, the raw model reply, the parsed plan, token counts, the estimated cost, and a sidecar with the FFmpeg version.
+
+## Failures
+
+A failure is a stored state, never a silent retry, because each model call costs money.
+
+| Cause | What the job shows |
+| --- | --- |
+| No API key | The variable to set |
+| Model error or timeout | The provider status, without the response body |
+| Reply is not a valid plan | The validation error. The raw reply stays on the job |
+| Worst-case or actual cost over the cap | Both amounts and the variable to change |
+| Encoder crash or failed QA | The FFmpeg or QA message |
+
+**Try again** re-queues a failed job. A job may run three times in total.
+
+## Output
+
+The renderer writes to a temporary directory and moves the file into `STUDIO_OUTPUT_DIR/<user id>/<job id>.mp4` only after QA passes. A retry replaces that one file, so a job never owns two public files. Download is offered only when the status is `ready`.
+
+## Endpoints
+
+All routes need a signed-in user with a verified email. A job of another user answers `404`.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /videos` | List your jobs |
+| `GET /videos/create` | The brief form |
+| `POST /videos` | Create a job. `201` with JSON, or a redirect for the web UI |
+| `GET /videos/{id}` | One job |
+| `GET /videos/{id}/status` | State, stage, progress, error. Used for polling |
+| `GET /videos/{id}/download` | The MP4. `409` until the job is ready |
+| `POST /videos/{id}/retry` | Re-queue a failed job. `409` when it is not failed or has no attempts left |
+
+Send `Accept: application/json` to get JSON instead of Inertia pages. An invalid brief answers `422` with a `{field: [messages]}` body.
