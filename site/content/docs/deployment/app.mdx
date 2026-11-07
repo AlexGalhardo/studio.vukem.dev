@@ -18,7 +18,9 @@ The image sets `QUEUE_CONNECTION=database`, so `serve` runs the render worker be
 
 ## Before traffic
 
-`railway.app.toml` sets the start command to `/bin/sh -c "/app/app migrate && exec /app/app"`. The database is a SQLite file on the volume mounted at `/app/storage`, and Railway mounts volumes only for the running container, never for a pre-deploy command. Migrating at start runs against the real file before the server listens; a failed migration exits and fails the deploy. Keep the service at one replica.
+Railway reads only the root `railway.toml`, and it applies to both services, so it holds just the shared builder and restart policy. Each service picks its image with a variable: `RAILWAY_DOCKERFILE_PATH=Dockerfile` on `studio` and `RAILWAY_DOCKERFILE_PATH=Dockerfile.app` on `studio-app`. Set the rest of `railway.app.toml` in the `studio-app` service settings.
+
+The start command is `/bin/sh -c "/app/app migrate && exec /app/app"`. The database is a SQLite file on the volume mounted at `/app/storage`, and Railway mounts volumes only for the running container, never for a pre-deploy command. Migrating at start runs against the real file before the server listens; a failed migration exits and fails the deploy. Keep the service at one replica.
 
 ## Variables
 
