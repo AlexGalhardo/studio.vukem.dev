@@ -6,6 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/AlexGalhardo/vukem/vukemtest"
 
@@ -81,4 +82,29 @@ func TestDailyQuotaHoldsUnderParallelSubmits(t *testing.T) {
 	}
 
 	vukemtest.AssertDatabaseCount(t, app, "videos", 3)
+}
+
+func TestQuotaWindowIsRolling(t *testing.T) {
+	t.Parallel()
+
+	_, svc, uid := serviceFor(t, map[string]string{"STUDIO_MAX_JOBS_PER_DAY": "2"})
+	base := time.Now()
+
+	for range 2 {
+		if _, err := svc.Create(context.Background(), uid, studioBrief()); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// The limit was used just now. Shortly before the 24-hour mark it still
+	// holds, which a calendar-day counter would have reset at midnight.
+	svc.Now = func() time.Time { return base.Add(23*time.Hour + 59*time.Minute) }
+	if _, err := svc.Create(context.Background(), uid, studioBrief()); !errors.Is(err, studio.ErrDailyLimit) {
+		t.Fatalf("at 23h59 got %v, want the daily limit", err)
+	}
+
+	svc.Now = func() time.Time { return base.Add(24*time.Hour + time.Minute) }
+	if _, err := svc.Create(context.Background(), uid, studioBrief()); err != nil {
+		t.Fatalf("after 24h got %v, want success", err)
+	}
 }

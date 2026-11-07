@@ -48,10 +48,8 @@ func NewService(db *database.DB, cfg Config, log *slog.Logger, now func() time.T
 }
 
 // Create validates the brief, compiles the prompt and stores a queued job.
-// The daily limit is taken inside the same transaction as the insert: the
-// counter row is bumped with a conditional UPDATE, so parallel submits
-// cannot pass MaxJobsPerDay (SQLite serialises writers, PostgreSQL locks the
-// counter row).
+// The 24-hour limit is checked inside the same transaction as the insert,
+// behind a per-user lock, so parallel submits cannot pass MaxJobsPerDay.
 func (s *Service) Create(ctx context.Context, userID int64, b Brief) (models.Video, error) {
 	sk, err := s.Skills.Get(b.Skill)
 	if err != nil {
@@ -87,29 +85,34 @@ func (s *Service) Create(ctx context.Context, userID int64, b Brief) (models.Vid
 	return v, nil
 }
 
+// takeQuota enforces a rolling 24-hour window. The lock row is touched first
+// so concurrent submits of one user queue up behind each other; the count and
+// the insert that follows then see a consistent state.
 func (s *Service) takeQuota(ctx context.Context, tx *database.Tx, userID int64) error {
 	limit := s.Cfg.MaxJobsPerDay
 	if limit <= 0 {
 		return nil
 	}
 
-	day := s.Now().UTC().Format("2006-01-02")
+	now := s.Now().UTC()
 
 	if _, err := tx.ExecContext(ctx, database.Rebind(tx.Dialect(),
-		"INSERT INTO video_quotas (user_id, day, used) VALUES (?, ?, 0) ON CONFLICT (user_id, day) DO NOTHING"), userID, day); err != nil {
+		"INSERT INTO video_quotas (user_id, touched_at) VALUES (?, ?) ON CONFLICT (user_id) DO NOTHING"), userID, now); err != nil {
 		return err
 	}
 
-	res, err := tx.ExecContext(ctx, database.Rebind(tx.Dialect(),
-		"UPDATE video_quotas SET used = used + 1 WHERE user_id = ? AND day = ? AND used < ?"), userID, day, limit)
+	if _, err := tx.ExecContext(ctx, database.Rebind(tx.Dialect(),
+		"UPDATE video_quotas SET touched_at = ? WHERE user_id = ?"), now, userID); err != nil {
+		return err
+	}
+
+	n, err := orm.QueryOf[models.Video](tx).Where("user_id", userID).Where("created_at", ">=", now.Add(-24*time.Hour)).Count(ctx)
 	if err != nil {
 		return err
 	}
 
-	if n, err := res.RowsAffected(); err != nil {
-		return err
-	} else if n == 0 {
-		return fmt.Errorf("%w (%d per UTC day)", ErrDailyLimit, limit)
+	if int(n) >= limit {
+		return fmt.Errorf("%w (%d per 24 hours)", ErrDailyLimit, limit)
 	}
 
 	return nil
