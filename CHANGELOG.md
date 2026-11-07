@@ -16,27 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **deploy:** `Dockerfile.app` ships ffmpeg, a font, the skill catalog and `QUEUE_CONNECTION=database`; `railway.app.toml` runs `migrate` before traffic and checks `/up`
 - **docs:** Quickstart, configuration, jobs, app deployment and security pages
 - **test:** Go flow tests and parallel-request tests for quota, claim and retry; env-flagged real FFmpeg and real Claude tests
-
-### Changed
-
-- Bump vukem to v0.38.0
-- **site:** The documentation site is built with Astro on the vukem.dev site shell instead of Next.js. Build `npm run build` (writes `dist/`), start `npm start`; `/` and `/docs` answer 307 to `/docs/introduction`
-- The posts example resource is gone; the dashboard links to videos
-
-### Removed
-
-- Next.js dependencies and configuration from `site/`
-
-### Fixed
-
-- CI markdown lint and the Betterleaks scan: bare URLs are wrapped, the phase 5 and 6 audit headings match the outline, and auth fixture passwords are allowlisted
-
-### Changed
-
-- GitHub repository is [AlexGalhardo/vukem-studio](https://github.com/AlexGalhardo/vukem-studio). The public site stays `studio.vukem.dev`
-
-### Added
-
 - Vukem application shell: Inertia React, sidebar dashboard at `/`, Google-only login page, and session redirect tests
 - App CI jobs: gofmt, `go vet`, `go test -race`, govulncheck, Betterleaks, and a `Dockerfile.app` image build
 - Dependabot for Go modules, GitHub Actions, Docker, and the npm lockfiles
@@ -47,3 +26,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker image and Railway config for the documentation site
 - `.railwayignore` so CLI uploads skip skill media, and a generated Railway config draft in `.railway/railway.ts` (not applied)
 - Bun 1.4.4 typecheck script (`bun run check`)
+
+### Changed
+
+- Bump vukem to v0.38.0
+- **site:** The documentation site is built with Astro on the vukem.dev site shell instead of Next.js. Build `npm run build` (writes `dist/`), start `npm start`; `/` and `/docs` answer 307 to `/docs/introduction`
+- The posts example resource is gone; the dashboard links to videos
+- GitHub repository is [AlexGalhardo/vukem-studio](https://github.com/AlexGalhardo/vukem-studio). The public site stays `studio.vukem.dev`
+
+### Removed
+
+- Next.js dependencies and configuration from `site/`
+
+### Fixed
+
+- CI markdown lint and the Betterleaks scan: bare URLs are wrapped, the phase 5 and 6 audit headings match the outline, and auth fixture passwords are allowlisted
