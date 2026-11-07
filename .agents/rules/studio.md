@@ -11,3 +11,4 @@
 - Framework bugs go in `vukem-feedback.md`, which is gitignored. Do not fork Vukem to paper over them.
 - Skill kits are still Portuguese. Translate the kit you are wiring, not the whole tree, unless the task says otherwise.
 - Do not commit `zip/`.
+- Apply the vendored `security-audit` skill (`.agents/skills/security-audit`, Cloudflare) during development, in guidance mode unless the task is an explicit full audit. CI runs it in `.github/workflows/security-audit.yml`.

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **security:** Vendor the Cloudflare security-audit skill and run it on pull requests (guidance mode)
+
+### Changed
+
+- Bump vukem to v0.38.0
+
 ### Fixed
 
 - CI markdown lint and the Betterleaks scan: bare URLs are wrapped, the phase 5 and 6 audit headings match the outline, and auth fixture passwords are allowlisted
