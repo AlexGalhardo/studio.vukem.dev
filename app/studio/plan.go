@@ -7,6 +7,7 @@ import (
 	"math"
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 // Scene is one card of the plan.
@@ -79,6 +80,10 @@ func (p *ScenePlan) Validate(wantSeconds int) error {
 			return fmt.Errorf("%w: scene %d has no text", ErrBadPlan, i+1)
 		}
 
+		if hasControl(s.Title) || hasControl(s.Text) {
+			return fmt.Errorf("%w: scene %d text has control characters", ErrBadPlan, i+1)
+		}
+
 		if len([]rune(s.Text)) > MaxSceneText || len([]rune(s.Title)) > MaxSceneText {
 			return fmt.Errorf("%w: scene %d text is over %d characters", ErrBadPlan, i+1, MaxSceneText)
 		}
@@ -113,3 +118,15 @@ func (p ScenePlan) TotalSeconds() float64 {
 }
 
 var palette = []string{"#1f2937", "#7c2d12", "#134e4a", "#4c1d95", "#831843", "#1e3a8a"}
+
+// hasControl reports control characters (including newlines): scene text is
+// laid out by the renderer, not by the model.
+func hasControl(s string) bool {
+	for _, r := range s {
+		if unicode.IsControl(r) {
+			return true
+		}
+	}
+
+	return false
+}

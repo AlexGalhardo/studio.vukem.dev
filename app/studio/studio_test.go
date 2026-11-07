@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestParsePlan(t *testing.T) {
@@ -116,7 +117,7 @@ func TestFFmpegRenderQA(t *testing.T) {
 	b := Brief{Ratio: "9:16", Skill: DefaultSkill, Model: "fake"}
 	plan := ScenePlan{Title: "t", Scenes: []Scene{
 		{Title: "Hi: there", Text: "It's a 'quoted' line, with: colons", Seconds: 1, Color: "#1f2937"},
-		{Title: "Bye", Text: "x", Seconds: 1, Color: "#7c2d12"},
+		{Title: "Bye", Text: "%{eif:1/0:d} %{pts} %{localtime}", Seconds: 1, Color: "#7c2d12"},
 	}}
 
 	out := filepath.Join(t.TempDir(), "o.mp4")
@@ -137,6 +138,36 @@ func TestFFmpegRenderQA(t *testing.T) {
 	}
 
 	if _, err := exec.LookPath(cfg.FFmpeg); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestHungFFmpegIsKilledByTheDeadline(t *testing.T) {
+	t.Setenv("STUDIO_HELPER_HANG", "1")
+
+	f := FFmpeg{Bin: os.Args[0], Timeout: 300 * time.Millisecond}
+
+	start := time.Now()
+	err := f.run(context.Background(), t.TempDir(), f.Bin, "-version")
+
+	if err == nil || !strings.Contains(err.Error(), "killed after") {
+		t.Fatalf("err = %v, want a kill by the deadline", err)
+	}
+
+	if time.Since(start) > 10*time.Second {
+		t.Fatalf("took %s, the deadline did not stop the process", time.Since(start))
+	}
+}
+
+func TestPlanRejectsControlCharacters(t *testing.T) {
+	raw := `{"title":"T","scenes":[{"title":"a","text":"line\nbreak","seconds":10}]}`
+	if _, err := ParsePlan(raw, 10); err == nil {
+		t.Fatal("control characters in scene text must be rejected")
+	}
+
+	// A percent sign is plain text: drawtext runs with expansion=none.
+	ok := `{"title":"T","scenes":[{"title":"a","text":"100% %{eif:1/0:d}","seconds":10}]}`
+	if _, err := ParsePlan(ok, 10); err != nil {
 		t.Fatal(err)
 	}
 }

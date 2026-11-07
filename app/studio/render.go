@@ -44,6 +44,8 @@ var ErrQA = errors.New("studio: render failed QA")
 type FFmpeg struct {
 	Bin, Probe, Font string
 	Width            int
+	// Timeout bounds each ffmpeg or ffprobe process (zero means two minutes).
+	Timeout time.Duration
 }
 
 // NewFFmpeg builds the renderer from cfg.
@@ -137,8 +139,8 @@ func (f FFmpeg) card(ctx context.Context, s Scene, font string, w, h int, work s
 
 	ff := escapeFilterValue(font)
 	vf := fmt.Sprintf(
-		"drawtext=fontfile=%s:textfile=%s:fontsize=%d:fontcolor=white:x=(w-text_w)/2:y=h*0.30-text_h/2,"+
-			"drawtext=fontfile=%s:textfile=%s:fontsize=%d:fontcolor=white@0.92:x=(w-text_w)/2:y=h*0.52:line_spacing=%d",
+		"drawtext=fontfile=%s:expansion=none:textfile=%s:fontsize=%d:fontcolor=white:x=(w-text_w)/2:y=h*0.30-text_h/2,"+
+			"drawtext=fontfile=%s:expansion=none:textfile=%s:fontsize=%d:fontcolor=white@0.92:x=(w-text_w)/2:y=h*0.52:line_spacing=%d",
 		ff, filepath.Base(titleFile), titleSize, ff, filepath.Base(textFile), bodySize, bodySize/4)
 
 	src := fmt.Sprintf("color=c=%s:s=%dx%d:r=%d:d=%.3f", "0x"+strings.TrimPrefix(s.Color, "#"), w, h, FPS, s.Seconds)
@@ -149,6 +151,9 @@ func (f FFmpeg) card(ctx context.Context, s Scene, font string, w, h int, work s
 
 // QA applies the pipeline QA rules for a silent file.
 func (f FFmpeg) QA(ctx context.Context, path string, w, h int, wantSeconds float64) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	cmd := exec.CommandContext(ctx, f.Probe, "-v", "error", "-print_format", "json", "-show_streams", "-show_format", path)
 
 	var stdout bytes.Buffer
@@ -236,6 +241,9 @@ func Faststart(path string) (bool, error) {
 }
 
 func (f FFmpeg) version(ctx context.Context) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	out, err := exec.CommandContext(ctx, f.Bin, "-version").Output()
 	if err != nil {
 		return "", fmt.Errorf("ffmpeg is not available (%s): install it or set STUDIO_FFMPEG", f.Bin)
@@ -247,14 +255,29 @@ func (f FFmpeg) version(ctx context.Context) (string, error) {
 }
 
 func (f FFmpeg) run(ctx context.Context, dir, bin string, args ...string) error {
+	limit := f.Timeout
+	if limit <= 0 {
+		limit = 2 * time.Minute
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, limit)
+	defer cancel()
+
 	cmd := exec.CommandContext(ctx, bin, args...)
 	cmd.Dir = dir
+	// ffmpeg runs as one process here; WaitDelay also closes its pipes so a
+	// stuck child cannot hold the job after the kill.
+	cmd.WaitDelay = 2 * time.Second
 
 	var stderr bytes.Buffer
 
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			return fmt.Errorf("ffmpeg killed after %s", limit)
+		}
+
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
