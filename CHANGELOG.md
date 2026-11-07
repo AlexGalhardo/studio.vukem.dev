@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **security:** A voice upload whose WAV header understates its length no longer crashes the process; the declared data size is honored and the decoded length is checked before resampling (ST-SEC-001)
 - Captions with control characters, braces or backslashes are rejected in a plan instead of reaching libass
 - The docs server answers 400 on malformed percent-encoding instead of failing
 - CI markdown lint and the Betterleaks scan: bare URLs are wrapped, the phase 5 and 6 audit headings match the outline, and auth fixture passwords are allowlisted

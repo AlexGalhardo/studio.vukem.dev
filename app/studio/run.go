@@ -279,6 +279,12 @@ func prepareVoice(ctx context.Context, dir string, st State, plan Plan) (wav str
 			return "", false, "", nil, err
 		}
 
+		// ffprobe measured the header; the samples we hold decide the real length,
+		// and resample sizes its output from it.
+		if rate > 0 && math.Abs(float64(len(decoded))/float64(rate)-float64(st.Brief.Duration)) > 0.5 {
+			return "", false, "", nil, fmt.Errorf("the voice track does not fit the requested duration")
+		}
+
 		if rate != sampleRate && rate > 0 {
 			decoded = resample(decoded, rate, sampleRate)
 		}
