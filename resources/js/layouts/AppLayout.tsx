@@ -3,7 +3,6 @@ import { Clapperboard, LayoutDashboard, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuItem } from "../components/ui/sidebar";
-import { demoInstalled, demoLink } from "../demo";
 import type { SharedProps } from "../types";
 
 const item = "flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:hover:bg-zinc-800";
@@ -50,13 +49,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   Videos
                 </Link>
               </SidebarMenuItem>
-              {demoInstalled ? (
-                <SidebarMenuItem>
-                  <Link href={demoLink.href} className={item}>
-                    {demoLink.label}
-                  </Link>
-                </SidebarMenuItem>
-              ) : null}
             </SidebarMenu>
           </nav>
         </SidebarContent>

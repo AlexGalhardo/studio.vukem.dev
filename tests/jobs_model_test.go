@@ -63,3 +63,14 @@ func TestFiveMinuteVideoRenders(t *testing.T) {
 	c.PostJSON("/jobs", validBrief(map[string]any{"duration": 300})).AssertRedirect("/jobs/1")
 	c.Get("/jobs/1").AssertInertia("Jobs/Show").PropEquals("job.status", "ready")
 }
+
+// The starter's public posts CRUD is gone: nothing unauthenticated writes data.
+func TestPostsScaffoldIsRemoved(t *testing.T) {
+	t.Parallel()
+
+	app := vukemtest.New(t, bootstrap.New)
+	c := app.Client(t)
+
+	c.Get("/posts").AssertNotFound()
+	c.PostJSON("/posts", map[string]any{"title": "x"}).AssertNotFound()
+}

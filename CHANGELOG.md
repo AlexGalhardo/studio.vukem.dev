@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **app:** Videos up to 300 seconds (was 45); plan shots, output tokens and the queue timeout scale with the duration
 - **security:** Vendor the Cloudflare security-audit skill and run it on pull requests (guidance mode)
 - **app:** Claude (`claude-sonnet-5-5`, `claude-opus-5-5`) and OpenAI planners behind the planner interface, selected by `STUDIO_MODEL` or `ANTHROPIC_API_KEY`; a missing key fails the job with the variable name
 - **app:** Rolling 24-hour job quota behind a per-user lock, integer-epoch window, worst-case cost cap per job, output-token cap, and at most five renders per job
@@ -39,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- The starter's posts CRUD (it was public, unauthenticated), its seeder, factory and pages
 - Next.js dependencies and configuration from `site/`, and the pt-br redirect component (an open redirect)
 
 ### Fixed
