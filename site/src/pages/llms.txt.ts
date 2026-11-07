@@ -1,14 +1,15 @@
-import { getNavGroups, getAllDocs } from "@/lib/content";
+import type { APIRoute } from "astro";
+import { getAllDocs, getNavGroups } from "@/lib/content";
 import { site } from "@/lib/site";
 
-export const dynamic = "force-static";
+export const prerender = true;
 
-export function GET() {
+export const GET: APIRoute = () => {
   const docs = new Map(getAllDocs().map((d) => [d.href, d]));
   const lines = [
     `# ${site.name}`,
     "",
-    `> ${site.tagline}`,
+    `> ${site.tagline} Vukem is a web framework built on net/http for REST APIs and full-stack apps.`,
     "",
     `Full documentation in one file: ${site.url}/llms-full.txt`,
     "",
@@ -18,10 +19,10 @@ export function GET() {
     lines.push(`## ${group.title}`, "");
     for (const item of group.items) {
       const doc = docs.get(item.href);
-      lines.push(`- [${item.title}](${site.url}${item.href}): ${doc?.description ?? ""}`);
+      lines.push(`- [${item.title}](${site.url}${item.href}/): ${doc?.description ?? ""}`);
     }
     lines.push("");
   }
 
   return new Response(lines.join("\n"), { headers: { "Content-Type": "text/plain; charset=utf-8" } });
-}
+};

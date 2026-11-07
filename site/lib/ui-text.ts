@@ -1,12 +1,12 @@
 /** Interface strings. The site is English only. Client-safe: no file system access here. */
 export const t = {
   skipToContent: "Skip to content",
-  logoLabel: "Studio documentation",
+  logoLabel: "Vukem documentation",
   githubTooltip: "GitHub repository",
-  githubLabel: "Studio on GitHub",
+  githubLabel: "Vukem on GitHub",
   changelog: "Changelog",
   changelogTitle: "Changelog",
-  changelogDescription: "Every release of Studio, with a link to the commit behind each change.",
+  changelogDescription: "Every release of Vukem, with a link to the commit behind each change.",
   openNavigation: "Open navigation",
   closeNavigation: "Close navigation",
   navigation: "Navigation",

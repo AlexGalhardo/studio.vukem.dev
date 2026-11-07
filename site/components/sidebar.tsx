@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Collapsible } from "@base-ui/react/collapsible";
+import { Link } from "@/components/link";
 import { ChevronRight } from "lucide-react";
 import type { NavGroup } from "@/lib/content";
 import { t } from "@/lib/ui-text";
@@ -30,17 +30,31 @@ function Item({ href, title, active, onNavigate }: { href: string; title: string
  * Base UI Collapsible, open when it contains the current page. Shows the
  * groups of the docs version the current pathname belongs to.
  */
+function useBrowserPath(): string {
+  const [path, setPath] = useState("");
+  useEffect(() => {
+    const pathname = window.location.pathname;
+    setPath(pathname.length > 1 ? pathname.replace(/\/$/, "") : pathname);
+  }, []);
+  return path;
+}
+
 export function Sidebar({
   groupsByVersion,
+  pathname,
   collapsible = false,
   onNavigate,
 }: {
   groupsByVersion: Record<string, NavGroup[]>;
+  /** Page path without a trailing slash. The mobile drawer reads the browser when this is omitted. */
+  pathname?: string;
   collapsible?: boolean;
   onNavigate?: () => void;
 }) {
-  const pathname = usePathname();
-  const groups = groupsByVersion[versionOfPath(pathname).id] ?? [];
+  const live = useBrowserPath();
+  // trailingSlash adds a slash in the browser; nav hrefs have none.
+  const path = pathname ?? live;
+  const groups = groupsByVersion[versionOfPath(path).id] ?? [];
 
   return (
     <nav aria-label={t.documentation} className={`text-sm ${collapsible ? "space-y-1" : "space-y-6"}`}>
@@ -48,7 +62,7 @@ export function Sidebar({
         const list = (
           <ul className="space-y-0.5">
             {group.items.map((item) => (
-              <Item key={item.href} {...item} active={item.href === pathname} onNavigate={onNavigate} />
+              <Item key={item.href} {...item} active={item.href === path} onNavigate={onNavigate} />
             ))}
           </ul>
         );
@@ -62,7 +76,7 @@ export function Sidebar({
           );
         }
 
-        const open = group.items.some((i) => i.href === pathname);
+        const open = group.items.some((i) => i.href === path);
         return (
           <Collapsible.Root key={group.title} defaultOpen={open}>
             <Collapsible.Trigger className="group flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-xs font-semibold tracking-wide text-fg hover:bg-hover">
